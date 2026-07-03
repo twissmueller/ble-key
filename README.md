@@ -1,14 +1,15 @@
 # ble-key
 
-Firmware for a Bluetooth Low Energy Morse **key** (paddle) built on a
+A Bluetooth Low Energy interface for a Morse **key**, built on a
 [Seeed Studio XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/).
 
-The board reads a two-lever iambic paddle (dit / dah), debounces the contacts, and
-streams **timed paddle edges** over BLE as notifications. It also drives a local piezo
-sidetone and the onboard LED so you get instant, BLE-independent feedback while keying.
+Plug in your own straight key or iambic paddle. The board reads the contacts (dit / dah),
+debounces them, and streams **timed keying edges** over BLE as notifications to the
+[Sidetone](https://github.com/twissmueller/sidetone) Morse-training app, which produces the
+audio/sidetone and does the training. The device itself makes no sound — it's purely the
+key interface. The onboard LED gives instant, BLE-independent visual feedback while keying.
 
-This is the hardware companion to the Sidetone Morse-training app, but the BLE contract
-below is simple and app-agnostic — anything that speaks GATT can consume it.
+The BLE contract below is simple and app-agnostic — anything that speaks GATT can consume it.
 
 ## Hardware
 
@@ -16,11 +17,11 @@ below is simple and app-agnostic — anything that speaks GATT can consume it.
 |----------|----------|--------|--------------------------------|
 | Dit      | `D1`     | GPIO2  | Tip, `INPUT_PULLUP`, pressed = LOW |
 | Dah      | `D2`     | GPIO3  | Ring, `INPUT_PULLUP`, pressed = LOW |
-| Piezo    | `D3`     | GPIO4  | Sidetone (LEDC tone, 600 Hz)   |
 | LED      | `GPIO21` | —      | `LED_BUILTIN`, active-low      |
 
-Wire each paddle lever between its input pin and ground; the internal pull-ups mean no
-external resistors are needed.
+Wire each key/paddle contact between its input pin and ground; the internal pull-ups mean
+no external resistors are needed. A straight key uses the dit line only; an iambic paddle
+uses both. The tip/ring assignment matches a standard 3.5 mm TRS paddle plug.
 
 ## BLE contract
 

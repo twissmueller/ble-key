@@ -1,6 +1,7 @@
-// Morse paddle -> BLE (XIAO ESP32-S3)
-// Sends timed paddle edges as 5-byte notifications.
-// Local sidetone (piezo) + onboard debug LED for instant, BLE-independent feedback.
+// Morse key -> BLE (XIAO ESP32-S3)
+// A BLE interface for a Morse key: plug in your own straight key or paddle and it streams
+// the keying as timed edges (5-byte notifications) to the Sidetone app, which produces the
+// audio/sidetone. The onboard LED gives instant, BLE-independent visual feedback.
 //
 // Library: NimBLE-Arduino  ->  arduino-cli lib install "NimBLE-Arduino"
 // Generate your own UUIDs with `uuidgen` and replace the two below.
@@ -11,12 +12,7 @@
 // ---- Pins ----
 const int PIN_DIT   = D1;   // GPIO2, Tip
 const int PIN_DAH   = D2;   // GPIO3, Ring
-const int PIN_PIEZO = D3;   // GPIO4
 // LED_BUILTIN = GPIO21 on the XIAO, active-low (LOW = on, HIGH = off)
-
-// ---- Sidetone ----
-const int SIDETONE_HZ = 600;
-const int LEDC_RES    = 10;
 
 // ---- Debounce ----
 // Report a paddle edge only after the reading is stable this long. Well below the
@@ -64,10 +60,7 @@ void setup() {
 
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);                 // LED off (active-low)
-
-  ledcAttach(PIN_PIEZO, SIDETONE_HZ, LEDC_RES);
-  ledcWriteTone(PIN_PIEZO, 0);                     // silent
-  Serial.println("[paddle] pins + sidetone ready");
+  Serial.println("[paddle] pins ready");
 
   NimBLEDevice::init("Paddle");
   Serial.print("[paddle] BLE MAC: ");
@@ -123,7 +116,6 @@ void loop() {
     Serial.println(dah.reported ? "[paddle] DAH down" : "[paddle] DAH up");
   }
 
-  bool keyed = dit.reported || dah.reported;        // debounced state drives sidetone/LED
-  ledcWriteTone(PIN_PIEZO, keyed ? SIDETONE_HZ : 0);
+  bool keyed = dit.reported || dah.reported;        // debounced state drives the LED
   digitalWrite(LED_BUILTIN, keyed ? LOW : HIGH);    // active-low
 }
