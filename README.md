@@ -5,7 +5,7 @@ A Bluetooth Low Energy interface for a Morse **key**, built on a
 
 Plug in your own straight key or iambic paddle. The board reads the contacts (dit / dah),
 debounces them, and streams **timed keying edges** over BLE as notifications to the
-[Sidetone](https://github.com/twissmueller/sidetone) Morse-training app, which produces the
+[Longpath](https://wissmueller.net/en/longpath.html) Morse-training app, which produces the
 audio/sidetone and does the training. The device itself makes no sound — it's purely the
 key interface. The onboard LED gives instant, BLE-independent visual feedback while keying.
 

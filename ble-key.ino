@@ -1,6 +1,6 @@
 // Morse key -> BLE (XIAO ESP32-S3)
 // A BLE interface for a Morse key: plug in your own straight key or paddle and it streams
-// the keying as timed edges (5-byte notifications) to the Sidetone app, which produces the
+// the keying as timed edges (5-byte notifications) to the Longpath app, which produces the
 // audio/sidetone. The onboard LED gives instant, BLE-independent visual feedback.
 //
 // Library: NimBLE-Arduino  ->  arduino-cli lib install "NimBLE-Arduino"
