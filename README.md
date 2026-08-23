@@ -11,6 +11,20 @@ key interface. The onboard LED gives instant, BLE-independent visual feedback wh
 
 The BLE contract below is simple and app-agnostic — anything that speaks GATT can consume it.
 
+## Getting a key
+
+The BLE key is open hardware — get one in whichever way suits you:
+
+1. **Build it yourself** — source the parts ([Hardware](#hardware)) and flash the firmware
+   ([Build & flash](#build--flash)); everything you need is in this repository.
+2. **Order a parts kit** — I'll send you the board and connectors, you assemble and flash.
+3. **Order a ready-built key** — assembled, flashed, and tested.
+
+For a parts kit or a ready-built key, email
+[hello@wissmueller.net](mailto:hello@wissmueller.net) with your shipping address. The Longpath
+app offers the same three options (with pre-filled order emails) in its BLE-key dialog — keep
+that dialog and this section in sync.
+
 ## Hardware
 
 | Signal   | XIAO pin | GPIO   | Notes                          |
