@@ -4,7 +4,9 @@
 // audio/sidetone. The onboard LED gives instant, BLE-independent visual feedback.
 //
 // Library: NimBLE-Arduino  ->  arduino-cli lib install "NimBLE-Arduino"
-// Generate your own UUIDs with `uuidgen` and replace the two below.
+// The two UUIDs below are the Longpath BLE contract — keep them as they are, or the
+// Longpath app will not find the key. Fork with your own (`uuidgen`) only for a
+// different client.
 
 #include <NimBLEDevice.h>
 #include <string.h>
@@ -20,8 +22,8 @@ const int PIN_DAH   = D2;   // GPIO3, Ring
 const uint32_t DEBOUNCE_MS = 5;
 
 // ---- BLE contract ----
-#define SVC_UUID "6e3a0001-0000-1000-8000-00805f9b34fb"   // <-- replace (uuidgen)
-#define CHR_UUID "6e3a0002-0000-1000-8000-00805f9b34fb"   // <-- replace (uuidgen)
+#define SVC_UUID "6e3a0001-0000-1000-8000-00805f9b34fb"   // Longpath contract — do not change
+#define CHR_UUID "6e3a0002-0000-1000-8000-00805f9b34fb"   // Longpath contract — do not change
 
 enum Evt : uint8_t { DIT_DOWN = 0, DIT_UP = 1, DAH_DOWN = 2, DAH_UP = 3 };
 

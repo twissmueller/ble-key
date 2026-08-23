@@ -62,14 +62,11 @@ without power-cycling.
 
 ### UUIDs
 
-The service and characteristic UUIDs in `ble-key.ino` are **placeholders**. Generate your
-own before flashing:
-
-```sh
-uuidgen   # run twice — one for the service, one for the characteristic
-```
-
-and replace `SVC_UUID` / `CHR_UUID` near the top of the sketch.
+The service and characteristic UUIDs in `ble-key.ino` are the **fixed Longpath contract**
+— the app looks for exactly this service, so leave them unchanged if your key should work
+with Longpath (whether self-built, from a kit, or bought ready-made). Only when building
+for a *different* client should you mint your own pair (`uuidgen`, run twice) and replace
+`SVC_UUID` / `CHR_UUID` near the top of the sketch.
 
 ## Build & flash
 
