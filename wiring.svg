@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="560" viewBox="0 0 860 560" font-family="Helvetica, Arial, sans-serif">
+  <!-- Fritzing-style wiring: Seeed XIAO ESP32-S3 to a 3.5 mm TRS jack.
+       Dit = D1 (tip), Dah = D2 (ring), common = GND (sleeve). Internal pull-ups,
+       so there are no external resistors. A straight key uses tip + sleeve only. -->
+  <rect width="860" height="560" fill="#ffffff"/>
+
+  <!-- ======================= wires (behind the parts) ======================= -->
+  <!-- D1 (dit) → Tip : yellow -->
+  <path d="M 120 142 C 50 142, 45 400, 180 470 C 235 496, 270 492, 300 492"
+        fill="none" stroke="#eab308" stroke-width="5" stroke-linecap="round"/>
+  <!-- D2 (dah) → Ring : blue -->
+  <path d="M 120 174 C 70 174, 68 424, 200 502 C 240 522, 275 510, 300 510"
+        fill="none" stroke="#2563eb" stroke-width="5" stroke-linecap="round"/>
+  <!-- GND → Sleeve : black -->
+  <path d="M 300 142 C 385 142, 385 380, 355 436 C 345 452, 335 454, 324 454"
+        fill="none" stroke="#111827" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- ======================= XIAO ESP32-S3 ======================= -->
+  <g transform="translate(120,70)">
+    <rect x="0" y="0" width="180" height="300" rx="16" fill="#1f2937" stroke="#0f172a" stroke-width="2"/>
+    <rect x="55" y="-14" width="70" height="34" rx="8" fill="#9ca3af" stroke="#6b7280" stroke-width="2"/>
+    <rect x="30" y="60" width="120" height="120" rx="6" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/>
+    <text x="90" y="115" font-size="14" fill="#475569" text-anchor="middle">ESP32-S3</text>
+    <text x="90" y="133" font-size="10" fill="#64748b" text-anchor="middle">XIAO</text>
+    <circle cx="150" cy="40" r="5" fill="#fbbf24" stroke="#b45309"/>
+    <text x="140" y="44" font-size="9" fill="#e5e7eb" text-anchor="end">LED</text>
+    <text x="90" y="285" font-size="12" fill="#e5e7eb" text-anchor="middle">Seeed XIAO</text>
+    <text x="90" y="285" dy="14" font-size="12" fill="#e5e7eb" text-anchor="middle">ESP32-S3</text>
+
+    <!-- left pin column -->
+    <g font-size="11" fill="#e5e7eb">
+      <circle cx="0" cy="40"  r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="0" cy="72"  r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="0" cy="104" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="0" cy="136" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="0" cy="168" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="0" cy="200" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="0" cy="232" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <text x="12" y="44">D0</text>
+      <text x="12" y="76"  font-weight="bold">D1</text>
+      <text x="12" y="108" font-weight="bold">D2</text>
+      <text x="12" y="140">D3</text>
+      <text x="12" y="172">D4</text>
+      <text x="12" y="204">D5</text>
+      <text x="12" y="236">D6</text>
+    </g>
+
+    <!-- right pin column -->
+    <g font-size="11" fill="#e5e7eb">
+      <circle cx="180" cy="40"  r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="180" cy="72"  r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="180" cy="104" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="180" cy="136" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="180" cy="168" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="180" cy="200" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="180" cy="232" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+      <text x="168" y="44"  text-anchor="end">5V</text>
+      <text x="168" y="76"  text-anchor="end" font-weight="bold">GND</text>
+      <text x="168" y="108" text-anchor="end">3V3</text>
+      <text x="168" y="140" text-anchor="end">D10</text>
+      <text x="168" y="172" text-anchor="end">D9</text>
+      <text x="168" y="204" text-anchor="end">D8</text>
+      <text x="168" y="236" text-anchor="end">D7</text>
+    </g>
+  </g>
+
+  <!-- ======================= 3.5 mm TRS jack ======================= -->
+  <g transform="translate(300,430)">
+    <rect x="0" y="20" width="130" height="70" rx="10" fill="#374151" stroke="#111827" stroke-width="2"/>
+    <rect x="130" y="38" width="26" height="34" rx="6" fill="#6b7280" stroke="#374151" stroke-width="2"/>
+    <circle cx="143" cy="55" r="8" fill="#111827"/>
+    <text x="65" y="52" font-size="12" fill="#e5e7eb" text-anchor="middle">3.5 mm</text>
+    <text x="65" y="68" font-size="12" fill="#e5e7eb" text-anchor="middle">TRS jack</text>
+    <!-- terminals -->
+    <circle cx="0"  cy="62" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+    <circle cx="0"  cy="80" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+    <circle cx="24" cy="24" r="6" fill="#d1a24c" stroke="#8a6d3b"/>
+    <text x="-12" y="58"  font-size="11" fill="#a16207" text-anchor="end">Tip</text>
+    <text x="-12" y="92"  font-size="11" fill="#1d4ed8" text-anchor="end">Ring</text>
+    <text x="46" y="12"   font-size="11" fill="#111827">Sleeve</text>
+  </g>
+
+  <!-- ======================= TRS plug legend ======================= -->
+  <g transform="translate(480,60)">
+    <text x="0" y="0" font-size="13" fill="#0f172a" font-weight="bold">TRS plug (key side)</text>
+    <rect x="150" y="14" width="90" height="26" rx="6" fill="#374151"/>
+    <rect x="86" y="18" width="64" height="18" fill="#9ca3af" stroke="#6b7280"/>
+    <rect x="80" y="18" width="6"  height="18" fill="#111827"/>
+    <rect x="52" y="18" width="28" height="18" fill="#9ca3af" stroke="#6b7280"/>
+    <rect x="46" y="18" width="6"  height="18" fill="#111827"/>
+    <path d="M 16 18 L 46 18 L 46 36 L 16 36 Q 4 27 16 18 Z" fill="#9ca3af" stroke="#6b7280"/>
+    <line x1="30"  y1="40" x2="30"  y2="52" stroke="#a16207" stroke-width="2"/>
+    <line x1="66"  y1="40" x2="98"  y2="52" stroke="#1d4ed8" stroke-width="2"/>
+    <line x1="118" y1="40" x2="176" y2="52" stroke="#111827" stroke-width="2"/>
+    <g font-size="11">
+      <text x="18" y="68" fill="#a16207">Tip</text>
+      <text x="18" y="82" fill="#a16207">dit ·</text>
+      <text x="86" y="68" fill="#1d4ed8">Ring</text>
+      <text x="86" y="82" fill="#1d4ed8">dah −</text>
+      <text x="160" y="68" fill="#111827">Sleeve</text>
+      <text x="160" y="82" fill="#111827">common</text>
+    </g>
+  </g>
+
+  <!-- ======================= notes ======================= -->
+  <g font-size="13" fill="#334155" transform="translate(480,220)">
+    <text y="0"  font-weight="bold" fill="#0f172a">Wiring</text>
+    <text y="26"><tspan fill="#a16207" font-weight="bold">D1 → Tip</tspan> — dit contact</text>
+    <text y="50"><tspan fill="#1d4ed8" font-weight="bold">D2 → Ring</tspan> — dah contact</text>
+    <text y="74"><tspan fill="#111827" font-weight="bold">GND → Sleeve</tspan> — common</text>
+    <text y="110">No external resistors — the inputs use the</text>
+    <text y="128">ESP32-S3's internal pull-ups (pressed = LOW).</text>
+    <text y="158">A straight key uses only Tip + Sleeve.</text>
+    <text y="188" fill="#64748b">The LED is on the board (GPIO21) — no wiring.</text>
+  </g>
+</svg>

@@ -35,7 +35,9 @@ that dialog and this section in sync.
 
 Wire each key/paddle contact between its input pin and ground; the internal pull-ups mean
 no external resistors are needed. A straight key uses the dit line only; an iambic paddle
-uses both. The tip/ring assignment matches a standard 3.5 mm TRS paddle plug.
+uses both. The tip/ring assignment matches a standard 3.5 mm TRS paddle plug:
+
+![Wiring: XIAO ESP32-S3 to a 3.5 mm TRS jack — D1 to tip (dit), D2 to ring (dah), GND to sleeve](wiring.svg)
 
 ## BLE contract
 
