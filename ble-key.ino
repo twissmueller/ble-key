@@ -7,13 +7,24 @@
 // The two UUIDs below are the Longpath BLE contract — keep them as they are, or the
 // Longpath app will not find the key. Fork with your own (`uuidgen`) only for a
 // different client.
+//
+// Battery (optional mod, see BATTERY.md): a LiPo on the BAT pads plus a 2 × 220 kΩ divider
+// from BAT+ to GND, tapped into A0. The cell level is published through the SIG-standard
+// Battery Service (0x180F / 0x2A19) next to the Longpath service — the keying contract is
+// untouched, and clients that do not know the service simply ignore it. A battery key also
+// deep-sleeps after IDLE_SLEEP_MS without a paddle edge and wakes on the next press
+// (14 µA instead of tens of mA); the press that wakes it is consumed by the boot.
 
 #include <NimBLEDevice.h>
 #include <string.h>
+#include <esp_sleep.h>
+#include <driver/rtc_io.h>
+#include <driver/gpio.h>
 
 // ---- Pins ----
 const int PIN_DIT   = D1;   // GPIO2, Tip
 const int PIN_DAH   = D2;   // GPIO3, Ring
+const int PIN_VBAT  = A0;   // GPIO1, battery divider tap (BATTERY_MOD only)
 // LED_BUILTIN = GPIO21 on the XIAO, active-low (LOW = on, HIGH = off)
 
 // ---- Debounce ----
@@ -21,13 +32,46 @@ const int PIN_DAH   = D2;   // GPIO3, Ring
 // shortest Morse element (a dit at 40 WPM ~30 ms), so timing is unaffected.
 const uint32_t DEBOUNCE_MS = 5;
 
+// ---- Battery ----
+// 1 = the battery mod is fitted (LiPo on the BAT pads, 2 × 220 kΩ divider on A0): the level
+//     is reported over BLE and the key deep-sleeps when idle.
+// 0 = stock USB-powered key: no Battery Service, A0 is never read, and the key never sleeps
+//     (on USB there is nothing to save, and a sleeping key costs the first press). Without
+//     the divider A0 floats and would report nonsense, so do not leave this at 1 on a stock key.
+#define BATTERY_MOD 1
+
+// ---- Idle sleep (BATTERY_MOD only) ----
+// Deep sleep after this long without a paddle edge (counted from boot or the last edge,
+// connected or not). Long enough to only ever trigger between sessions, never mid-word:
+// the press that wakes the key is lost to the ~1 s boot + reconnect, so a sleep during a
+// session would cost an element.
+// Overridable for bench tests, e.g. a 30 s build:
+//   arduino-cli compile --build-property "compiler.cpp.extra_flags=-DIDLE_SLEEP_MS=30000" ...
+#ifndef IDLE_SLEEP_MS
+#define IDLE_SLEEP_MS (10UL * 60UL * 1000UL)   // 10 minutes
+#endif
+
+// The divider halves the cell voltage (220 kΩ over 220 kΩ), which keeps a full cell
+// (4.2 V → 2.1 V) inside the ADC range at 11 dB attenuation (~0–3.1 V).
+const float    VBAT_DIVIDER   = 2.0f;
+const uint8_t  VBAT_SAMPLES   = 16;      // oversampling — the ESP32 ADC is noisy
+const uint32_t VBAT_PERIOD_MS = 10000;   // how often the level is re-measured
+const uint16_t VBAT_LOW_MV    = 3500;    // boot double-blink below this
+const uint16_t VBAT_PLAUSIBLE_MIN_MV = 2500;   // outside this window the reading is
+const uint16_t VBAT_PLAUSIBLE_MAX_MV = 4600;   // treated as "no cell / no divider"
+
 // ---- BLE contract ----
 #define SVC_UUID "6e3a0001-0000-1000-8000-00805f9b34fb"   // Longpath contract — do not change
 #define CHR_UUID "6e3a0002-0000-1000-8000-00805f9b34fb"   // Longpath contract — do not change
 
+// SIG-assigned numbers (not part of the Longpath contract, but standard — do not change).
+const uint16_t BATTERY_SVC_UUID = 0x180F;   // Battery Service
+const uint16_t BATTERY_LVL_UUID = 0x2A19;   // Battery Level, uint8 percent 0–100
+
 enum Evt : uint8_t { DIT_DOWN = 0, DIT_UP = 1, DAH_DOWN = 2, DAH_UP = 3 };
 
-NimBLECharacteristic* evtChar = nullptr;
+NimBLECharacteristic* evtChar     = nullptr;
+NimBLECharacteristic* batteryChar = nullptr;
 
 // 5-byte little-endian packet: [event][uint32 millis timestamp]
 void sendEvent(Evt e) {
@@ -37,6 +81,132 @@ void sendEvent(Evt e) {
   memcpy(&pkt[1], &t, 4);          // ESP32 is little-endian
   evtChar->setValue(pkt, sizeof(pkt));
   evtChar->notify();
+}
+
+// ---- Battery measurement ----
+
+// Cell voltage in millivolts, from the calibrated ADC reading at the divider tap.
+uint16_t readBatteryMillivolts() {
+  uint32_t sum = 0;
+  for (uint8_t i = 0; i < VBAT_SAMPLES; i++) sum += analogReadMilliVolts(PIN_VBAT);
+  return (uint16_t)((sum / VBAT_SAMPLES) * VBAT_DIVIDER);
+}
+
+// Open-circuit LiPo discharge curve (single cell, light load), linearly interpolated.
+// Flat between 3.6 V and 3.9 V, which is where a cell spends most of its life — a plain
+// linear 3.3–4.2 V map would sit at "60 %" for hours and then collapse.
+uint8_t batteryPercent(uint16_t mv) {
+  static const uint16_t MV[]  = { 3300, 3500, 3600, 3700, 3750, 3800, 3850, 3900, 3950, 4000, 4100, 4200 };
+  static const uint8_t  PCT[] = {    0,    5,   10,   20,   30,   40,   50,   60,   70,   80,   90,  100 };
+  const int n = sizeof(MV) / sizeof(MV[0]);
+  if (mv <= MV[0])     return PCT[0];
+  if (mv >= MV[n - 1]) return PCT[n - 1];
+  int i = 1;
+  while (mv > MV[i]) i++;
+  // interpolate between point i-1 and i
+  return (uint8_t)(PCT[i - 1] + (uint32_t)(mv - MV[i - 1]) * (PCT[i] - PCT[i - 1]) / (MV[i] - MV[i - 1]));
+}
+
+bool batteryPlausible(uint16_t mv) {
+  return mv >= VBAT_PLAUSIBLE_MIN_MV && mv <= VBAT_PLAUSIBLE_MAX_MV;
+}
+
+// Re-measure the cell, and push the level to the client if it changed. Called from loop()
+// every VBAT_PERIOD_MS; the first call after boot always publishes.
+void updateBattery() {
+  if (!batteryChar) return;
+  static int lastPercent = -1;
+
+  uint16_t mv = readBatteryMillivolts();
+  if (!batteryPlausible(mv)) {
+    // Floating A0 (divider missing?) or the cell unplugged while on USB. Keep the last
+    // published value rather than reporting a random number.
+    Serial.printf("[battery] implausible reading %u mV — no cell or no divider?\n", mv);
+    return;
+  }
+
+  int percent = batteryPercent(mv);
+  if (percent != lastPercent) {
+    lastPercent = percent;
+    uint8_t v = (uint8_t)percent;
+    batteryChar->setValue(&v, 1);
+    batteryChar->notify();
+    Serial.printf("[battery] %u mV -> %d %%\n", mv, percent);
+  }
+}
+
+// BLE-independent low-battery hint at boot: two short blinks of the onboard LED.
+void blinkLowBattery() {
+  for (int i = 0; i < 2; i++) {
+    digitalWrite(LED_BUILTIN, LOW);  delay(120);
+    digitalWrite(LED_BUILTIN, HIGH); delay(120);
+  }
+}
+
+// ---- Idle sleep ----
+
+// Deep sleep until either paddle line goes LOW. Deep sleep is a reset: setup() runs again
+// on wake, millis() restarts at 0 and the BLE connection is gone — which is fine, the app
+// re-scans on its own, and its keyers detect pauses by wall clock, not device time.
+void sleepUntilKeyPress() {
+  Serial.println("[sleep] idle — entering deep sleep, wake on dit/dah");
+
+  // Tell the app now rather than letting it wait for the supervision timeout.
+  NimBLEServer* server = NimBLEDevice::getServer();
+  if (server && server->getConnectedCount() > 0) {
+    server->disconnect(server->getPeerInfo(0).getConnHandle());
+    delay(150);                                    // let the disconnect go out
+  }
+  NimBLEDevice::getAdvertising()->stop();
+
+  // The plain INPUT_PULLUP is a digital-domain pull-up and dies in deep sleep; without an
+  // RTC pull-up both lines float low and the board wakes straight away in a loop. Both
+  // GPIO2 and GPIO3 are RTC IOs on the S3, so re-arm them there.
+  //
+  // Deliberately NOT keeping the RTC-peripheral power domain on (esp_sleep_pd_config
+  // ESP_PD_DOMAIN_RTC_PERIPH / ESP_PD_OPTION_ON), although the IDF docs suggest it for
+  // internal pull-ups: measured on the XIAO ESP32-S3 with IDF 5.5, ext1 ANY_LOW never fires
+  // with the domain forced on, while with AUTO the IDF holds the pad configuration
+  // (pull-up included) through the sleep and the wake works — at lower sleep current, too.
+  const gpio_num_t DIT = (gpio_num_t)PIN_DIT;
+  const gpio_num_t DAH = (gpio_num_t)PIN_DAH;
+  for (gpio_num_t pin : { DIT, DAH }) {
+    rtc_gpio_init(pin);
+    rtc_gpio_set_direction(pin, RTC_GPIO_MODE_INPUT_ONLY);
+    rtc_gpio_pulldown_dis(pin);
+    rtc_gpio_pullup_en(pin);
+  }
+  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO);
+
+  // Park the LED off and hold it there: a floating GPIO21 would let the active-low LED
+  // glow faintly through the whole sleep.
+  digitalWrite(LED_BUILTIN, HIGH);
+  gpio_hold_en((gpio_num_t)LED_BUILTIN);
+  gpio_deep_sleep_hold_en();
+
+  const uint64_t mask = (1ULL << PIN_DIT) | (1ULL << PIN_DAH);
+  esp_err_t armed = esp_sleep_enable_ext1_wakeup_io(mask, ESP_EXT1_WAKEUP_ANY_LOW);   // dit OR dah
+  delay(5);
+  Serial.printf("[sleep] ext1 armed (%d), rtc levels dit=%u dah=%u\n",
+                armed, rtc_gpio_get_level(DIT), rtc_gpio_get_level(DAH));
+#ifdef SLEEP_TEST_TIMER_S
+  // Bench builds only: also wake after a fixed time, to test the wake/boot path without a key.
+  esp_sleep_enable_timer_wakeup((uint64_t)SLEEP_TEST_TIMER_S * 1000000ULL);
+#endif
+  Serial.flush();
+  esp_deep_sleep_start();
+}
+
+// After a wake, release the holds and hand the wake pins back from the RTC domain to the
+// digital GPIO matrix — otherwise pinMode() is silently ineffective and digitalWrite()
+// cannot drive the LED.
+void releaseSleepHolds() {
+  gpio_hold_dis((gpio_num_t)LED_BUILTIN);
+  gpio_deep_sleep_hold_dis();
+  for (gpio_num_t pin : { (gpio_num_t)PIN_DIT, (gpio_num_t)PIN_DAH }) {
+    rtc_gpio_hold_dis(pin);
+    rtc_gpio_deinit(pin);
+  }
 }
 
 // Re-advertise whenever a central disconnects, so the app can reconnect (e.g. after an app
@@ -54,8 +224,22 @@ class ServerCallbacks : public NimBLEServerCallbacks {
 
 void setup() {
   Serial.begin(115200);
-  delay(400);
-  Serial.println("\n[paddle] boot");
+  // Woken by a key press? Then every millisecond counts towards the reconnect — skip
+  // the serial-monitor grace period a cold boot affords.
+  esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
+  bool wokeFromSleep = cause == ESP_SLEEP_WAKEUP_EXT1;
+  if (!wokeFromSleep) delay(400);
+  if (wokeFromSleep) {
+    uint64_t pins = esp_sleep_get_ext1_wakeup_status();
+    Serial.printf("\n[paddle] woke on key press (%s)\n",
+                  (pins & (1ULL << PIN_DAH)) ? "dah" : "dit");
+  } else {
+    Serial.printf("\n[paddle] boot (wake cause %d)\n", (int)cause);
+  }
+
+#if BATTERY_MOD
+  releaseSleepHolds();
+#endif
 
   pinMode(PIN_DIT, INPUT_PULLUP);
   pinMode(PIN_DAH, INPUT_PULLUP);
@@ -63,6 +247,18 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);                 // LED off (active-low)
   Serial.println("[paddle] pins ready");
+
+#if BATTERY_MOD
+  analogSetPinAttenuation(PIN_VBAT, ADC_11db);     // full 0–3.1 V range for the 2.1 V tap
+  analogReadResolution(12);
+  uint16_t bootMv = readBatteryMillivolts();
+  if (batteryPlausible(bootMv)) {
+    Serial.printf("[battery] %u mV at boot (%d %%)\n", bootMv, batteryPercent(bootMv));
+    if (bootMv < VBAT_LOW_MV) blinkLowBattery();
+  } else {
+    Serial.printf("[battery] implausible reading %u mV at boot — no cell or no divider?\n", bootMv);
+  }
+#endif
 
   NimBLEDevice::init("Paddle");
   Serial.print("[paddle] BLE MAC: ");
@@ -74,9 +270,22 @@ void setup() {
   evtChar = svc->createCharacteristic(CHR_UUID, NIMBLE_PROPERTY::NOTIFY);
   svc->start();
 
+#if BATTERY_MOD
+  // Standard Battery Service: the client reads the level once after connecting and then
+  // subscribes to changes. Seeded with 0 until the first updateBattery() below replaces it
+  // (the first call always publishes).
+  NimBLEService* batterySvc = server->createService(NimBLEUUID(BATTERY_SVC_UUID));
+  batteryChar = batterySvc->createCharacteristic(NimBLEUUID(BATTERY_LVL_UUID),
+                                                 NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
+  uint8_t seed = 0;
+  batteryChar->setValue(&seed, 1);
+  batterySvc->start();
+  updateBattery();
+#endif
+
   NimBLEAdvertising* adv = NimBLEDevice::getAdvertising();
   adv->setName("Paddle");          // NimBLE 2.x: name is NOT advertised by default
-  adv->addServiceUUID(SVC_UUID);
+  adv->addServiceUUID(SVC_UUID);   // the app scans for the Longpath service only
   adv->enableScanResponse(true);   // NimBLE 2.x: scan response (carries the name) is off by default
   bool ok = adv->start();
   Serial.print("[paddle] advertising started: ");
@@ -104,20 +313,54 @@ struct Debounced {
 
 void loop() {
   static Debounced dit, dah;
+  static uint32_t lastBatteryMs = 0;
+  static uint32_t lastEdgeMs = 0;                   // boot counts as activity
+  static bool readyLogged = false;
 
   uint32_t now = millis();
+
+  // USB-CDC drops everything printed before the host opens the port, i.e. the whole boot
+  // log after a wake. Repeat the essentials once the monitor has had a chance to attach.
+  if (!readyLogged && now >= 3000) {
+    readyLogged = true;
+    esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
+    uint64_t pins = (cause == ESP_SLEEP_WAKEUP_EXT1) ? esp_sleep_get_ext1_wakeup_status() : 0;
+    Serial.printf("[paddle] ready — %s, %s\n",
+                  cause == ESP_SLEEP_WAKEUP_EXT1
+                      ? ((pins & (1ULL << PIN_DAH)) ? "woke on dah" : "woke on dit")
+                      : "cold boot",
+                  NimBLEDevice::getServer()->getConnectedCount() ? "connected" : "advertising");
+  }
   bool ditSample = (digitalRead(PIN_DIT) == LOW);  // pressed = LOW
   bool dahSample = (digitalRead(PIN_DAH) == LOW);
 
   if (dit.update(ditSample, now)) {
     sendEvent(dit.reported ? DIT_DOWN : DIT_UP);
     Serial.println(dit.reported ? "[paddle] DIT down" : "[paddle] DIT up");
+    lastEdgeMs = now;
   }
   if (dah.update(dahSample, now)) {
     sendEvent(dah.reported ? DAH_DOWN : DAH_UP);
     Serial.println(dah.reported ? "[paddle] DAH down" : "[paddle] DAH up");
+    lastEdgeMs = now;
   }
 
   bool keyed = dit.reported || dah.reported;        // debounced state drives the LED
   digitalWrite(LED_BUILTIN, keyed ? LOW : HIGH);    // active-low
+
+#if BATTERY_MOD
+  // Measured only while the key is idle: the 16-sample ADC burst takes a few hundred µs
+  // and must not land between two paddle edges.
+  if (!keyed && (now - lastBatteryMs) >= VBAT_PERIOD_MS) {
+    lastBatteryMs = now;
+    updateBattery();
+  }
+
+  // Idle long enough → sleep. Never while a paddle is held: a held line is LOW and would
+  // wake the board again immediately (and a key left resting on its contact should keep
+  // the LED on, which is the visible hint that something is wrong).
+  if (!keyed && (now - lastEdgeMs) >= IDLE_SLEEP_MS) {
+    sleepUntilKeyPress();                           // does not return
+  }
+#endif
 }
