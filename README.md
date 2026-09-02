@@ -53,12 +53,13 @@ because on USB the `BAT+` pad carries the charger's output, not the cell, and wo
 meaningless "62 %" even with no cell fitted. Cell choice, polarity, soldering order and
 runtime expectations are in [BATTERY.md](BATTERY.md).
 
-The firmware ships with the battery mod switched on (`#define BATTERY_MOD 1` in
-`ble-key.ino`). A battery key reports its level over BLE and **deep-sleeps after ten idle
-minutes** — the next dit or dah wakes it (that press is consumed by the boot; keying
-resumes with the following one, and the Longpath app reconnects on its own). For a stock
-USB-only key set `BATTERY_MOD` to `0`: without the dividers, `A0` and `D10` float and the
-reported level would be noise, and a USB key has no reason to sleep.
+One build fits every key: at boot the firmware checks whether the mod is actually fitted
+(VBUS on `D10`, or a plausible cell voltage on `A0`, steady over a few samples) and switches
+the battery features on or off accordingly. A battery key reports its level over BLE and
+**deep-sleeps after ten idle minutes** — the next dit or dah wakes it (that press is consumed
+by the boot; keying resumes with the following one, and the Longpath app reconnects on its
+own). A stock USB key exposes no Battery Service and never sleeps. To leave the battery code
+out of the image altogether, build with `-DBATTERY_MOD=0` (see [Bench builds](#bench-builds)).
 
 ## BLE contract
 
@@ -85,7 +86,7 @@ without power-cycling.
 
 ### Battery level
 
-With the battery mod (`BATTERY_MOD 1`) the key additionally exposes the SIG-standard
+With the battery mod fitted the key additionally exposes the SIG-standard
 **Battery Service `0x180F`** with the **Battery Level characteristic `0x2A19`** (`uint8`,
 0–100 %, read + notify). The level is re-measured every 10 s while the key is idle and
 notified only when it changes; a client reads it once after connecting and then subscribes.
@@ -103,7 +104,7 @@ LED double-blinks once at boot, independently of BLE.
 
 ### Idle sleep
 
-A battery key (`BATTERY_MOD 1`) enters deep sleep after ten minutes without a paddle edge.
+A battery key enters deep sleep after ten minutes without a paddle edge.
 It disconnects the central first, so a client sees a clean disconnect rather than a
 supervision timeout, and wakes on either paddle line going LOW. Waking is a reset: the key
 advertises again after about half a second, and `millis()` restarts at 0 — clients must
@@ -150,6 +151,10 @@ arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 \
 # additionally wake by timer after 15 s, to test the wake/boot path without a key
 arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 \
   --build-property "compiler.cpp.extra_flags=-DIDLE_SLEEP_MS=20000 -DSLEEP_TEST_TIMER_S=15" .
+
+# leave the battery code out of the image entirely (no ADC, no Battery Service, no sleep)
+arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 \
+  --build-property "compiler.cpp.extra_flags=-DBATTERY_MOD=0" .
 ```
 
 A sleeping key has no USB port (native USB dies with the chip), so a build that cannot wake

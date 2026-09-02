@@ -41,12 +41,15 @@ const int PIN_VBUS  = D10;  // GPIO9, USB-power (5V pin) divider tap (BATTERY_MO
 const uint32_t DEBOUNCE_MS = 5;
 
 // ---- Battery ----
-// 1 = the battery mod is fitted (LiPo on the BAT pads, 2 × 220 kΩ divider on A0): the level
-//     is reported over BLE and the key deep-sleeps when idle.
-// 0 = stock USB-powered key: no Battery Service, A0 is never read, and the key never sleeps
-//     (on USB there is nothing to save, and a sleeping key costs the first press). Without
-//     the divider A0 floats and would report nonsense, so do not leave this at 1 on a stock key.
+// 1 = the battery code is compiled in and the key checks at boot whether the mod is actually
+//     fitted (see detectBatteryMod): with it, the level is reported over BLE and the key
+//     deep-sleeps when idle; without it — a stock USB key, both divider taps floating — the
+//     Battery Service is not created and the key never sleeps, so one build fits every key.
+// 0 = compile the battery code out entirely (no ADC, no sleep, smaller image):
+//   arduino-cli compile --build-property "compiler.cpp.extra_flags=-DBATTERY_MOD=0" ...
+#ifndef BATTERY_MOD
 #define BATTERY_MOD 1
+#endif
 
 // ---- Idle sleep (BATTERY_MOD only) ----
 // Deep sleep after this long without a paddle edge (counted from boot or the last edge,
@@ -87,6 +90,7 @@ enum Evt : uint8_t { DIT_DOWN = 0, DIT_UP = 1, DAH_DOWN = 2, DAH_UP = 3 };
 
 NimBLECharacteristic* evtChar     = nullptr;
 NimBLECharacteristic* batteryChar = nullptr;
+bool batteryModFitted = false;   // decided once at boot by detectBatteryMod()
 
 // 5-byte little-endian packet: [event][uint32 millis timestamp]
 void sendEvent(Evt e) {
@@ -137,6 +141,20 @@ uint16_t readVbusMillivolts() {
 // the serial port (fallback for a key without the VBUS divider — then D10 floats low-ish).
 bool usbPowered() {
   return readVbusMillivolts() >= VBUS_PRESENT_MV || Serial.isPlugged();
+}
+
+// Is the battery mod actually on this board? With the mod, at least one of the two divider
+// taps reads something real at boot: VBUS ≥ 4 V (the key is on USB) or a plausible cell
+// voltage on A0. On a stock key both pins float, and a floating ADC input is noisy — so the
+// reading has to hold across a few samples spread over ~50 ms before it counts.
+bool detectBatteryMod() {
+  bool vbusAll = true, cellAll = true;
+  for (int i = 0; i < 5; i++) {
+    if (readVbusMillivolts() < VBUS_PRESENT_MV) vbusAll = false;
+    if (!batteryPlausible(readBatteryMillivolts())) cellAll = false;
+    delay(10);
+  }
+  return vbusAll || cellAll;
 }
 
 // Push [value] to the client if it differs from what was last published.
@@ -315,14 +333,15 @@ void setup() {
   analogSetPinAttenuation(PIN_VBAT, ADC_11db);     // full 0–3.1 V range for the 2.1 V tap
   analogSetPinAttenuation(PIN_VBUS, ADC_11db);     // and for the 2.5 V VBUS tap
   analogReadResolution(12);
-  uint16_t bootMv = readBatteryMillivolts();
-  if (usbPowered()) {
+  batteryModFitted = detectBatteryMod();
+  if (!batteryModFitted) {
+    Serial.println("[battery] no divider or cell detected — stock key, battery features off");
+  } else if (usbPowered()) {
     Serial.printf("[battery] on USB (VBUS %u mV) — level not measured, idle sleep off\n", readVbusMillivolts());
-  } else if (batteryPlausible(bootMv)) {
+  } else {
+    uint16_t bootMv = readBatteryMillivolts();
     Serial.printf("[battery] %u mV at boot (%d %%)\n", bootMv, batteryPercent(bootMv));
     if (bootMv < VBAT_LOW_MV) blinkLowBattery();
-  } else {
-    Serial.printf("[battery] implausible reading %u mV at boot — no cell or no divider?\n", bootMv);
   }
 #endif
 
@@ -337,16 +356,18 @@ void setup() {
   svc->start();
 
 #if BATTERY_MOD
-  // Standard Battery Service: the client reads the level once after connecting and then
-  // subscribes to changes. Seeded with "unknown" until the first updateBattery() below
-  // replaces it (the first call always publishes).
-  NimBLEService* batterySvc = server->createService(NimBLEUUID(BATTERY_SVC_UUID));
-  batteryChar = batterySvc->createCharacteristic(NimBLEUUID(BATTERY_LVL_UUID),
-                                                 NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
-  uint8_t seed = BATTERY_LEVEL_UNKNOWN;
-  batteryChar->setValue(&seed, 1);
-  batterySvc->start();
-  updateBattery();
+  // Standard Battery Service, only on a key that actually has the mod: the client reads the
+  // level once after connecting and then subscribes to changes. Seeded with "unknown" until
+  // the first updateBattery() below replaces it (the first call always publishes).
+  if (batteryModFitted) {
+    NimBLEService* batterySvc = server->createService(NimBLEUUID(BATTERY_SVC_UUID));
+    batteryChar = batterySvc->createCharacteristic(NimBLEUUID(BATTERY_LVL_UUID),
+                                                   NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
+    uint8_t seed = BATTERY_LEVEL_UNKNOWN;
+    batteryChar->setValue(&seed, 1);
+    batterySvc->start();
+    updateBattery();
+  }
 #endif
 
   NimBLEAdvertising* adv = NimBLEDevice::getAdvertising();
@@ -401,7 +422,8 @@ void loop() {
                   NimBLEDevice::getServer()->getConnectedCount() ? "connected" : "advertising");
 #if BATTERY_MOD
     Serial.printf("[battery] VBUS %u mV, BAT %u mV — %s\n", readVbusMillivolts(), readBatteryMillivolts(),
-                  usbPowered() ? "on USB, level unknown, idle sleep off" : "on the cell");
+                  !batteryModFitted ? "no mod detected, battery features off"
+                  : usbPowered() ? "on USB, level unknown, idle sleep off" : "on the cell");
 #endif
   }
   // Log the negotiated link parameters once, a few seconds after the connect (the central
@@ -429,6 +451,8 @@ void loop() {
   digitalWrite(LED_BUILTIN, keyed ? LOW : HIGH);    // active-low
 
 #if BATTERY_MOD
+  if (!batteryModFitted) return;                    // stock key: no level, no sleep
+
   // Measured only while the key is idle: the 16-sample ADC burst takes a few hundred µs
   // and must not land between two paddle edges.
   if (!keyed && (now - lastBatteryMs) >= VBAT_PERIOD_MS) {
