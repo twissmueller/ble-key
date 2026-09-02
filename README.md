@@ -33,27 +33,32 @@ that dialog and this section in sync.
 | Dah         | `D2`     | GPIO3  | Ring, `INPUT_PULLUP`, pressed = LOW          |
 | LED         | `GPIO21` | —      | `LED_BUILTIN`, active-low                    |
 | Battery     | `A0`     | GPIO1  | Divider tap, ADC — battery mod only          |
+| USB power   | `D10`    | GPIO9  | Divider tap from `5V` (VBUS), ADC — battery mod only |
 
 Wire each key/paddle contact between its input pin and ground; the internal pull-ups mean
 no external resistors are needed. A straight key uses the dit line only; an iambic paddle
 uses both. The tip/ring assignment matches a standard 3.5 mm TRS paddle plug:
 
-![Wiring: XIAO ESP32-S3 to a 3.5 mm TRS jack — D1 to tip (dit), D2 to ring (dah), GND to sleeve; optional LiPo on the BAT pads with a 2 × 220 kΩ divider into A0](wiring.svg)
+![Wiring: XIAO ESP32-S3 to a 3.5 mm TRS jack — D1 to tip (dit), D2 to ring (dah), GND to sleeve; optional LiPo on the BAT pads with a 2 × 220 kΩ divider into A0, and a second 2 × 220 kΩ divider from 5V into D10 to sense USB power](wiring.svg)
 
 ### Battery (optional)
 
 The key runs from USB-C as it is. For a cordless key, solder a single-cell LiPo to the
 `BAT` pads on the underside of the XIAO — it has the charger on board — and add a
 **2 × 220 kΩ voltage divider** from `BAT+` to `GND`, tapped into `A0`, so the firmware can
-measure the cell and report its level to the app. Cell choice, polarity, soldering order and
+measure the cell and report its level to the app. Add a **second 2 × 220 kΩ divider from the
+`5V` pin to `GND`, tapped into `D10`**: the 5V pin is USB VBUS, so this tells the firmware
+when the key is on USB power — from a host, a charger or a power bank alike. That matters
+because on USB the `BAT+` pad carries the charger's output, not the cell, and would read as a
+meaningless "62 %" even with no cell fitted. Cell choice, polarity, soldering order and
 runtime expectations are in [BATTERY.md](BATTERY.md).
 
 The firmware ships with the battery mod switched on (`#define BATTERY_MOD 1` in
 `ble-key.ino`). A battery key reports its level over BLE and **deep-sleeps after ten idle
 minutes** — the next dit or dah wakes it (that press is consumed by the boot; keying
 resumes with the following one, and the Longpath app reconnects on its own). For a stock
-USB-only key set `BATTERY_MOD` to `0`: without the divider, `A0` floats and the reported
-level would be noise, and a USB key has no reason to sleep.
+USB-only key set `BATTERY_MOD` to `0`: without the dividers, `A0` and `D10` float and the
+reported level would be noise, and a USB key has no reason to sleep.
 
 ## BLE contract
 
@@ -90,9 +95,11 @@ that do not know it, and older app builds, simply ignore it; a key without the m
 no Battery Service at all, and the Longpath app then shows no level.
 
 The percentage comes from an open-circuit LiPo discharge curve (3.30 V → 0 %, 4.20 V →
-100 %, flat in the middle), not a linear map. On USB the charger holds the cell near 4.2 V,
-so a charging key reads ~100 %. Below 3.5 V the onboard LED double-blinks once at boot,
-independently of BLE.
+100 %, flat in the middle), not a linear map. On USB power (sensed on `D10`, see above) the
+divider would only see the charger, so the key publishes **`0xFF` = level unknown** instead
+of a percentage — outside the SIG's 0–100 on purpose; Longpath shows no level for it, other
+clients should treat it the same way — and the idle sleep is off. Below 3.5 V the onboard
+LED double-blinks once at boot, independently of BLE.
 
 ### Idle sleep
 

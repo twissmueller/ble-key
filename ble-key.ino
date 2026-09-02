@@ -14,6 +14,13 @@
 // untouched, and clients that do not know the service simply ignore it. A battery key also
 // deep-sleeps after IDLE_SLEEP_MS without a paddle edge and wakes on the next press
 // (14 µA instead of tens of mA); the press that wakes it is consumed by the boot.
+//
+// On USB neither makes sense: BAT+ is the charger's output and reads ~3.9–4.2 V whether a cell
+// is fitted or not, and a sleep would only cost the first press. So while USB power is present
+// the key publishes BATTERY_LEVEL_UNKNOWN (0xFF) instead of a percentage — the Longpath app
+// shows no level for it — and the idle sleep is off. USB power is sensed on the 5V pin (VBUS)
+// through a second 2 × 220 kΩ divider into D10, so a plain charger or power bank counts too;
+// a USB host (serial) is detected as well, as a fallback for a key without that divider.
 
 #include <NimBLEDevice.h>
 #include <string.h>
@@ -25,6 +32,7 @@
 const int PIN_DIT   = D1;   // GPIO2, Tip
 const int PIN_DAH   = D2;   // GPIO3, Ring
 const int PIN_VBAT  = A0;   // GPIO1, battery divider tap (BATTERY_MOD only)
+const int PIN_VBUS  = D10;  // GPIO9, USB-power (5V pin) divider tap (BATTERY_MOD only)
 // LED_BUILTIN = GPIO21 on the XIAO, active-low (LOW = on, HIGH = off)
 
 // ---- Debounce ----
@@ -52,13 +60,20 @@ const uint32_t DEBOUNCE_MS = 5;
 #endif
 
 // The divider halves the cell voltage (220 kΩ over 220 kΩ), which keeps a full cell
-// (4.2 V → 2.1 V) inside the ADC range at 11 dB attenuation (~0–3.1 V).
+// (4.2 V → 2.1 V) inside the ADC range at 11 dB attenuation (~0–3.1 V). The VBUS divider is
+// the same 1:1 pair: 5 V → 2.5 V.
 const float    VBAT_DIVIDER   = 2.0f;
+const float    VBUS_DIVIDER   = 2.0f;
+const uint16_t VBUS_PRESENT_MV = 4000;   // above this the 5V pin carries USB power
+const uint32_t VBUS_PERIOD_MS  = 1000;   // how often USB presence is re-sampled
 const uint8_t  VBAT_SAMPLES   = 16;      // oversampling — the ESP32 ADC is noisy
 const uint32_t VBAT_PERIOD_MS = 10000;   // how often the level is re-measured
 const uint16_t VBAT_LOW_MV    = 3500;    // boot double-blink below this
 const uint16_t VBAT_PLAUSIBLE_MIN_MV = 2500;   // outside this window the reading is
 const uint16_t VBAT_PLAUSIBLE_MAX_MV = 4600;   // treated as "no cell / no divider"
+// Published instead of a percentage while a USB host is attached (the divider then sees the
+// charger, not the cell). Outside the SIG's 0–100 range on purpose; Longpath reads it as unknown.
+const uint8_t  BATTERY_LEVEL_UNKNOWN = 0xFF;
 
 // ---- BLE contract ----
 #define SVC_UUID "6e3a0001-0000-1000-8000-00805f9b34fb"   // Longpath contract — do not change
@@ -111,11 +126,39 @@ bool batteryPlausible(uint16_t mv) {
   return mv >= VBAT_PLAUSIBLE_MIN_MV && mv <= VBAT_PLAUSIBLE_MAX_MV;
 }
 
+// USB power on the 5V pin, in millivolts, from the divider tap on D10.
+uint16_t readVbusMillivolts() {
+  uint32_t sum = 0;
+  for (uint8_t i = 0; i < VBAT_SAMPLES; i++) sum += analogReadMilliVolts(PIN_VBUS);
+  return (uint16_t)((sum / VBAT_SAMPLES) * VBUS_DIVIDER);
+}
+
+// USB power is present: VBUS is up (charger, power bank or host), or a USB host is talking to
+// the serial port (fallback for a key without the VBUS divider — then D10 floats low-ish).
+bool usbPowered() {
+  return readVbusMillivolts() >= VBUS_PRESENT_MV || Serial.isPlugged();
+}
+
+// Push [value] to the client if it differs from what was last published.
+static void publishBattery(uint8_t value, const char* why) {
+  static int lastPublished = -1;
+  if (value == lastPublished) return;
+  lastPublished = value;
+  batteryChar->setValue(&value, 1);
+  batteryChar->notify();
+  Serial.printf("[battery] %s\n", why);
+}
+
 // Re-measure the cell, and push the level to the client if it changed. Called from loop()
 // every VBAT_PERIOD_MS; the first call after boot always publishes.
 void updateBattery() {
   if (!batteryChar) return;
-  static int lastPercent = -1;
+
+  if (usbPowered()) {
+    // BAT+ carries the charger output now, with or without a cell: no level to report.
+    publishBattery(BATTERY_LEVEL_UNKNOWN, "on USB — level unknown");
+    return;
+  }
 
   uint16_t mv = readBatteryMillivolts();
   if (!batteryPlausible(mv)) {
@@ -126,13 +169,9 @@ void updateBattery() {
   }
 
   int percent = batteryPercent(mv);
-  if (percent != lastPercent) {
-    lastPercent = percent;
-    uint8_t v = (uint8_t)percent;
-    batteryChar->setValue(&v, 1);
-    batteryChar->notify();
-    Serial.printf("[battery] %u mV -> %d %%\n", mv, percent);
-  }
+  char why[40];
+  snprintf(why, sizeof(why), "%u mV -> %d %%", mv, percent);
+  publishBattery((uint8_t)percent, why);
 }
 
 // BLE-independent low-battery hint at boot: two short blinks of the onboard LED.
@@ -212,9 +251,33 @@ void releaseSleepHolds() {
 // Re-advertise whenever a central disconnects, so the app can reconnect (e.g. after an app
 // restart) without power-cycling the board. NimBLE stops advertising once connected and does
 // not resume on its own.
+// ---- Link parameters ----
+// Keying edges must not wait for a skipped connection event: ask the central for a short
+// interval and no slave latency as soon as it connects. Apple accepts 15–30 ms with latency 0
+// (its accessory guidelines); a central that negotiated, say, 30 ms with latency 4 would
+// otherwise deliver an UP edge up to 150 ms late, which the app's keyer hears as extra dits.
+const uint16_t CONN_INTERVAL_MIN = 12;    // × 1.25 ms = 15 ms
+const uint16_t CONN_INTERVAL_MAX = 24;    // × 1.25 ms = 30 ms
+const uint16_t CONN_LATENCY      = 0;
+const uint16_t CONN_TIMEOUT      = 400;   // × 10 ms = 4 s
+
+volatile uint32_t connectedAtMs = 0;      // for the one-off parameter log in loop()
+
+void logConnParams(const char* when) {
+  NimBLEServer* server = NimBLEDevice::getServer();
+  if (!server || server->getConnectedCount() == 0) return;
+  NimBLEConnInfo info = server->getPeerInfo(0);
+  Serial.printf("[paddle] link %s: interval %.2f ms, latency %u, timeout %u ms\n", when,
+                info.getConnInterval() * 1.25f, info.getConnLatency(), info.getConnTimeout() * 10);
+}
+
 class ServerCallbacks : public NimBLEServerCallbacks {
   void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override {
-    Serial.println("[paddle] central connected");
+    Serial.printf("[paddle] central connected (interval %.2f ms, latency %u, timeout %u ms)\n",
+                  connInfo.getConnInterval() * 1.25f, connInfo.getConnLatency(), connInfo.getConnTimeout() * 10);
+    pServer->updateConnParams(connInfo.getConnHandle(), CONN_INTERVAL_MIN, CONN_INTERVAL_MAX,
+                              CONN_LATENCY, CONN_TIMEOUT);
+    connectedAtMs = millis();
   }
   void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override {
     Serial.printf("[paddle] central disconnected (reason %d) — re-advertising\n", reason);
@@ -250,9 +313,12 @@ void setup() {
 
 #if BATTERY_MOD
   analogSetPinAttenuation(PIN_VBAT, ADC_11db);     // full 0–3.1 V range for the 2.1 V tap
+  analogSetPinAttenuation(PIN_VBUS, ADC_11db);     // and for the 2.5 V VBUS tap
   analogReadResolution(12);
   uint16_t bootMv = readBatteryMillivolts();
-  if (batteryPlausible(bootMv)) {
+  if (usbPowered()) {
+    Serial.printf("[battery] on USB (VBUS %u mV) — level not measured, idle sleep off\n", readVbusMillivolts());
+  } else if (batteryPlausible(bootMv)) {
     Serial.printf("[battery] %u mV at boot (%d %%)\n", bootMv, batteryPercent(bootMv));
     if (bootMv < VBAT_LOW_MV) blinkLowBattery();
   } else {
@@ -272,12 +338,12 @@ void setup() {
 
 #if BATTERY_MOD
   // Standard Battery Service: the client reads the level once after connecting and then
-  // subscribes to changes. Seeded with 0 until the first updateBattery() below replaces it
-  // (the first call always publishes).
+  // subscribes to changes. Seeded with "unknown" until the first updateBattery() below
+  // replaces it (the first call always publishes).
   NimBLEService* batterySvc = server->createService(NimBLEUUID(BATTERY_SVC_UUID));
   batteryChar = batterySvc->createCharacteristic(NimBLEUUID(BATTERY_LVL_UUID),
                                                  NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
-  uint8_t seed = 0;
+  uint8_t seed = BATTERY_LEVEL_UNKNOWN;
   batteryChar->setValue(&seed, 1);
   batterySvc->start();
   updateBattery();
@@ -316,6 +382,9 @@ void loop() {
   static uint32_t lastBatteryMs = 0;
   static uint32_t lastEdgeMs = 0;                   // boot counts as activity
   static bool readyLogged = false;
+  static bool wasOnUsb = false;
+  static bool onUsb = false;
+  static uint32_t lastVbusMs = 0;
 
   uint32_t now = millis();
 
@@ -330,7 +399,18 @@ void loop() {
                       ? ((pins & (1ULL << PIN_DAH)) ? "woke on dah" : "woke on dit")
                       : "cold boot",
                   NimBLEDevice::getServer()->getConnectedCount() ? "connected" : "advertising");
+#if BATTERY_MOD
+    Serial.printf("[battery] VBUS %u mV, BAT %u mV — %s\n", readVbusMillivolts(), readBatteryMillivolts(),
+                  usbPowered() ? "on USB, level unknown, idle sleep off" : "on the cell");
+#endif
   }
+  // Log the negotiated link parameters once, a few seconds after the connect (the central
+  // answers the update request asynchronously).
+  if (connectedAtMs && (now - connectedAtMs) >= 3000) {
+    connectedAtMs = 0;
+    logConnParams("settled");
+  }
+
   bool ditSample = (digitalRead(PIN_DIT) == LOW);  // pressed = LOW
   bool dahSample = (digitalRead(PIN_DAH) == LOW);
 
@@ -356,10 +436,24 @@ void loop() {
     updateBattery();
   }
 
+  // USB presence is re-sampled once a second while idle (an ADC burst must not land between
+  // two paddle edges), and remembered in between.
+  if (!keyed && (now - lastVbusMs) >= VBUS_PERIOD_MS) {
+    lastVbusMs = now;
+    onUsb = usbPowered();
+    if (onUsb != wasOnUsb) Serial.println(onUsb ? "[battery] USB power present" : "[battery] USB power gone");
+  }
+
+  // No idle sleep on USB: there is nothing to save and a sleep would cost the first press
+  // (and drop the serial port). Unplugging restarts the idle clock, so a key taken off the
+  // charger stays awake for a full idle period first.
+  if (wasOnUsb && !onUsb) lastEdgeMs = now;
+  wasOnUsb = onUsb;
+
   // Idle long enough → sleep. Never while a paddle is held: a held line is LOW and would
   // wake the board again immediately (and a key left resting on its contact should keep
   // the LED on, which is the visible hint that something is wrong).
-  if (!keyed && (now - lastEdgeMs) >= IDLE_SLEEP_MS) {
+  if (!onUsb && !keyed && (now - lastEdgeMs) >= IDLE_SLEEP_MS) {
     sleepUntilKeyPress();                           // does not return
   }
 #endif

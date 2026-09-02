@@ -203,15 +203,22 @@ Implemented in `ble-key.ino` behind `#define BATTERY_MOD 1`:
   older app builds ignore the extra service.
 - Readings outside 2.5–4.6 V are treated as implausible (no cell, no divider) and dropped;
   the last published value stands.
-- On USB the charger holds the cell near 4.2 V, so a **charging key reads ~100 %**. There
-  is no USB-detect pin, so the firmware cannot distinguish "full" from "charging".
+- On USB the divider sees the **charger's output, not the cell**: BAT+ sits at ~3.9–4.2 V
+  whether a cell is fitted or not (a bare board on USB reads "62 %"). So USB power is sensed
+  separately: a second **2 × 220 kΩ divider from the 5V pin (VBUS) into `D10`** (GPIO9,
+  ADC1) reads ~2.5 V whenever anything is plugged in — host, charger or power bank — and
+  0 V on the cell. Above 4 V on VBUS the firmware publishes **`0xFF` = level unknown**
+  instead of a percentage, and the idle sleep is off (nothing to save, and a sleep would
+  cost the first press and drop the serial port). Unplugging restarts the idle clock. A USB
+  host on the serial port (`Serial.isPlugged()`) counts as USB power too, as the fallback
+  for a key without the VBUS divider.
 - Below **3.5 V** the onboard LED double-blinks once at boot — the BLE-independent
   low-battery hint in the spirit of the keying LED.
 
 The Longpath app reads the level once after connecting and then subscribes: the connection
 chip shows "BLE key connected · 78 %", and Settings › Device adds a battery line that turns
-into a charge hint at 15 % and below. A key without the Battery Service shows the plain
-connected chip and no level.
+into a charge hint at 15 % and below. A key without the Battery Service — or one on USB,
+publishing `0xFF` — shows the plain connected chip and no level.
 
 ## Idle sleep
 
