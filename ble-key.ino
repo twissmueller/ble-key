@@ -305,6 +305,11 @@ class ServerCallbacks : public NimBLEServerCallbacks {
 
 void setup() {
   Serial.begin(115200);
+  // Never block on the console. The native USB serial remembers the host's DTR after a
+  // monitor closes the port, keeps treating it as connected, and then every print blocks
+  // until its write times out — seen as paddle edges stamped two seconds apart, which the
+  // app hears as a stream of dits or dahs. With a zero timeout a full buffer just drops.
+  Serial.setTxTimeoutMs(0);
   // Woken by a key press? Then every millisecond counts towards the reconnect — skip
   // the serial-monitor grace period a cold boot affords.
   esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
