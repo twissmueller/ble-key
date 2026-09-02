@@ -37,8 +37,9 @@ const int PIN_VBUS  = D10;  // GPIO9, USB-power (5V pin) divider tap (BATTERY_MO
 
 // ---- Debounce ----
 // Report a paddle edge only after the reading is stable this long. Well below the
-// shortest Morse element (a dit at 40 WPM ~30 ms), so timing is unaffected.
-const uint32_t DEBOUNCE_MS = 5;
+// shortest Morse element (a dit at 40 WPM ~30 ms), so timing is unaffected. A paddle's
+// contacts were seen bouncing for 6 ms, so 5 ms was not enough.
+const uint32_t DEBOUNCE_MS = 12;
 
 // ---- Battery ----
 // 1 = the battery code is compiled in and the key checks at boot whether the mod is actually
