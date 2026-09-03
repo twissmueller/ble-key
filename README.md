@@ -40,7 +40,7 @@ Wire each key/paddle contact between its input pin and ground; the internal pull
 no external resistors are needed. A straight key uses the dit line only; an iambic paddle
 uses both. The tip/ring assignment matches a standard 3.5 mm TRS paddle plug:
 
-![Wiring: XIAO ESP32-S3 to a 3.5 mm TRS jack — D1 to tip (dit), D2 to ring (dah), GND to sleeve; optional LiPo on the BAT pads with a 2 × 220 kΩ divider into A0, and a second 2 × 220 kΩ divider from 5V into D10 to sense USB power; the optional charge-sense wire from the charge-LED net into D3 is not drawn](wiring.svg)
+![Wiring: XIAO ESP32-S3 to a 3.5 mm TRS jack — D1 to tip (dit), D2 to ring (dah), GND to sleeve; optional LiPo on the BAT pads with a 2 × 220 kΩ divider into A0, a second 2 × 220 kΩ divider from 5V into D10 to sense USB power, and the optional charge-sense wire from the charge LED's cathode pad through 100 kΩ into D3](wiring.svg)
 
 ### Battery (optional)
 
@@ -60,7 +60,7 @@ that LED and nothing else — flashing while a cell charges, off when it is full
 ~30 s after plug-in without a cell — and reading it is the only way the firmware can tell
 those apart. With the wire the key reports charging / charged / no cell over BLE and keeps
 publishing the live level while charging; without it, USB shows the plain connected chip
-as before. Details in [BATTERY.md](BATTERY.md#the-charge-sense-wire).
+as before. Details in [BATTERY.md](BATTERY.md#the-charge-sense-wire); the last strip of the wiring diagram shows it.
 
 One build fits every key: at boot the firmware checks whether the mod is actually fitted
 (VBUS on `D10`, or a plausible cell voltage on `A0`, steady over a few samples) and switches

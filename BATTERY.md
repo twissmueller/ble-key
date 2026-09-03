@@ -181,7 +181,8 @@ So the optional third wire of the mod taps that LED's net and brings it to `D3` 
   firmware treats as *no evidence*, and the key behaves exactly like a mod without it. There
   is no build flag to set.
 
-What the firmware makes of the LED is in [Battery level over BLE](#battery-level-over-ble).
+The last strip of `wiring.svg` shows the wire. What the firmware makes of the LED is in
+[Battery level over BLE](#battery-level-over-ble).
 
 ## Charging and power behaviour
 

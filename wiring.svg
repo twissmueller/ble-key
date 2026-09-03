@@ -1,12 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="860" height="900" viewBox="0 0 860 900" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="1120" viewBox="0 0 860 1120" font-family="Helvetica, Arial, sans-serif">
   <!-- Fritzing-style wiring: Seeed XIAO ESP32-S3 to a 3.5 mm TRS jack.
        Dit = D1 (tip), Dah = D2 (ring), common = GND (sleeve). Internal pull-ups,
        so there are no external resistors. A straight key uses tip + sleeve only.
        The strip at the bottom is the optional battery mod (BATTERY.md): LiPo on the
        underside BAT pads, 2 x 220 kOhm divider from BAT+ to GND tapped into A0 (= D0), and a
        second 2 x 220 kOhm divider from the 5V pin (USB VBUS) to GND tapped into D10 so the
-       firmware knows when the key is on USB power. -->
-  <rect width="860" height="900" fill="#ffffff"/>
+       firmware knows when the key is on USB power. The last strip is the optional charge-sense
+       wire: the red charge LED next to the USB-C jack (reset-button side), cathode pad through
+       100 kOhm into D3, so the firmware can tell charging / charged / no cell apart. -->
+  <rect width="860" height="1120" fill="#ffffff"/>
 
   <!-- ======================= wires (behind the parts) ======================= -->
   <!-- D1 (dit) → Tip : yellow -->
@@ -29,6 +31,8 @@
     <text x="90" y="133" font-size="10" fill="#64748b" text-anchor="middle">XIAO</text>
     <circle cx="150" cy="40" r="5" fill="#fbbf24" stroke="#b45309"/>
     <text x="140" y="44" font-size="9" fill="#e5e7eb" text-anchor="end">LED</text>
+    <circle cx="34" cy="12" r="5" fill="#ef4444" stroke="#991b1b"/>
+    <text x="24" y="16" font-size="9" fill="#e5e7eb" text-anchor="end">CHG</text>
     <text x="90" y="285" font-size="12" fill="#e5e7eb" text-anchor="middle">Seeed XIAO</text>
     <text x="90" y="285" dy="14" font-size="12" fill="#e5e7eb" text-anchor="middle">ESP32-S3</text>
 
@@ -44,7 +48,7 @@
       <text x="12" y="44">D0 <tspan fill="#16a34a" font-weight="bold">/ A0</tspan></text>
       <text x="12" y="76"  font-weight="bold">D1</text>
       <text x="12" y="108" font-weight="bold">D2</text>
-      <text x="12" y="140">D3</text>
+      <text x="12" y="140" fill="#16a34a" font-weight="bold">D3</text>
       <text x="12" y="172">D4</text>
       <text x="12" y="204">D5</text>
       <text x="12" y="236">D6</text>
@@ -131,6 +135,8 @@
     <text y="128">ESP32-S3's internal pull-ups (pressed = LOW).</text>
     <text y="158">A straight key uses only Tip + Sleeve.</text>
     <text y="188" fill="#64748b">The LED is on the board (GPIO21) — no wiring.</text>
+    <text y="218"><tspan fill="#16a34a" font-weight="bold">CHG LED → D3</tspan> — optional charge sense,</text>
+    <text y="236">see the last strip below.</text>
   </g>
 
   <!-- ======================= battery mod (optional) ======================= -->
@@ -229,4 +235,69 @@
       <text y="80" fill="#64748b">and skips the idle sleep. Draws 11 µA, and only while USB is present.</text>
     </g>
   </g>
+  <!-- ======================= charge sense (optional, on top of the battery mod) ======================= -->
+  <g transform="translate(0,915)">
+    <line x1="40" y1="0" x2="820" y2="0" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="40" y="26" font-size="13" font-weight="bold" fill="#0f172a">Charge sense (optional, on top of the battery mod)</text>
+
+    <!-- XIAO top side, USB-C end: the red charge LED sits left of the jack on the RESET side -->
+    <g transform="translate(90,48)">
+      <text x="110" y="-6" font-size="9" fill="#64748b" text-anchor="middle">XIAO top side, USB-C end</text>
+      <rect x="0" y="0" width="220" height="120" rx="10" fill="#1f2937" stroke="#0f172a" stroke-width="2"/>
+      <rect x="80" y="-2" width="60" height="26" rx="6" fill="#9ca3af" stroke="#6b7280" stroke-width="2"/>
+      <text x="110" y="15" font-size="9" fill="#111827" text-anchor="middle">USB-C</text>
+      <!-- reset button (left) and boot button (right) -->
+      <circle cx="24" cy="34" r="6" fill="#d1d5db" stroke="#6b7280"/>
+      <text x="24" y="37" font-size="7" fill="#111827" text-anchor="middle">R</text>
+      <circle cx="196" cy="34" r="6" fill="#d1d5db" stroke="#6b7280"/>
+      <text x="196" y="37" font-size="7" fill="#111827" text-anchor="middle">B</text>
+      <!-- charge LED (red, left) with its two pads; the user LED (yellow, right) is GPIO21 -->
+      <rect x="14" y="52" width="8" height="8" rx="1" fill="#d1a24c" stroke="#8a6d3b"/>
+      <rect x="30" y="52" width="8" height="8" rx="1" fill="#d1a24c" stroke="#8a6d3b"/>
+      <circle cx="26" cy="56" r="5" fill="#ef4444" stroke="#991b1b"/>
+      <text x="44" y="60" font-size="9" fill="#e5e7eb">charge LED</text>
+      <circle cx="196" cy="56" r="5" fill="#fbbf24" stroke="#b45309"/>
+      <text x="186" y="60" font-size="9" fill="#e5e7eb" text-anchor="end">user LED</text>
+      <!-- header pins, left column D0…D3 -->
+      <g font-size="10" fill="#e5e7eb">
+        <circle cx="0" cy="78"  r="5" fill="#d1a24c" stroke="#8a6d3b"/>
+        <circle cx="0" cy="92"  r="5" fill="#d1a24c" stroke="#8a6d3b"/>
+        <circle cx="0" cy="106" r="5" fill="#d1a24c" stroke="#8a6d3b"/>
+        <circle cx="0" cy="120" r="5" fill="#d1a24c" stroke="#8a6d3b"/>
+        <text x="10" y="81">D0</text>
+        <text x="10" y="95">D1</text>
+        <text x="10" y="109">D2</text>
+        <text x="10" y="123" font-weight="bold" fill="#16a34a">D3</text>
+        <circle cx="220" cy="78" r="5" fill="#d1a24c" stroke="#8a6d3b"/>
+        <text x="210" y="81" text-anchor="end">5V</text>
+      </g>
+      <!-- the wire: cathode pad → left off the board → down → D3 -->
+      <path d="M 18 60 L 18 68 L -30 68 L -30 120 L -6 120" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="-34" y="96" font-size="8" fill="#16a34a" text-anchor="end">cathode</text>
+      <text x="-34" y="106" font-size="8" fill="#16a34a" text-anchor="end">pad</text>
+    </g>
+
+    <!-- schematic: charge-LED cathode pad — 100 k — D3 -->
+    <g transform="translate(296,96)">
+      <text x="-2" y="-26" font-size="10" fill="#dc2626" text-anchor="start" font-weight="bold">charge-LED</text>
+      <text x="-2" y="-14" font-size="10" fill="#dc2626" text-anchor="start" font-weight="bold">cathode pad</text>
+      <line x1="-2" y1="6" x2="24" y2="6" stroke="#dc2626" stroke-width="4" stroke-linecap="round"/>
+      <rect x="24" y="-3" width="70" height="18" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+      <text x="59" y="10" font-size="10" fill="#92400e" text-anchor="middle">100 kΩ</text>
+      <line x1="94" y1="6" x2="150" y2="6" stroke="#16a34a" stroke-width="4" stroke-linecap="round"/>
+      <text x="150" y="-8" font-size="11" fill="#16a34a" text-anchor="middle" font-weight="bold">D3 (GPIO4)</text>
+      <text x="80" y="36" font-size="10" fill="#64748b" text-anchor="middle">internal pull-up · LOW = LED on</text>
+    </g>
+
+    <g font-size="12" fill="#334155" transform="translate(520,44)">
+      <text y="0">The red charge LED sits beside the USB-C jack, RESET side.</text>
+      <text y="20">The charge IC drives it and nothing else: flashing = charging,</text>
+      <text y="40">dark = full, solid for ~30 s after plug-in = no cell fitted.</text>
+      <text y="66">Tap its <tspan font-weight="bold">cathode pad</tspan> — the side towards the charge IC, the pad</text>
+      <text y="86">that reads ~0 V while the LED is on — through <tspan fill="#92400e" font-weight="bold">100 kΩ</tspan> into <tspan fill="#16a34a" font-weight="bold">D3</tspan>.</text>
+      <text y="112" fill="#64748b">Without this wire nothing changes: the key reports its power</text>
+      <text y="132" fill="#64748b">state as unknown and the app shows the plain chip on USB.</text>
+    </g>
+  </g>
 </svg>
+
