@@ -34,12 +34,13 @@ that dialog and this section in sync.
 | LED         | `GPIO21` | —      | `LED_BUILTIN`, active-low                    |
 | Battery     | `A0`     | GPIO1  | Divider tap, ADC — battery mod only          |
 | USB power   | `D10`    | GPIO9  | Divider tap from `5V` (VBUS), ADC — battery mod only |
+| Charge LED  | `D3`     | GPIO4  | Tap on the charge-LED net, `INPUT_PULLUP`, LOW = LED on — charge-sense wire only |
 
 Wire each key/paddle contact between its input pin and ground; the internal pull-ups mean
 no external resistors are needed. A straight key uses the dit line only; an iambic paddle
 uses both. The tip/ring assignment matches a standard 3.5 mm TRS paddle plug:
 
-![Wiring: XIAO ESP32-S3 to a 3.5 mm TRS jack — D1 to tip (dit), D2 to ring (dah), GND to sleeve; optional LiPo on the BAT pads with a 2 × 220 kΩ divider into A0, and a second 2 × 220 kΩ divider from 5V into D10 to sense USB power](wiring.svg)
+![Wiring: XIAO ESP32-S3 to a 3.5 mm TRS jack — D1 to tip (dit), D2 to ring (dah), GND to sleeve; optional LiPo on the BAT pads with a 2 × 220 kΩ divider into A0, and a second 2 × 220 kΩ divider from 5V into D10 to sense USB power; the optional charge-sense wire from the charge-LED net into D3 is not drawn](wiring.svg)
 
 ### Battery (optional)
 
@@ -52,6 +53,14 @@ when the key is on USB power — from a host, a charger or a power bank alike. T
 because on USB the `BAT+` pad carries the charger's output, not the cell, and would read as a
 meaningless "62 %" even with no cell fitted. Cell choice, polarity, soldering order and
 runtime expectations are in [BATTERY.md](BATTERY.md).
+
+To see *charging* in the app as well, add the **charge-sense wire**: one wire (through a
+100 kΩ series resistor) from the net of the red charge LED into `D3`. The charge IC drives
+that LED and nothing else — flashing while a cell charges, off when it is full, solid for
+~30 s after plug-in without a cell — and reading it is the only way the firmware can tell
+those apart. With the wire the key reports charging / charged / no cell over BLE and keeps
+publishing the live level while charging; without it, USB shows the plain connected chip
+as before. Details in [BATTERY.md](BATTERY.md#the-charge-sense-wire).
 
 One build fits every key: at boot the firmware checks whether the mod is actually fitted
 (VBUS on `D10`, or a plausible cell voltage on `A0`, steady over a few samples) and switches
@@ -101,6 +110,31 @@ divider would only see the charger, so the key publishes **`0xFF` = level unknow
 of a percentage — outside the SIG's 0–100 on purpose; Longpath shows no level for it, other
 clients should treat it the same way — and the idle sleep is off. Below 3.5 V the onboard
 LED double-blinks once at boot, independently of BLE.
+
+### Battery power state
+
+Next to the level the same service carries the SIG-standard **Battery Power State
+characteristic `0x2A1A`** (`uint8`, read + notify): bits 0–1 *present*, bits 2–3
+*discharging*, bits 4–5 *charging* (each 2 = no, 3 = yes; 0 = unknown), bits 6–7 unused.
+The key publishes five values:
+
+| Meaning   | Value  | present | discharging | charging |
+|-----------|--------|---------|-------------|----------|
+| unknown   | `0x00` | ?       | ?           | ?        |
+| on cell   | `0x2F` | yes     | yes         | no       |
+| charging  | `0x3B` | yes     | no          | yes      |
+| charged   | `0x2B` | yes     | no          | no       |
+| no cell   | `0x02` | no      | —           | —        |
+
+Off USB a plausible cell reading means *on cell*. On USB the charge LED, read through the
+charge-sense wire on `D3`, is the only evidence: flashing → *charging*; dark for two windows
+after having flashed → *charged*; solid for two windows without ever flashing → *no cell*.
+Dark from the start says nothing (a key booted on USB, a cell that was already full, or a key
+without the wire) and stays *unknown*. While *charging* or *charged* the level in `0x2A19`
+is the live reading of the cell under charge instead of `0xFF` — a few points high and
+climbing; the Longpath app shows it next to "charging" and forces 100 % once the key reports
+*charged*. In every other state on USB the level stays `0xFF`. Notified only on change; a
+client reads it once after connecting and subscribes.
 
 ### Idle sleep
 

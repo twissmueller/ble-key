@@ -156,10 +156,38 @@ divider: **two 220 kΩ resistors in series from `BAT+` to `GND`, with the midpoi
   and no divider, `A0` floats and the app shows nonsense; with `BATTERY_MOD 0` the resistors
   are harmless but the level is never read. The default in `ble-key.ino` is `1`.
 
+### The charge-sense wire
+
+On USB the divider cannot say whether a cell is fitted, let alone whether it is full: `BAT+`
+carries the charger's output either way. The charge IC knows, but it tells only the red
+charge LED next to the USB-C jack — Seeed's schematic connects that LED to nothing else.
+So the optional third wire of the mod taps that LED's net and brings it to `D3` (GPIO4):
+
+```
+  charge-LED net ──┤ 100 kΩ ├── D3      (LOW = LED on)
+```
+
+- Tap the net on the **cathode side** of the LED — the pad that goes to the charge IC's
+  open-drain status output, not the one tied to the supply. Find it with a meter: on USB
+  without a cell the LED is solid for ~30 s, and the cathode pad then reads near 0 V.
+- The **100 kΩ in series** is a precaution, not a divider: if the LED's supply turns out to
+  be VBUS rather than 3V3, the resistor limits whatever reaches the GPIO to microamps. The
+  firmware reads the pin with its internal pull-up, so the resistor does not change the
+  logic level.
+- Keep the wire short and route it away from the paddle lines; the net is a slow signal
+  (the LED blinks around once a second), so noise is not a worry, but a paddle edge picked up
+  on the sense line would be.
+- **Without the wire nothing changes**: the pull-up keeps `D3` reading "LED off", which the
+  firmware treats as *no evidence*, and the key behaves exactly like a mod without it. There
+  is no build flag to set.
+
+What the firmware makes of the LED is in [Battery level over BLE](#battery-level-over-ble).
+
 ## Charging and power behaviour
 
 - USB-C connected: the board runs from USB and charges the cell simultaneously. Flashing
-  with a battery attached is fine.
+  with a battery attached is fine. With the charge-sense wire the app shows the live level
+  and "charging", then "100 % · charged" once the LED has been dark for a few seconds.
 - USB-C disconnected: the board runs from the cell through the on-board regulator, down to
   roughly 3.4 V, below which the cell's protection circuit eventually cuts out.
 - Charging is slow by design (50 mA). Plan on charging overnight; there is no fast-charge
@@ -215,10 +243,26 @@ Implemented in `ble-key.ino` behind `#define BATTERY_MOD 1`:
 - Below **3.5 V** the onboard LED double-blinks once at boot — the BLE-independent
   low-battery hint in the spirit of the keying LED.
 
-The Longpath app reads the level once after connecting and then subscribes: the connection
-chip shows "BLE key connected · 78 %", and Settings › Device adds a battery line that turns
-into a charge hint at 15 % and below. A key without the Battery Service — or one on USB,
-publishing `0xFF` — shows the plain connected chip and no level.
+- With the charge-sense wire the same service carries the SIG-standard **Battery Power
+  State `0x2A1A`** (`uint8` bit fields, read + notify, notified on change). The charge LED
+  on `D3` is sampled on every loop pass and judged once per 3-second window: two or more
+  edges = flashing, otherwise the level at the window's end. Off USB a plausible cell reading
+  means *on cell*. On USB only positive evidence makes a claim: flashing → *charging*; dark
+  for two windows after having flashed → *charged*; solid for two windows without ever
+  having flashed → *no cell* (the IC's "no battery" signal, solid for ~30 s after plug-in).
+  Dark from the start — a key booted on USB, a cell already full at plug-in, or a key
+  without the wire — stays *unknown*. Two windows of the same verdict are required so that a
+  blink slower than one window cannot pass for solid or dark.
+- While *charging* or *charged*, `0x2A19` carries the **live reading of the cell under
+  charge** instead of `0xFF`: a few points optimistic (charge voltage, not open-circuit) and
+  climbing, which is what the app wants to show next to "charging". In every other state on
+  USB the level stays `0xFF`.
+
+The Longpath app reads level and power state once after connecting and then subscribes:
+the connection chip shows "BLE key connected · 78 %", "· 78 % · charging" or "· 100 % ·
+charged", and Settings › Device adds a battery line that turns into a charge hint at 15 %
+and below while on the cell. A key without the Battery Service — or one on USB whose power
+state is unknown, publishing `0xFF` — shows the plain connected chip and no level.
 
 ## Idle sleep
 
@@ -305,6 +349,12 @@ Still open in `ble-key.ino`:
 
 ## Open questions
 
+- The charge-sense wire, not yet bench-verified: which LED pad is the cathode net and
+  whether that net's high level is 3V3 or VBUS (the 100 kΩ covers either); whether the
+  charge LED blinks with a period well under the 3 s window (`CHG_WINDOW_MS`) so that a
+  charging cell is never judged solid or dark; and whether a cell that is already full at
+  plug-in makes the LED flash at least briefly — if not, such a key stays *unknown* on USB
+  rather than showing *charged*, which is the honest fallback the firmware takes.
 - Whether BLE + light sleep (keeping the connection alive at much lower current) would be
   worth the complexity compared to the deep sleep + reconnect that is implemented now. Deep
   sleep is simpler, and the app-side reconnect makes the wake invisible apart from the lost

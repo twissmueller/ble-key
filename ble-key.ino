@@ -21,6 +21,16 @@
 // shows no level for it — and the idle sleep is off. USB power is sensed on the 5V pin (VBUS)
 // through a second 2 × 220 kΩ divider into D10, so a plain charger or power bank counts too;
 // a USB host (serial) is detected as well, as a fallback for a key without that divider.
+//
+// Charge sense (optional, on top of the battery mod): the XIAO's charge IC drives the red
+// charge LED and nothing else — solid for ~30 s after USB arrives without a cell, flashing
+// while a cell charges, off once it is full. One wire from that LED's net (the IC's open-drain
+// status output, LOW = LED on) into D3 lets the firmware read it. The key then also exposes
+// the SIG Battery Power State characteristic (0x2A1A: on cell / charging / charged / no cell)
+// and keeps publishing the live level while charging, so the Longpath app can say
+// "78 % · charging" and "100 % · charged". Without the wire the pin reads "off" forever, the
+// classifier has no evidence, and the key reports the power state as unknown — the app then
+// shows the plain connected chip on USB, exactly as before. One build fits every key.
 
 #include <NimBLEDevice.h>
 #include <string.h>
@@ -33,6 +43,7 @@ const int PIN_DIT   = D1;   // GPIO2, Tip
 const int PIN_DAH   = D2;   // GPIO3, Ring
 const int PIN_VBAT  = A0;   // GPIO1, battery divider tap (BATTERY_MOD only)
 const int PIN_VBUS  = D10;  // GPIO9, USB-power (5V pin) divider tap (BATTERY_MOD only)
+const int PIN_CHG   = D3;   // GPIO4, charge-LED net tap, LOW = LED on (charge-sense wire only)
 // LED_BUILTIN = GPIO21 on the XIAO, active-low (LOW = on, HIGH = off)
 
 // ---- Debounce ----
@@ -75,23 +86,48 @@ const uint32_t VBAT_PERIOD_MS = 10000;   // how often the level is re-measured
 const uint16_t VBAT_LOW_MV    = 3500;    // boot double-blink below this
 const uint16_t VBAT_PLAUSIBLE_MIN_MV = 2500;   // outside this window the reading is
 const uint16_t VBAT_PLAUSIBLE_MAX_MV = 4600;   // treated as "no cell / no divider"
-// Published instead of a percentage while a USB host is attached (the divider then sees the
-// charger, not the cell). Outside the SIG's 0–100 range on purpose; Longpath reads it as unknown.
+// Published instead of a percentage while a USB host is attached and the key cannot vouch for
+// a cell being charged (the divider then sees the charger, not the cell). Outside the SIG's
+// 0–100 range on purpose; Longpath reads it as unknown.
 const uint8_t  BATTERY_LEVEL_UNKNOWN = 0xFF;
+
+// ---- Charge sense (BATTERY_MOD only) ----
+// The charge LED is sampled on every loop pass (a digitalRead, no ADC burst) and judged once
+// per window: two or more edges in a window = flashing; otherwise the level at the window's
+// end, on or off. The window must be longer than one blink period of the charge IC.
+const uint32_t CHG_WINDOW_MS     = 3000;
+const uint8_t  CHG_FLASH_EDGES   = 2;
+const uint8_t  CHG_STEADY_WINDOWS = 2;   // a solid or dark LED counts after this many windows
+
+enum ChargeLed : uint8_t { LED_OFF, LED_ON, LED_FLASHING };
+
+// What the key can say about its power, published as the SIG Battery Power State (0x2A1A):
+// bits 0–1 present (2 no, 3 yes), bits 2–3 discharging (2 no, 3 yes), bits 4–5 charging
+// (2 no, 3 yes), bits 6–7 level (0 unknown — the level lives in 0x2A19). 0 = nothing known.
+enum PowerState : uint8_t {
+  POWER_UNKNOWN  = 0x00,                        // no report, or the key cannot tell yet
+  POWER_ON_CELL  = 0x03 | (3 << 2) | (2 << 4),  // present, discharging, not charging
+  POWER_CHARGING = 0x03 | (2 << 2) | (3 << 4),  // present, not discharging, charging
+  POWER_CHARGED  = 0x03 | (2 << 2) | (2 << 4),  // present, not discharging, not charging
+  POWER_NO_CELL  = 0x02,                        // not present
+};
 
 // ---- BLE contract ----
 #define SVC_UUID "6e3a0001-0000-1000-8000-00805f9b34fb"   // Longpath contract — do not change
 #define CHR_UUID "6e3a0002-0000-1000-8000-00805f9b34fb"   // Longpath contract — do not change
 
 // SIG-assigned numbers (not part of the Longpath contract, but standard — do not change).
-const uint16_t BATTERY_SVC_UUID = 0x180F;   // Battery Service
-const uint16_t BATTERY_LVL_UUID = 0x2A19;   // Battery Level, uint8 percent 0–100
+const uint16_t BATTERY_SVC_UUID   = 0x180F;   // Battery Service
+const uint16_t BATTERY_LVL_UUID   = 0x2A19;   // Battery Level, uint8 percent 0–100
+const uint16_t BATTERY_STATE_UUID = 0x2A1A;   // Battery Power State, uint8 bit fields (see PowerState)
 
 enum Evt : uint8_t { DIT_DOWN = 0, DIT_UP = 1, DAH_DOWN = 2, DAH_UP = 3 };
 
-NimBLECharacteristic* evtChar     = nullptr;
-NimBLECharacteristic* batteryChar = nullptr;
+NimBLECharacteristic* evtChar          = nullptr;
+NimBLECharacteristic* batteryChar      = nullptr;
+NimBLECharacteristic* batteryStateChar = nullptr;
 bool batteryModFitted = false;   // decided once at boot by detectBatteryMod()
+PowerState powerState = POWER_UNKNOWN;   // what the key currently believes, see judgePowerState()
 
 // 5-byte little-endian packet: [event][uint32 millis timestamp]
 void sendEvent(Evt e) {
@@ -169,12 +205,15 @@ static void publishBattery(uint8_t value, const char* why) {
 }
 
 // Re-measure the cell, and push the level to the client if it changed. Called from loop()
-// every VBAT_PERIOD_MS; the first call after boot always publishes.
+// every VBAT_PERIOD_MS and whenever the power state changes; the first call after boot
+// always publishes.
 void updateBattery() {
   if (!batteryChar) return;
 
-  if (usbPowered()) {
-    // BAT+ carries the charger output now, with or without a cell: no level to report.
+  bool onUsb = usbPowered();
+  if (onUsb && powerState != POWER_CHARGING && powerState != POWER_CHARGED) {
+    // BAT+ carries the charger output now and the key cannot vouch for a cell (no charge-sense
+    // wire, no cell, or nothing seen yet): no level to report.
     publishBattery(BATTERY_LEVEL_UNKNOWN, "on USB — level unknown");
     return;
   }
@@ -187,10 +226,89 @@ void updateBattery() {
     return;
   }
 
+  // While charging this is the cell under charge — a few points high, and climbing; the app
+  // shows it as-is next to "charging" and forces 100 % once the key reports charged.
   int percent = batteryPercent(mv);
-  char why[40];
-  snprintf(why, sizeof(why), "%u mV -> %d %%", mv, percent);
+  char why[48];
+  snprintf(why, sizeof(why), "%u mV -> %d %%%s", mv, percent, onUsb ? " (under charge)" : "");
   publishBattery((uint8_t)percent, why);
+}
+
+// ---- Charge sense ----
+
+static const char* powerStateName(PowerState ps) {
+  switch (ps) {
+    case POWER_ON_CELL:  return "on cell";
+    case POWER_CHARGING: return "charging";
+    case POWER_CHARGED:  return "charged";
+    case POWER_NO_CELL:  return "no cell";
+    default:             return "unknown";
+  }
+}
+
+// Watches the charge-LED net across CHG_WINDOW_MS windows. Returns true once per window,
+// with the verdict in `verdict`. Without the charge-sense wire the pull-up keeps the pin
+// HIGH, so the verdict is LED_OFF forever — no evidence, never a wrong claim.
+struct ChargeLedWatch {
+  ChargeLed verdict = LED_OFF;
+  bool lastLow = false;
+  uint8_t edges = 0;
+  uint32_t windowStartMs = 0;
+
+  bool sample(bool ledOn, uint32_t now) {
+    if (ledOn != lastLow) { lastLow = ledOn; if (edges < 255) edges++; }
+    if ((now - windowStartMs) < CHG_WINDOW_MS) return false;
+    verdict = edges >= CHG_FLASH_EDGES ? LED_FLASHING : (lastLow ? LED_ON : LED_OFF);
+    edges = 0;
+    windowStartMs = now;
+    return true;
+  }
+};
+
+// What the key believes about its power, from USB presence and what the charge LED has
+// shown since USB arrived. Only positive evidence makes a claim: flashing → charging; solid
+// for a whole window → no cell (the charge IC's "no battery" signal); off after flashing →
+// charged. Off from the start says nothing — a key booted on USB, a full cell that never
+// flashed, or a key without the wire — and stays unknown, which the app shows as the plain
+// connected chip. Off USB the cell speaks for itself: a plausible reading → on cell.
+//
+// A steady verdict has to hold for CHG_STEADY_WINDOWS windows in a row before it counts:
+// a blink slower than one window would otherwise read as solid or off for a window at a time.
+PowerState judgePowerState(bool onUsb, bool usbJustArrived, bool ledJudged, ChargeLed led) {
+  static bool sawFlashing = false;   // since USB arrived
+  static bool sawSolid = false;
+  static ChargeLed lastLed = LED_OFF;
+  static uint8_t steadyWindows = 0;  // consecutive windows with the same verdict
+  if (usbJustArrived) { sawFlashing = false; sawSolid = false; steadyWindows = 0; }
+
+  if (!onUsb) {
+    sawFlashing = false; sawSolid = false; steadyWindows = 0;
+    return batteryPlausible(readBatteryMillivolts()) ? POWER_ON_CELL : POWER_UNKNOWN;
+  }
+  if (ledJudged) {
+    steadyWindows = (led == lastLed && steadyWindows < 255) ? steadyWindows + 1 : 1;
+    lastLed = led;
+    if (led == LED_FLASHING) { sawFlashing = true; sawSolid = false; }
+    if (led == LED_ON && !sawFlashing && steadyWindows >= CHG_STEADY_WINDOWS) sawSolid = true;
+  }
+  if (sawSolid) return POWER_NO_CELL;
+  if (!sawFlashing) return POWER_UNKNOWN;
+  bool dark = lastLed == LED_OFF && steadyWindows >= CHG_STEADY_WINDOWS;
+  return dark ? POWER_CHARGED : POWER_CHARGING;
+}
+
+// Push the power state to the client if it changed, and re-run the level, whose meaning on
+// USB depends on it (a level is only published while charging or charged).
+static void publishPowerState(PowerState ps) {
+  if (ps == powerState) return;
+  powerState = ps;
+  if (batteryStateChar) {
+    uint8_t value = (uint8_t)ps;
+    batteryStateChar->setValue(&value, 1);
+    batteryStateChar->notify();
+  }
+  Serial.printf("[battery] power state: %s\n", powerStateName(ps));
+  updateBattery();
 }
 
 // BLE-independent low-battery hint at boot: two short blinks of the onboard LED.
@@ -336,6 +454,7 @@ void setup() {
   Serial.println("[paddle] pins ready");
 
 #if BATTERY_MOD
+  pinMode(PIN_CHG, INPUT_PULLUP);                  // reads HIGH ("LED off") without the wire
   analogSetPinAttenuation(PIN_VBAT, ADC_11db);     // full 0–3.1 V range for the 2.1 V tap
   analogSetPinAttenuation(PIN_VBUS, ADC_11db);     // and for the 2.5 V VBUS tap
   analogReadResolution(12);
@@ -343,7 +462,7 @@ void setup() {
   if (!batteryModFitted) {
     Serial.println("[battery] no divider or cell detected — stock key, battery features off");
   } else if (usbPowered()) {
-    Serial.printf("[battery] on USB (VBUS %u mV) — level not measured, idle sleep off\n", readVbusMillivolts());
+    Serial.printf("[battery] on USB (VBUS %u mV) — idle sleep off, watching the charge LED on D3\n", readVbusMillivolts());
   } else {
     uint16_t bootMv = readBatteryMillivolts();
     Serial.printf("[battery] %u mV at boot (%d %%)\n", bootMv, batteryPercent(bootMv));
@@ -371,7 +490,15 @@ void setup() {
                                                    NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
     uint8_t seed = BATTERY_LEVEL_UNKNOWN;
     batteryChar->setValue(&seed, 1);
+    // Battery Power State next to it: nothing known until the charge LED or the cell has
+    // spoken (see judgePowerState). Standard as well — clients that do not know it ignore it.
+    batteryStateChar = batterySvc->createCharacteristic(NimBLEUUID(BATTERY_STATE_UUID),
+                                                        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
+    uint8_t stateSeed = POWER_UNKNOWN;
+    batteryStateChar->setValue(&stateSeed, 1);
     batterySvc->start();
+    bool onUsb = usbPowered();
+    publishPowerState(judgePowerState(onUsb, onUsb, false, LED_OFF));
     updateBattery();
   }
 #endif
@@ -412,6 +539,7 @@ void loop() {
   static bool wasOnUsb = false;
   static bool onUsb = false;
   static uint32_t lastVbusMs = 0;
+  static ChargeLedWatch chargeLed;
 
   uint32_t now = millis();
 
@@ -427,9 +555,10 @@ void loop() {
                       : "cold boot",
                   NimBLEDevice::getServer()->getConnectedCount() ? "connected" : "advertising");
 #if BATTERY_MOD
-    Serial.printf("[battery] VBUS %u mV, BAT %u mV — %s\n", readVbusMillivolts(), readBatteryMillivolts(),
+    Serial.printf("[battery] VBUS %u mV, BAT %u mV — %s, power state %s\n", readVbusMillivolts(), readBatteryMillivolts(),
                   !batteryModFitted ? "no mod detected, battery features off"
-                  : usbPowered() ? "on USB, level unknown, idle sleep off" : "on the cell");
+                  : usbPowered() ? "on USB, idle sleep off" : "on the cell",
+                  powerStateName(powerState));
 #endif
   }
   // Log the negotiated link parameters once, a few seconds after the connect (the central
@@ -463,15 +592,30 @@ void loop() {
   // and must not land between two paddle edges.
   if (!keyed && (now - lastBatteryMs) >= VBAT_PERIOD_MS) {
     lastBatteryMs = now;
+    // Off USB the cell speaks for itself; re-judge with every measurement so an implausible
+    // first reading (a cell plugged in late) does not leave the state unknown for good.
+    if (!onUsb) publishPowerState(judgePowerState(false, false, false, LED_OFF));
     updateBattery();
   }
 
   // USB presence is re-sampled once a second while idle (an ADC burst must not land between
   // two paddle edges), and remembered in between.
+  bool usbJustArrived = false;
   if (!keyed && (now - lastVbusMs) >= VBUS_PERIOD_MS) {
     lastVbusMs = now;
     onUsb = usbPowered();
-    if (onUsb != wasOnUsb) Serial.println(onUsb ? "[battery] USB power present" : "[battery] USB power gone");
+    if (onUsb != wasOnUsb) {
+      Serial.println(onUsb ? "[battery] USB power present" : "[battery] USB power gone");
+      usbJustArrived = onUsb;
+      if (!onUsb) publishPowerState(judgePowerState(false, false, false, LED_OFF));
+    }
+  }
+
+  // The charge LED is cheap to sample, so it is watched on every pass; its verdict, once a
+  // window, is what moves the power state while on USB.
+  bool ledJudged = chargeLed.sample(digitalRead(PIN_CHG) == LOW, now);
+  if (onUsb && (ledJudged || usbJustArrived)) {
+    publishPowerState(judgePowerState(true, usbJustArrived, ledJudged, chargeLed.verdict));
   }
 
   // No idle sleep on USB: there is nothing to save and a sleep would cost the first press
