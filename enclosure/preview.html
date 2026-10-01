@@ -1,0 +1,347 @@
+<meta charset="utf-8">
+<title>ble-key Housing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: drafting-sheet tool — model view on the left, spec sheet on the right, stacked on phones */
+:root {
+  --bg: #eef0ef;
+  --sheet: #fbfcfb;
+  --ink: #1d2422;
+  --muted: #5d6865;
+  --rule: #cfd5d3;
+  --accent: #c2541b;
+  --viewport: #e3e7e5;
+  --display: "Barlow Semi Condensed", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #161a19; --sheet: #1e2321; --ink: #e4e9e7; --muted: #98a39f; --rule: #343c39;
+  --accent: #f0864a; --viewport: #121615; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #161a19; --sheet: #1e2321; --ink: #e4e9e7; --muted: #98a39f; --rule: #343c39;
+  --accent: #f0864a; --viewport: #121615; color-scheme: dark }
+
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); padding: 20px 16px 32px }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 20px }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 20px; border-bottom: 1px solid var(--rule); padding-bottom: 12px }
+h1 { font: 600 1.9rem/1.1 var(--display); margin: 0; letter-spacing: .01em; text-wrap: balance }
+.sub { color: var(--muted); font-size: .9rem }
+.dims { font: 500 .95rem var(--mono); color: var(--accent); font-variant-numeric: tabular-nums }
+
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start }
+@media (max-width: 880px) { .main { grid-template-columns: minmax(0, 1fr) } }
+
+.stage { background: var(--viewport); border: 1px solid var(--rule); border-radius: 4px; position: relative; aspect-ratio: 4 / 3; max-width: 100%; overflow: hidden }
+.stage canvas { display: block; width: 100%; height: 100%; touch-action: none }
+.hint { position: absolute; left: 12px; bottom: 10px; font: .75rem var(--mono); color: var(--muted); pointer-events: none }
+.status { position: absolute; inset: 0; display: grid; place-items: center; font: .9rem var(--mono); color: var(--muted) }
+
+.controls { display: flex; flex-wrap: wrap; gap: 14px 22px; margin-top: 12px; align-items: center }
+.group { display: flex; gap: 0; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden }
+.group button { font: 500 .82rem var(--body); background: var(--sheet); color: var(--ink); border: 0; border-right: 1px solid var(--rule); padding: 7px 12px; cursor: pointer }
+.group button:last-child { border-right: 0 }
+.group button[aria-pressed="true"] { background: var(--ink); color: var(--sheet) }
+.group button:focus-visible, label.chk:focus-within { outline: 2px solid var(--accent); outline-offset: 2px }
+.lbl { font: 500 .7rem var(--body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-right: 8px }
+label.chk { display: inline-flex; align-items: center; gap: 6px; font-size: .88rem; cursor: pointer }
+label.chk input { accent-color: var(--accent) }
+
+aside { background: var(--sheet); border: 1px solid var(--rule); border-radius: 4px; padding: 4px 18px 16px; min-width: 0 }
+aside section + section { border-top: 1px solid var(--rule) }
+h2 { font: 600 1.05rem var(--display); letter-spacing: .04em; text-transform: uppercase; margin: 16px 0 8px }
+dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: .88rem }
+dt { color: var(--muted) }
+dd { margin: 0; font-family: var(--mono); font-size: .84rem; font-variant-numeric: tabular-nums; text-align: right }
+ol, ul { margin: 0; padding-left: 1.2em; font-size: .88rem; display: grid; gap: 4px }
+.note { font-size: .82rem; color: var(--muted); margin: 8px 0 0 }
+code { font: .82rem var(--mono); overflow-wrap: anywhere }
+.controls.top { margin-top: 0 }
+.held { margin-top: 18px; max-width: 68ch }
+.held p { margin: 0 0 8px; font-size: .9rem }
+.held b { font-weight: 500 }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>ble-key Housing</h1>
+      <div class="sub" id="sub">XIAO ESP32-S3 · PJ-392 paddle jack · v2</div>
+    </div>
+    <div class="dims" id="dims"></div>
+  </header>
+
+  <div class="controls top">
+    <div><span class="lbl">Version</span>
+      <div class="group" role="group" aria-label="Version">
+        <button id="var-usb" aria-pressed="true">USB only</button>
+        <button id="var-battery" aria-pressed="false">With battery</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div>
+      <div class="stage" id="stage">
+        <div class="status" id="status">Loading model…</div>
+        <div class="hint">drag to orbit · scroll or pinch to zoom · right-drag to pan</div>
+      </div>
+      <div class="controls">
+        <div><span class="lbl">Lid</span>
+          <div class="group" role="group" aria-label="Lid">
+            <button id="lid-on" aria-pressed="false">Closed</button>
+            <button id="lid-up" aria-pressed="true">Lifted</button>
+            <button id="lid-off" aria-pressed="false">Hidden</button>
+          </div>
+        </div>
+        <div><span class="lbl">View</span>
+          <div class="group" role="group" aria-label="View">
+            <button id="v-iso" aria-pressed="true">3D</button>
+            <button id="v-usb" aria-pressed="false">USB end</button>
+            <button id="v-jack" aria-pressed="false">Jack end</button>
+            <button id="v-top" aria-pressed="false">Top</button>
+          </div>
+        </div>
+        <label class="chk"><input type="checkbox" id="c-board" checked> Board</label>
+        <label class="chk"><input type="checkbox" id="c-jack" checked> Jack</label>
+        <label class="chk" id="l-battery"><input type="checkbox" id="c-battery" checked> Battery</label>
+        <label class="chk"><input type="checkbox" id="c-cut"> Cut lengthwise</label>
+      </div>
+
+      <section class="held">
+        <h2>How the board is held</h2>
+        <p>No screws or glue touch the XIAO. It is clamped between the base and the lid:</p>
+        <ul>
+          <li><b>Underneath:</b> four 3 × 3 mm corner pads lift it 3 mm off the floor, so the solder joints and wires on its underside have room.</li>
+          <li><b>Sideways:</b> small lips beside the corner pads stop it sliding left or right. They stay clear of the solder pads.</li>
+          <li><b>Lengthwise:</b> the USB-C end rests against the end wall with the socket in its notch, so pulling a cable cannot drag the board out. A rib behind the far edge stops a plug from pushing it back.</li>
+          <li><b>From above:</b> when the lid is screwed down, its tab sits on top of the USB-C socket and two pins press on the far corners of the board.</li>
+        </ul>
+      </section>
+    </div>
+
+    <aside>
+      <section>
+        <h2>Printed parts</h2>
+        <dl id="spec-parts"></dl>
+        <p class="note" id="files"></p>
+      </section>
+      <section>
+        <h2>Openings</h2>
+        <dl>
+          <dt>USB-C notch</dt><dd>9.44 wide, closed by lid tab</dd>
+          <dt>Plug recess</dt><dd>12.4 × 7.0 × 0.5</dd>
+          <dt>Jack hole</dt><dd>Ø 6.5, wall 1.5</dd>
+          <dt>LED light holes</dt><dd>2 × Ø 1.6</dd>
+        </dl>
+      </section>
+      <section>
+        <h2>To buy</h2>
+        <ul id="buy"></ul>
+      </section>
+      <section>
+        <h2>Assembly</h2>
+        <ol id="steps"></ol>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  const VARIANTS = {
+    usb: {
+      dims: '43.0 × 25.0 × 13.6 mm',
+      sub: 'XIAO ESP32-S3 · PJ-392 paddle jack · USB-C power · v2',
+      parts: [['Base', '43.0 × 25.0 × 11.6'], ['Lid', '43.0 × 25.0 × 2.0 + lip'],
+              ['Inside', '39.0 × 21.0 × 9.6'], ['Walls / floor / lid', '2.0 / 2.0 / 2.0'], ['Fit clearance', '0.25']],
+      files: 'out/usb/ble-key-usb-base.step, ble-key-usb-lid.step',
+      buy: ['PJ-392 3.5 mm stereo panel jack with nut',
+            '2 × M2 × 6 self-tapping screw for plastic'],
+      steps: ['Solder the jack wires to D1 (tip), D2 (ring) and GND (sleeve).',
+              'Push the jack through the end wall from inside and tighten its nut outside.',
+              'Lower the XIAO in USB-C first, with the socket in the notch, onto the four corner pads.',
+              'Put the lid on and fasten the two M2 screws.'],
+      names: ['base', 'lid', 'board', 'jack'],
+    },
+    battery: {
+      dims: '43.0 × 48.0 × 13.6 mm',
+      sub: 'XIAO ESP32-S3 · PJ-392 paddle jack · 350 mAh LiPo · v2',
+      parts: [['Base', '43.0 × 48.0 × 11.6'], ['Lid', '43.0 × 48.0 × 2.0 + lip'],
+              ['Electronics bay', '39.0 × 21.0 × 9.6'], ['Battery bay', '36.0 × 21.0, lead slot to board'],
+              ['Walls / floor / lid', '2.0 / 2.0 / 2.0'], ['Fit clearance', '0.25']],
+      files: 'out/battery/ble-key-battery-base.step, ble-key-battery-lid.step',
+      buy: ['PJ-392 3.5 mm stereo panel jack with nut',
+            'LiPo LP-552035, 3.7 V 350 mAh, JST-PH, protected (see BATTERY.md)',
+            '2 × 220 kΩ + 2 × 220 kΩ + 100 kΩ resistors (dividers and charge sense)',
+            '4 × M2 × 6 self-tapping screw for plastic',
+            'Strip of 0.5 mm foam tape on top of the cell'],
+      steps: ['Wire the jack, the resistors and the cell to the XIAO as in BATTERY.md.',
+              'Push the jack through the end wall from inside and tighten its nut outside.',
+              'Lay the cell flat in its bay, lead towards the slot in the divider.',
+              'Lower the XIAO in USB-C first, with the socket in the notch, onto the four corner pads. Tuck the resistors into the space between jack and board.',
+              'Stick the foam strip on the cell, put the lid on and fasten the four M2 screws. Ribs under the lid hold the cell down.'],
+      names: ['base', 'lid', 'board', 'jack', 'battery'],
+    },
+  };
+
+  const looks = {
+    base:    { color: 0xd9dcd6, opacity: 1 },
+    lid:     { color: 0xd9dcd6, opacity: 0.55 },
+    board:   { color: 0x1f2a26, opacity: 1 },
+    jack:    { color: 0xb08a3e, opacity: 1, metal: true },
+    battery: { color: 0x9aa3b5, opacity: 1, metal: true },
+  };
+
+  const $ = id => document.getElementById(id);
+  const stage = $('stage'), status = $('status');
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.localClippingEnabled = true;
+  stage.prepend(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(30, 4 / 3, 1, 2000);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a9490, 0.75));
+  const key = new THREE.DirectionalLight(0xffffff, 0.75);
+  key.position.set(60, 90, 70);
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.3);
+  fill.position.set(-70, 30, -50);
+  scene.add(fill);
+
+  // Model frame is metres, Y up (glTF). Show in millimetres.
+  const root = new THREE.Group();
+  root.scale.setScalar(1000);
+  scene.add(root);
+
+  const cutPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
+  const LIFT = 14;
+  const loader = new THREE.GLTFLoader();
+  const cache = {};
+  let parts = {}, current = null, lidMode = 'up', view = 'iso';
+
+  function loadPart(variant, n) {
+    const k = variant + '/' + n;
+    if (!cache[k]) cache[k] = fetch('out/' + variant + '/preview-' + n + '.b64.txt')
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(t => new Promise((res, rej) => {
+        const bin = atob(t.trim()), buf = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+        loader.parse(buf.buffer, '', g => res(style(n, g.scene)), rej);
+      }));
+    return cache[k];
+  }
+
+  function style(n, obj) {
+    const look = looks[n];
+    obj.traverse(m => {
+      if (!m.isMesh) return;
+      m.material = new THREE.MeshStandardMaterial({
+        color: look.color, roughness: look.metal ? 0.35 : 0.7, metalness: look.metal ? 0.6 : 0.05,
+        transparent: look.opacity < 1, opacity: look.opacity, side: THREE.DoubleSide,
+      });
+    });
+    return obj;
+  }
+
+  function fillSpecs(v) {
+    const d = VARIANTS[v];
+    $('dims').textContent = d.dims;
+    $('sub').textContent = d.sub;
+    $('spec-parts').innerHTML = d.parts.map(([k, val]) => '<dt>' + k + '</dt><dd>' + val + '</dd>').join('');
+    $('files').innerHTML = 'Files: <code>' + d.files + '</code> (plus STL). Suggested process: SLA resin or MJF nylon.';
+    $('buy').innerHTML = d.buy.map(s => '<li>' + s + '</li>').join('');
+    $('steps').innerHTML = d.steps.map(s => '<li>' + s + '</li>').join('');
+    $('l-battery').hidden = v !== 'battery';
+  }
+
+  function setVariant(v) {
+    current = v;
+    press('var-', v, Object.keys(VARIANTS));
+    fillSpecs(v);
+    status.hidden = false;
+    status.textContent = 'Loading model…';
+    const names = VARIANTS[v].names;
+    Promise.all(names.map(n => loadPart(v, n))).then(objs => {
+      if (current !== v) return;
+      root.clear();
+      parts = {};
+      names.forEach((n, i) => { parts[n] = objs[i]; root.add(objs[i]); });
+      status.hidden = true;
+      parts.lid.position.y = 0;
+      frame();
+      setLid(lidMode);
+      applyToggles();
+      setView(view);
+    }).catch(() => { status.textContent = 'The model files did not load. Reload the page to try again.'; });
+  }
+
+  let center = new THREE.Vector3(), radius = 40;
+  function frame() {
+    const box = new THREE.Box3().setFromObject(root);
+    box.getCenter(center);
+    radius = box.getSize(new THREE.Vector3()).length() / 2;
+    controls.target.copy(center);
+  }
+
+  const views = { iso: [1.2, 0.9, 1.4], usb: [1, 0.25, 0.12], jack: [-1, 0.25, 0.12], top: [0.001, 1, 0.001] };
+  function setView(v) {
+    view = v;
+    const d = new THREE.Vector3(...views[v]).normalize().multiplyScalar(radius * 3.8);
+    camera.position.copy(center).add(d);
+    controls.update();
+    press('v-', v, Object.keys(views));
+  }
+
+  function setLid(mode) {
+    lidMode = mode;
+    press('lid-', mode, ['on', 'up', 'off']);
+    if (!parts.lid) return;
+    parts.lid.visible = mode !== 'off';
+    parts.lid.position.y = mode === 'up' ? LIFT / 1000 : 0;
+  }
+
+  function applyToggles() {
+    ['board', 'jack', 'battery'].forEach(n => { if (parts[n]) parts[n].visible = $('c-' + n).checked; });
+    const on = $('c-cut').checked;
+    root.traverse(m => { if (m.isMesh) { m.material.clippingPlanes = on ? [cutPlane] : []; m.material.needsUpdate = true; } });
+  }
+
+  function press(prefix, active, all) {
+    all.forEach(k => $(prefix + k).setAttribute('aria-pressed', String(k === active)));
+  }
+
+  Object.keys(VARIANTS).forEach(k => $('var-' + k).addEventListener('click', () => { if (k !== current) setVariant(k); }));
+  ['on', 'up', 'off'].forEach(k => $('lid-' + k).addEventListener('click', () => setLid(k)));
+  Object.keys(views).forEach(k => $('v-' + k).addEventListener('click', () => setView(k)));
+  ['c-board', 'c-jack', 'c-battery', 'c-cut'].forEach(id => $(id).addEventListener('change', applyToggles));
+
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(stage);
+  resize();
+
+  setVariant(location.hash === '#battery' ? 'battery' : 'usb');
+
+  (function loop() {
+    controls.update();
+    renderer.render(scene, camera);
+    requestAnimationFrame(loop);
+  })();
+})();
+</script>

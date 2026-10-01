@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+vendor/xiao.zip
+out/*/preview-*.b64.txt
+vendor/*.jpg
+vendor/*.png
