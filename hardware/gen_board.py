@@ -119,7 +119,12 @@ def read_netlist():
     comps = {}
     for c in field(tree, "components")[1:]:
         ref = field(c, "ref")[1]
-        comps[ref] = {"value": field(c, "value")[1], "footprint": field(c, "footprint")[1]}
+        mpn = None
+        fields = field(c, "fields")
+        for f in (fields[1:] if fields else []):
+            if field(f, "name") and field(f, "name")[1] == "MPN" and len(f) > 2:
+                mpn = f[-1] if isinstance(f[-1], str) else None
+        comps[ref] = {"value": field(c, "value")[1], "footprint": field(c, "footprint")[1], "mpn": mpn}
     nets = {}
     for n in field(tree, "nets")[1:]:
         name = field(n, "name")[1]
@@ -277,6 +282,11 @@ def build():
         fp = load_fp(c["footprint"])
         fp.SetReference(ref)
         fp.SetValue(c["value"])
+        if c["mpn"]:                         # AISLER matches parts on this field
+            fp.SetField("MPN", c["mpn"])
+            f = fp.GetField("MPN")
+            f.SetVisible(False)
+            f.SetLayer(pcbnew.F_Fab)
         x, y, rot, side = PLACEMENT[ref]
         board.Add(fp)
         if side == "B":

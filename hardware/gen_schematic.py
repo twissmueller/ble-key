@@ -242,11 +242,11 @@ def build():
         "P1.15": "LED_RED", "P1.10": "LED_BLUE", "P0.00": "XL1", "P0.01": "XL2", "DCCH": "DCCH"},
         nc_rest=True, mpn="MDBT50Q-1MV2")
     sh.place("Device", "L", "L1", "10u", (240, 175), {"1": "DCCH", "2": "VDD"},
-             footprint="Inductor_SMD:L_0603_1608Metric")
+             footprint="Inductor_SMD:L_0603_1608Metric", mpn="LBMF1608T100K")   # as on the nRF52840-DK
     sh.place("Device", "Crystal", "Y1", "32.768k", (255, 160), {"1": "XL1", "2": "XL2"},
-             footprint="Crystal:Crystal_SMD_2012-2Pin_2.0x1.2mm")
-    C(sh, "C9", "12p", (250, 175), "XL1", "GND")
-    C(sh, "C10", "12p", (260, 175), "XL2", "GND")
+             footprint="Crystal:Crystal_SMD_2012-2Pin_2.0x1.2mm", mpn="FC-12M 32.7680KA-AC0")   # CL 9 pF
+    C(sh, "C9", "12p", (250, 175), "XL1", "GND", mpn="GRM1555C1H120GA01D")
+    C(sh, "C10", "12p", (260, 175), "XL2", "GND", mpn="GRM1555C1H120GA01D")
     C(sh, "C5", "10u", (180, 175), "VSYS", "GND")
     C(sh, "C6", "10u", (190, 175), "VDD", "GND")
     C(sh, "C7", "100n", (200, 175), "VDD", "GND")
