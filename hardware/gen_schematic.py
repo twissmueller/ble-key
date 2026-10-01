@@ -181,12 +181,14 @@ class Sheet:
 
 def R(sh, ref, value, at, a, b, mpn=None):
     sh.place("Device", "R", ref, value, at, {"1": a, "2": b},
-             footprint="Resistor_SMD:R_0603_1608Metric", mpn=mpn)
+             footprint="Resistor_SMD:R_0402_1005Metric", mpn=mpn)
 
 
 def C(sh, ref, value, at, a, b, mpn=None):
+    # bulk capacitors stay 0603 so they keep their capacitance at 5 V
+    size = "C_0603_1608Metric" if value.endswith("u") and value != "1u" else "C_0402_1005Metric"
     sh.place("Device", "C", ref, value, at, {"1": a, "2": b},
-             footprint="Capacitor_SMD:C_0603_1608Metric", mpn=mpn)
+             footprint=f"Capacitor_SMD:{size}", mpn=mpn)
 
 
 def build():
@@ -236,7 +238,7 @@ def build():
     sh.place("RF_Module", "MDBT50Q-1MV2", "U1", "MDBT50Q-1MV2", (210, 110), {
         "VDDH": "VSYS", "VDD": "VDD", "VBUS": "VBUS", "D+": "USB_DP", "D-": "USB_DN", "GND": "GND",
         "SWDIO": "SWDIO", "SWDCLK": "SWDCLK", "P0.18": "~{RESET}",
-        "P0.04": "DIT", "P0.05": "DAH", "P0.29": "VBAT_SENSE", "P0.30": "~{PGOOD}", "P0.28": "~{CHG}",
+        "P0.04": "DIT", "P0.06": "DAH", "P0.29": "VBAT_SENSE", "P0.30": "~{PGOOD}", "P0.31": "~{CHG}",
         "P1.15": "LED_RED", "P1.10": "LED_BLUE", "P0.00": "XL1", "P0.01": "XL2", "DCCH": "DCCH"},
         nc_rest=True, mpn="MDBT50Q-1MV2")
     sh.place("Device", "L", "L1", "10u", (240, 175), {"1": "DCCH", "2": "VDD"},

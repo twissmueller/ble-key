@@ -9,9 +9,17 @@ charger with power path, USB-C, a 3.5 mm paddle jack and a JST-PH socket for the
 | `ble-key-schematic.pdf` | the schematic as a PDF |
 | `ble-key-bom.csv` | parts list with MPNs where chosen |
 | `gen_schematic.py` | generates the schematic; the parts, values and nets live here |
+| `ble-key.kicad_pcb` | the board: 46 × 26 mm, 2 layers, routed |
+| `gen_board.py` | places the footprints, draws outline, holes, pours and the antenna keep-out |
+| `route.py` | autoroutes the board with Freerouting and refills the pours |
+| `board-top.png`, `board-bottom.png` | renders of the routed board |
 
-**Status:** schematic only, passes KiCad's electrical rules check (0 errors; 2 warnings that two
-derived library symbols are stored flattened). No layout yet.
+**Status:** schematic and a first routed layout. ERC: 0 errors. DRC: 0 errors and 0 unconnected
+pads; the remaining warnings are the paddle jack's outline crossing the board edge (its opening
+overhangs the edge on purpose) and, until KiCad has been opened once, "library not in the
+configuration" notices.
+
+![Board, top](board-top.png)
 
 ## Design
 
@@ -22,12 +30,30 @@ derived library symbols are stored flattened). No layout yet.
 | Power | BQ24074 OUT (VSYS: 4.4 V on USB, battery voltage otherwise) feeds the module's VDDH. VDD is the module's own 3.3 V output, through its REG0 DC/DC converter with L1 (Raytac spec §8.1) |
 | Module | MDBT50Q-1MV2, 32.768 kHz crystal on P0.00/P0.01 (the module has none) |
 | Battery level | 1 MΩ + 1 MΩ divider with 100 nF into P0.29 / AIN5, about 2 µA drain |
-| Charger status | ~PGOOD (USB present) on P0.30, ~CHG (charging) on P0.28, 100 kΩ pull-ups to VDD |
-| Paddle | tip → 470 Ω → P0.04 (dit), ring → 470 Ω → P0.05 (dah), sleeve → GND; internal pull-ups |
+| Charger status | ~PGOOD (USB present) on P0.30, ~CHG (charging) on P0.31, 100 kΩ pull-ups to VDD |
+| Paddle | tip → 470 Ω → P0.04 (dit), ring → 470 Ω → P0.06 (dah), sleeve → GND; internal pull-ups |
 | LEDs, reset | red P1.15, blue P1.10 — the Feather nRF52840 pins, so its bootloader drives them; reset button on P0.18 |
 | Programming | Tag-Connect TC2030 pads for SWD (no part fitted) |
 
-## Before layout
+## Layout
+
+- **46 × 26 mm, 2 layers, 1.6 mm, ENIG** (AISLER 2-layer ENIG rules: 0.125 mm track and space).
+  Ground pour on both sides.
+- **Module** at the top edge, antenna outward, with a copper-free strip along the top edge
+  (12–34 mm, 4.2 mm deep) on both layers, wider than Raytac's minimum.
+- **USB-C** on the right edge, **paddle jack** on the left edge, **battery JST** at the top-left
+  with the cable entering from the left, **reset button** on the bottom edge (side push).
+- **SWD pads** (Tag-Connect TC2030-NL) on the back, bottom-left. Two M2 mounting holes.
+- Net classes: signals 0.2 mm, power 0.3 mm, the reset line 0.15 mm so it can escape from the
+  module's inner pad row.
+
+**This is an autorouted first pass.** Before ordering it should be reviewed by hand, in
+particular: the ground pour on the back is cut up by signal traces (add stitching vias and move
+traces to the front where possible), the USB pair is routed as two single tracks (fine for 12 Mbit/s
+full speed, but keep them short and parallel), and the enclosure has to be redrawn around this board.
+Raytac offers a free layout review.
+
+## Open points
 
 - **UICR.REGOUT0 = 3.3 V** must be written when the bootloader is flashed over SWD. In VDDH mode
   the nRF52840 starts with VDD at 1.8 V.
@@ -43,6 +69,21 @@ derived library symbols are stored flattened). No layout yet.
   Raytac reviews layouts for free (service@raytac.com).
 
 ## Regenerating
+
+Schematic, then board, then routing:
+
+```bash
+.venv/bin/python gen_schematic.py
+/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli sch export netlist -o ble-key.net ble-key.kicad_sch
+/Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/Current/bin/python3 gen_board.py
+/Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/Current/bin/python3 route.py 100
+/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli pcb drc ble-key.kicad_pcb
+```
+
+`route.py` runs Freerouting 2.4.1 in its Docker image (`ghcr.io/freerouting/freerouting:2.4.1`,
+no network access). Each run may route slightly differently.
+
+### Schematic symbols
 
 The generator copies symbols from KiCad's standard libraries into `.kilib/` (not committed):
 

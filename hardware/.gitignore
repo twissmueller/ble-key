@@ -6,3 +6,7 @@ erc.rpt
 *-backups/
 fp-info-cache
 *.kicad_prl
+*.dsn
+*.ses
+drc.rpt
+freerouting.log
