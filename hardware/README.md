@@ -42,7 +42,8 @@ configuration" notices.
 - **Module** at the top edge, antenna outward, with a copper-free strip along the top edge
   (12–35 mm, 4.2 mm deep) on both layers, wider than Raytac's minimum.
 - **USB-C** on the right edge, **paddle jack** on the left edge, **battery JST** at the top-left
-  with the cable entering from the left, **reset button** on the bottom edge (side push).
+  with its plug pointing inward (the cell sits above the board in the case lid), **status LEDs** in
+  the top-right corner, **reset button** on the bottom edge (side push).
 - **SWD pads** (Tag-Connect TC2030-NL) on the back, bottom-left. Two M2 mounting holes.
 - Net classes: signals 0.2 mm, power 0.3 mm, the reset line 0.15 mm so it can escape from the
   module's inner pad row.

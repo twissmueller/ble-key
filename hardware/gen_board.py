@@ -12,6 +12,7 @@ Board frame: origin at the top-left corner, x to the right, y down, millimetres.
 of the module is on the top edge, USB-C on the right edge, the paddle jack on the left edge.
 """
 
+import json
 import re
 from pathlib import Path
 
@@ -40,11 +41,11 @@ PLACEMENT = {
     "C8": (29.6, 18.2, 90, "F"),
     "C5": (27.4, 21.9, 90, "F"),
     "C7": (29.0, 21.9, 90, "F"),
-    # status LEDs below the module
-    "D1": (17.2, 21.9, 0, "F"),
-    "R12": (20.1, 21.9, 0, "F"),
-    "D2": (22.9, 21.9, 0, "F"),
-    "R13": (25.5, 21.9, 0, "F"),
+    # status LEDs in the top-right corner, outside the battery's footprint, under light holes in the lid
+    "D1": (41.0, 3.4, 0, "F"),
+    "D2": (41.0, 5.2, 0, "F"),
+    "R12": (35.6, 5.6, 0, "F"),
+    "R13": (35.6, 7.0, 0, "F"),
     # USB-C on the right edge, opening to +x, with CC resistors, ESD and series resistors
     "J1": (W - 3.675, 12.0, 90, "F"),
     "R1": (38.0, 3.8, 0, "F"),
@@ -61,22 +62,23 @@ PLACEMENT = {
     "R4": (33.4, 24.5, 90, "F"),
     "R5": (30.0, 24.5, 90, "F"),
     "SW1": (44.0, 23.7, 180, "F"),
-    # battery: JST at the top-left, cable entering from the left edge; divider and pull-ups beside it
-    "J3": (5.5, 5.0, 270, "F"),
-    "R8": (12.5, 6.2, 90, "F"),
-    "R9": (14.0, 6.2, 90, "F"),
-    "C4": (15.5, 6.2, 90, "F"),
-    "R6": (17.0, 6.2, 90, "F"),
-    "R7": (18.5, 6.2, 90, "F"),
+    # battery: JST at the top-left, plug and cable pointing inward to the cell in the lid above the
+    # board; divider and pull-ups below the plug's path
+    "J3": (5.5, 5.0, 90, "F"),
+    "R8": (12.5, 9.0, 90, "F"),
+    "R9": (14.0, 9.0, 90, "F"),
+    "C4": (15.5, 9.0, 90, "F"),
+    "R6": (17.0, 9.0, 90, "F"),
+    "R7": (18.5, 9.0, 90, "F"),
     # paddle jack on the left edge, opening to -x, series resistors beside it
     "J2": (6.0, 16.0, 90, "F"),
     "R10": (17.0, 13.0, 90, "F"),
     "R11": (17.0, 16.0, 90, "F"),
     # SWD pads on the back, below the jack
-    "J4": (5.5, 24.3, 0, "B"),
+    "J4": (4.0, 23.8, 0, "B"),
 }
 
-MOUNTING_HOLES = [(W - 2.6, 2.6), (12.4, 24.6)]
+MOUNTING_HOLES = [(W - 2.6, 2.6), (9.5, 25.6)]   # both outside the battery's footprint
 
 # net classes: (track width, clearance)
 CLASSES = {
@@ -305,7 +307,18 @@ def build():
         ground_zone(board, layer, netinfo["GND"])
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     board.Save(str(OUT))
+    write_mechanics()
     print("wrote", OUT)
+
+
+def write_mechanics():
+    """Board size, part positions and mounting holes for the enclosure script (../enclosure)."""
+    data = {
+        "board": {"w": W, "h": H, "thickness": 1.6, "corner": CORNER},
+        "parts": {ref: {"x": x, "y": y, "rot": rot, "side": side} for ref, (x, y, rot, side) in PLACEMENT.items()},
+        "mounting_holes": [{"x": x, "y": y, "d": 2.2} for x, y in MOUNTING_HOLES],
+    }
+    (HERE / "mechanics.json").write_text(json.dumps(data, indent=2) + "\n")
 
 
 if __name__ == "__main__":

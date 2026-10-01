@@ -41,7 +41,7 @@ h1 { font: 600 1.9rem/1.1 var(--display); margin: 0; letter-spacing: .01em; text
 .status { position: absolute; inset: 0; display: grid; place-items: center; font: .9rem var(--mono); color: var(--muted) }
 
 .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; margin-top: 12px; align-items: center }
-.group { display: flex; gap: 0; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden }
+.group { display: flex; flex-wrap: wrap; gap: 0; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden }
 .group button { font: 500 .82rem var(--body); background: var(--sheet); color: var(--ink); border: 0; border-right: 1px solid var(--rule); padding: 7px 12px; cursor: pointer }
 .group button:last-child { border-right: 0 }
 .group button[aria-pressed="true"] { background: var(--ink); color: var(--sheet) }
@@ -77,8 +77,10 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
   <div class="controls top">
     <div><span class="lbl">Version</span>
       <div class="group" role="group" aria-label="Version">
-        <button id="var-usb" aria-pressed="true">USB only</button>
-        <button id="var-battery" aria-pressed="false">With battery</button>
+        <button id="var-board-usb" aria-pressed="true">nRF board · USB</button>
+        <button id="var-board-battery" aria-pressed="false">nRF board · battery</button>
+        <button id="var-usb" aria-pressed="false">XIAO · USB</button>
+        <button id="var-battery" aria-pressed="false">XIAO · battery</button>
       </div>
     </div>
   </div>
@@ -106,20 +108,14 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
           </div>
         </div>
         <label class="chk"><input type="checkbox" id="c-board" checked> Board</label>
-        <label class="chk"><input type="checkbox" id="c-jack" checked> Jack</label>
+        <label class="chk"><input type="checkbox" id="c-jack" checked> Connectors</label>
         <label class="chk" id="l-battery"><input type="checkbox" id="c-battery" checked> Battery</label>
         <label class="chk"><input type="checkbox" id="c-cut"> Cut lengthwise</label>
       </div>
 
       <section class="held">
         <h2>How the board is held</h2>
-        <p>No screws or glue touch the XIAO. It is clamped between the base and the lid:</p>
-        <ul>
-          <li><b>Underneath:</b> four 3 × 3 mm corner pads lift it 3 mm off the floor, so the solder joints and wires on its underside have room.</li>
-          <li><b>Sideways:</b> small lips beside the corner pads stop it sliding left or right. They stay clear of the solder pads.</li>
-          <li><b>Lengthwise:</b> the USB-C end rests against the end wall with the socket in its notch, so pulling a cable cannot drag the board out. A rib behind the far edge stops a plug from pushing it back.</li>
-          <li><b>From above:</b> when the lid is screwed down, its tab sits on top of the USB-C socket and two pins press on the far corners of the board.</li>
-        </ul>
+        <div id="held"></div>
       </section>
     </div>
 
@@ -131,12 +127,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
       </section>
       <section>
         <h2>Openings</h2>
-        <dl>
-          <dt>USB-C notch</dt><dd>9.44 wide, closed by lid tab</dd>
-          <dt>Plug recess</dt><dd>12.4 × 7.0 × 0.5</dd>
-          <dt>Jack hole</dt><dd>Ø 6.5, wall 1.5</dd>
-          <dt>LED light holes</dt><dd>2 × Ø 1.6</dd>
-        </dl>
+        <dl id="openings"></dl>
       </section>
       <section>
         <h2>To buy</h2>
@@ -156,11 +147,44 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
 <script>
 (function () {
   const VARIANTS = {
+    'board-usb': {
+      dims: '52.4 × 31.6 × 12.4 mm',
+      sub: 'nRF52840 board v0.1 · USB-C power',
+      parts: [['Base', '52.4 × 31.6 × 4.7'], ['Lid', '52.4 × 31.6 × 7.7'], ['Walls / floor / lid', '2.0 / 1.6 / 1.6'],
+              ['Board play', '0.25']],
+      openings: [["USB-C", "9.5 × 3.7, wall 1.55 so any plug seats"], ["Paddle jack", "Ø 5.6 arch, barrel flush"], ["Reset", "flexible tongue, 4.8 wide"], ["Status LEDs", "light channel 1.8 × 3.4 to the top"]],
+      held: "<p>The board is clamped between base and lid by the two screws that hold the case together:</p><ul><li><b>Underneath:</b> two standoffs at the mounting holes and four small pads lift it 1.5 mm off the floor, clear of the jack's locating pegs.</li><li><b>Sideways:</b> the base walls surround the board with 0.25 mm play; their top is flush with the board's top surface.</li><li><b>From above:</b> two posts in the lid press on the board around the mounting holes. Two M2 × 8 screws go up through the base, the board and into those posts.</li><li><b>Connectors:</b> the lid's walls arch over the USB-C socket and the jack, whose barrel ends flush with the outside. The reset button is pressed through a flexible tongue in the wall.</li></ul>",
+      files: 'out/board-usb/ble-key-board-usb-base.step, ble-key-board-usb-lid.step',
+      buy: ['2 × M2 × 8 self-tapping screw for plastic'],
+      steps: ['Lay the assembled board in the base, onto the two standoffs and four pads.',
+              'Put the lid on; its walls fit over USB-C and the jack.',
+              'Turn the case over and drive the two M2 × 8 screws in from below.'],
+      names: ['base', 'lid', 'board', 'jack', 'jst'],
+    },
+    'board-battery': {
+      dims: '52.4 × 31.6 × 18.8 mm',
+      sub: 'nRF52840 board v0.1 · 350 mAh LiPo above the board',
+      parts: [['Base', '52.4 × 31.6 × 4.7'], ['Lid', '52.4 × 31.6 × 14.1'], ['Battery pocket', '37.0 × 20.3 × 6.3, ribs on two sides'],
+              ['Walls / floor / lid', '2.0 / 1.6 / 1.6'], ['Board play', '0.25']],
+      openings: [["USB-C", "9.5 × 3.7, wall 1.55 so any plug seats"], ["Paddle jack", "Ø 5.6 arch, barrel flush"], ["Reset", "flexible tongue, 4.8 wide"], ["Status LEDs", "light channel 1.8 × 3.4 to the top"]],
+      held: "<p>The board is clamped between base and lid by the two screws that hold the case together:</p><ul><li><b>Underneath:</b> two standoffs at the mounting holes and four small pads lift it 1.5 mm off the floor, clear of the jack's locating pegs.</li><li><b>Sideways:</b> the base walls surround the board with 0.25 mm play; their top is flush with the board's top surface.</li><li><b>From above:</b> two posts in the lid press on the board around the mounting holes. Two M2 × 8 screws go up through the base, the board and into those posts.</li><li><b>Connectors:</b> the lid's walls arch over the USB-C socket and the jack, whose barrel ends flush with the outside. The reset button is pressed through a flexible tongue in the wall.</li></ul>",
+      files: 'out/board-battery/ble-key-board-battery-base.step, ble-key-board-battery-lid.step',
+      buy: ['LiPo LP-552035, 3.7 V 350 mAh, JST-PH, protected — check its plug polarity against the board',
+            '2 × M2 × 8 self-tapping screw for plastic',
+            'Double-sided foam tape for the cell'],
+      steps: ['Lay the assembled board in the base, onto the two standoffs and four pads.',
+              'Stick the cell into the lid pocket with foam tape, lead end against the rib near the jack.',
+              'Plug the cell into the JST socket and tuck the spare lead under the cell, next to the socket.',
+              'Close the lid and drive the two M2 × 8 screws in from below.'],
+      names: ['base', 'lid', 'board', 'jack', 'jst', 'battery'],
+    },
     usb: {
       dims: '43.0 × 25.0 × 13.6 mm',
-      sub: 'XIAO ESP32-S3 · PJ-392 paddle jack · USB-C power · v2',
+      sub: 'XIAO ESP32-S3 · PJ-392 paddle jack · USB-C power',
       parts: [['Base', '43.0 × 25.0 × 11.6'], ['Lid', '43.0 × 25.0 × 2.0 + lip'],
               ['Inside', '39.0 × 21.0 × 9.6'], ['Walls / floor / lid', '2.0 / 2.0 / 2.0'], ['Fit clearance', '0.25']],
+      openings: [["USB-C notch", "9.44 wide, closed by lid tab"], ["Plug recess", "12.4 × 7.0 × 0.5"], ["Jack hole", "Ø 6.5, wall 1.5"], ["LED light holes", "2 × Ø 1.6"]],
+      held: "<p>No screws or glue touch the XIAO. It is clamped between the base and the lid:</p><ul><li><b>Underneath:</b> four 3 × 3 mm corner pads lift it 3 mm off the floor, so the solder joints and wires on its underside have room.</li><li><b>Sideways:</b> small lips beside the corner pads stop it sliding left or right. They stay clear of the solder pads.</li><li><b>Lengthwise:</b> the USB-C end rests against the end wall with the socket in its notch, so pulling a cable cannot drag the board out. A rib behind the far edge stops a plug from pushing it back.</li><li><b>From above:</b> when the lid is screwed down, its tab sits on top of the USB-C socket and two pins press on the far corners of the board.</li></ul>",
       files: 'out/usb/ble-key-usb-base.step, ble-key-usb-lid.step',
       buy: ['PJ-392 3.5 mm stereo panel jack with nut',
             '2 × M2 × 6 self-tapping screw for plastic'],
@@ -172,10 +196,12 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
     },
     battery: {
       dims: '43.0 × 48.0 × 13.6 mm',
-      sub: 'XIAO ESP32-S3 · PJ-392 paddle jack · 350 mAh LiPo · v2',
+      sub: 'XIAO ESP32-S3 · PJ-392 paddle jack · 350 mAh LiPo beside it',
       parts: [['Base', '43.0 × 48.0 × 11.6'], ['Lid', '43.0 × 48.0 × 2.0 + lip'],
               ['Electronics bay', '39.0 × 21.0 × 9.6'], ['Battery bay', '36.0 × 21.0, lead slot to board'],
               ['Walls / floor / lid', '2.0 / 2.0 / 2.0'], ['Fit clearance', '0.25']],
+      openings: [["USB-C notch", "9.44 wide, closed by lid tab"], ["Plug recess", "12.4 × 7.0 × 0.5"], ["Jack hole", "Ø 6.5, wall 1.5"], ["LED light holes", "2 × Ø 1.6"]],
+      held: "<p>No screws or glue touch the XIAO. It is clamped between the base and the lid:</p><ul><li><b>Underneath:</b> four 3 × 3 mm corner pads lift it 3 mm off the floor, so the solder joints and wires on its underside have room.</li><li><b>Sideways:</b> small lips beside the corner pads stop it sliding left or right. They stay clear of the solder pads.</li><li><b>Lengthwise:</b> the USB-C end rests against the end wall with the socket in its notch, so pulling a cable cannot drag the board out. A rib behind the far edge stops a plug from pushing it back.</li><li><b>From above:</b> when the lid is screwed down, its tab sits on top of the USB-C socket and two pins press on the far corners of the board.</li></ul>",
       files: 'out/battery/ble-key-battery-base.step, ble-key-battery-lid.step',
       buy: ['PJ-392 3.5 mm stereo panel jack with nut',
             'LiPo LP-552035, 3.7 V 350 mAh, JST-PH, protected (see BATTERY.md)',
@@ -196,6 +222,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
     lid:     { color: 0xd9dcd6, opacity: 0.55 },
     board:   { color: 0x1f2a26, opacity: 1 },
     jack:    { color: 0xb08a3e, opacity: 1, metal: true },
+    jst:     { color: 0xece6d6, opacity: 1 },
     battery: { color: 0x9aa3b5, opacity: 1, metal: true },
   };
 
@@ -263,7 +290,9 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
     $('files').innerHTML = 'Files: <code>' + d.files + '</code> (plus STL). Suggested process: SLA resin or MJF nylon.';
     $('buy').innerHTML = d.buy.map(s => '<li>' + s + '</li>').join('');
     $('steps').innerHTML = d.steps.map(s => '<li>' + s + '</li>').join('');
-    $('l-battery').hidden = v !== 'battery';
+    $('l-battery').hidden = !VARIANTS[v].names.includes('battery');
+    $('openings').innerHTML = d.openings.map(([k, val]) => '<dt>' + k + '</dt><dd>' + val + '</dd>').join('');
+    $('held').innerHTML = d.held;
   }
 
   function setVariant(v) {
@@ -314,6 +343,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
 
   function applyToggles() {
     ['board', 'jack', 'battery'].forEach(n => { if (parts[n]) parts[n].visible = $('c-' + n).checked; });
+    if (parts.jst) parts.jst.visible = $('c-jack').checked;
     const on = $('c-cut').checked;
     root.traverse(m => { if (m.isMesh) { m.material.clippingPlanes = on ? [cutPlane] : []; m.material.needsUpdate = true; } });
   }
@@ -336,7 +366,8 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
   new ResizeObserver(resize).observe(stage);
   resize();
 
-  setVariant(location.hash === '#battery' ? 'battery' : 'usb');
+  const start = (location.hash || '').slice(1);
+  setVariant(VARIANTS[start] ? start : 'board-usb');
 
   (function loop() {
     controls.update();
