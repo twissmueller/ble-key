@@ -232,10 +232,11 @@ def lid(v: Variant):
         with Locations((INNER_L + WALL, 0, BOARD_Z + (USB_Z0 + USB_Z1) / 2)):
             Box(1.0, 12.4, 7.0, mode=Mode.SUBTRACT)
 
-        # hold-down pins on the PCB's far corners (clear of the U.FL socket and the pin pads)
+        # hold-down pins on the PCB's far corners, on bare board on both the XIAO ESP32-S3 and the
+        # XIAO nRF52840 (clear of the S3's U.FL socket, a small part on the nRF52840, and the pin pads)
         for sy in (-1, 1):
-            with Locations((PCB_X0 + 1.0, sy * (PCB_W / 2 - 1.2), INNER_H)):
-                Cylinder(1.0, INNER_H - BOARD_TOP - 0.1, align=(Align.CENTER, Align.CENTER, Align.MAX))
+            with Locations((PCB_X0 + 0.8, sy * (PCB_W / 2 - 0.8), INNER_H)):
+                Cylinder(0.7, INNER_H - BOARD_TOP - 0.1, align=(Align.CENTER, Align.CENTER, Align.MAX))
 
         # screw holes with counterbores
         for x, y in v.screws:

@@ -7,8 +7,8 @@ STL turned over for printing. `preview.html` shows all four cases in 3D after th
 |---|---|---|
 | `board_case.py` | **nRF52840 board** from `../hardware`, USB only | 52.4 × 31.6 × 12.4 mm |
 | `board_case.py` | **nRF52840 board** with the 350 mAh LP-552035 in the lid | 52.4 × 31.6 × 18.8 mm |
-| `enclosure.py` | XIAO ESP32-S3 + PJ-392 panel jack, USB only | 43.0 × 25.0 × 13.6 mm |
-| `enclosure.py` | XIAO ESP32-S3 + PJ-392, battery beside it | 43.0 × 48.0 × 13.6 mm |
+| `enclosure.py` | XIAO ESP32-S3 **or XIAO nRF52840** + PJ-392 panel jack, USB only | 43.0 × 25.0 × 13.6 mm |
+| `enclosure.py` | XIAO ESP32-S3 or XIAO nRF52840 + PJ-392, battery beside it | 43.0 × 48.0 × 13.6 mm |
 
 ```bash
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.txt
@@ -38,3 +38,10 @@ Panasonic EVQ-PU drawings; the cell is sized to the worst case of PKCELL's drawi
 
 **Before ordering prints,** check one sample of the actual cell and its plug polarity, and print
 one case to test the reset tongue's feel and the screw posts' grip.
+
+## XIAO ESP32-S3 and XIAO nRF52840
+
+Both XIAO cases fit either board: the two share the outline, board thickness and USB-C position
+(checked against Seeed's STEP models, `vendor/XIAO-ESP32S3 v2.step` and
+`vendor/nrf/XIAO-nRF52840 v15.step`), and the lid's two hold-down pins sit on bare board on both.
+The light holes are placed for the ESP32-S3's LEDs; on the nRF52840 they are not verified.

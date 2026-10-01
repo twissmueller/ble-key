@@ -4,3 +4,4 @@ vendor/xiao.zip
 out/*/preview-*.b64.txt
 vendor/*.jpg
 vendor/*.png
+vendor/nrf/*.png
