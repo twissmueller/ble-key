@@ -13,6 +13,7 @@ charger with power path, USB-C, a 3.5 mm paddle jack and a JST-PH socket for the
 | `gen_board.py` | places the footprints, draws outline, holes, pours and the antenna keep-out |
 | `route.py` | autoroutes the board with Freerouting, stitches the ground pours and refills them |
 | `board-top.png`, `board-bottom.png` | renders of the routed board |
+| `export_jlc.py`, `jlcpcb/` | JLCPCB production files: Gerbers + drill (zip), BOM and placement (CPL) |
 
 **Status:** schematic and a first routed layout. ERC: 0 errors. DRC: 0 errors and 0 unconnected
 pads; the remaining warnings are the paddle jack's outline crossing the board edge (its opening
@@ -71,6 +72,24 @@ Raytac offers a free layout review.
 - **Layout rules from Raytac:** module at the board edge with the antenna end outward, a 3.8 mm
   copper-free strip across the antenna end on every layer, plenty of GND vias at the module corners.
   Raytac reviews layouts for free (service@raytac.com).
+
+## JLCPCB
+
+`python3 export_jlc.py` writes `jlcpcb/ble-key-gerbers.zip`, `jlcpcb/ble-key-bom.csv` and
+`jlcpcb/ble-key-cpl.csv` for JLCPCB's PCB + SMT assembly order. The parts come from the schematic's
+`LCSC` fields (the table at the top of `gen_schematic.py`). Choose 2 layers, 1.6 mm, ENIG, and
+assembly on the top side only.
+
+As of 1 October 2026:
+
+- **Out of stock:** the MDBT50Q-1MV2 module (C5118826, 0 at JLCPCB and LCSC) and the EVQ-PUC02K
+  reset switch (C79174, 1 left). Pre-order them into the JLCPCB parts library, or send them in.
+- **Extended parts** (each adds JLCPCB's setup fee): the module, charger, ESD chip, USB-C, jack,
+  JST, switch, inductor, crystal, blue LED, 3.09 kΩ and 27 Ω. The rest are Basic parts.
+- **Different makers than the AISLER build** for the generic parts (red/blue LED, 12 pF), same
+  values and packages.
+- **Rotations:** after uploading, check JLCPCB's placement preview; parts their library orients
+  differently get a correction in `ROTATION_FIX` in `export_jlc.py`.
 
 ## Regenerating
 

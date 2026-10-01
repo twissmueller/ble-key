@@ -35,6 +35,35 @@ FONT = "(effects (font (size 1.27 1.27)))"
 HIDDEN = "(effects (font (size 1.27 1.27)) (hide yes))"
 _parsed, _raw = {}, {}
 
+# JLCPCB / LCSC part numbers by reference, used by export_jlc.py. Looked up 1 October 2026;
+# "Basic" parts avoid JLCPCB's per-part setup fee, the rest are "Extended".
+LCSC = {
+    "U1": "C5118826",    # Raytac MDBT50Q-1MV2 — out of stock at JLCPCB/LCSC: pre-order or consign
+    "U2": "C54313",      # TI BQ24074RGTR
+    "U3": "C7519",       # ST USBLC6-2SC6
+    "J1": "C5184243",    # GCT USB4105-GF-A-120 (1.2 mm shell stakes; same part, most stock)
+    "J2": "C4991872",    # Same Sky SJ-3523-SMT-TR
+    "J3": "C295747",     # JST S2B-PH-SM4-TB(LF)(SN)
+    "SW1": "C79174",     # Panasonic EVQPUC02K — only 1 in stock: pre-order or consign
+    "L1": "C87216",      # Taiyo Yuden LBMF1608T100K
+    "Y1": "C96341",      # Epson X1A0000610008 = FC-12M 32.768 kHz, 9 pF, ±20 ppm
+    "C9": "C1547", "C10": "C1547",                    # 12 pF C0G 0402 (Basic)
+    "D1": "C2286",       # Kento KT-0603R red (Basic)
+    "D2": "C2986058",    # Everlight 19-217/BHC-ZL1M2RY/6T blue (no Basic blue left)
+    "C1": "C52923",                                   # 1 µF 25 V X5R 0402 (Basic)
+    "C2": "C19666", "C3": "C19666",                   # 4.7 µF 16 V X5R 0603 (Basic)
+    "C4": "C1525", "C7": "C1525",                     # 100 nF 16 V X7R 0402 (Basic)
+    "C5": "C19702", "C6": "C19702", "C8": "C19702",   # 10 µF 10 V X5R 0603 (Basic)
+    "R1": "C25905", "R2": "C25905", "R5": "C25905",   # 5.1 kΩ (Basic)
+    "R3": "C25744",                                   # 10 kΩ (Basic)
+    "R4": "C11460",                                   # 3.09 kΩ (Extended)
+    "R6": "C25741", "R7": "C25741",                   # 100 kΩ (Basic)
+    "R8": "C26083", "R9": "C26083",                   # 1 MΩ (Basic)
+    "R10": "C25117", "R11": "C25117",                 # 470 Ω (Basic)
+    "R12": "C11702", "R13": "C11702",                 # 1 kΩ (Basic)
+    "R14": "C25100", "R15": "C25100",                 # 27 Ω (Extended)
+}
+
 
 _count = 0
 
@@ -110,7 +139,8 @@ class Sheet:
         self.libs = {}
         self.items = []
 
-    def place(self, lib, name, ref, value, at, nets, footprint=None, mpn=None, nc_rest=False, bom=True):
+    def place(self, lib, name, ref, value, at, nets, footprint=None, mpn=None, nc_rest=False, bom=True,
+              lcsc=None):
         key = f"{lib}:{name}"
         if key not in self.libs:
             self.libs[key] = embedded_symbol(lib, name)
@@ -132,6 +162,9 @@ class Sheet:
         ]
         if mpn:
             props.append(("MPN", mpn, (x0, y0), True))
+        lcsc = lcsc or LCSC.get(ref)
+        if lcsc:                                      # JLCPCB / LCSC part number
+            props.append(("LCSC", lcsc, (x0, y0), True))
         body = [f'(symbol (lib_id {q(key)}) (at {x0} {y0} 0) (unit 1)',
                 f'  (exclude_from_sim no) (in_bom {"yes" if bom else "no"}) (on_board yes) (dnp no)',
                 f'  (uuid {q(U())})']
