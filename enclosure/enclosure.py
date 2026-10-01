@@ -7,7 +7,8 @@ Two variants, each made of a base and a flat lid held by M2 self-tapping screws:
 
 Run with
 
-    .venv/bin/python enclosure.py
+    .venv/bin/python enclosure.py          # MJF / SLA print service, 0.25 mm fit
+    .venv/bin/python enclosure.py --fdm    # own FDM printer (PETG), 0.35 mm fit, out/*-fdm/
 
 to regenerate everything in out/<variant>/: STEP and STL per part, a lid STL turned over for
 printing, and base64 GLB meshes (including the board, a placeholder jack and battery) for the
@@ -20,6 +21,7 @@ All dimensions in mm.
 
 import base64
 import copy
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -313,7 +315,14 @@ def export(v: Variant):
 
 
 def main():
-    for v in (USB, BATTERY):
+    global CLEAR
+    if "--fdm" in sys.argv:
+        # FDM (e.g. PETG on a Bambu Lab A1 mini) prints a little fat: looser fit, own output folders
+        CLEAR = 0.35
+        variants = (Variant("usb-fdm", battery=False), Variant("battery-fdm", battery=True))
+    else:
+        variants = (USB, BATTERY)
+    for v in variants:
         export(v)
 
 
