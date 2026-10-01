@@ -132,6 +132,29 @@ cost about 47 € at 30. The parts surplus and the assembly setup were both unde
 Each change in the "fewer different parts" row needs a schematic change and a new upload to see
 its real effect; AISLER prices only the design it has.
 
+### JLCPCB quote, 1 October 2026
+
+Same design, uploaded to JLCPCB (`hardware/jlcpcb/`), 30 boards, ENIG, economic assembly on the
+top side. Prices in USD, before shipping (DHL about 23 $) and EU import VAT:
+
+| Item | 30 boards |
+|---|---|
+| Bare boards | 76.15 $ — of which about 51 $ come from the 0.25 mm vias, which make JLCPCB add via plugging and a 4-wire test; with 0.3 mm vias the boards cost 26 $ |
+| Parts (22 of 24 types) | 140.35 $ |
+| Extended-part fees | 30.90 $ |
+| Setup, stencil, assembly, nitrogen reflow | 17.44 $ |
+| **Total without module and switch** | **264.84 $ (8.83 $ per board)** |
+
+Not in that total, because JLCPCB has no stock: the **module** (MDBT50Q-1MV2, listed at 18.94 $
+each, so about 570 $ for 30 if pre-ordered there) and the **reset switch**. With the module bought
+through JLCPCB the order comes to roughly **850–870 $**, about 29 $ per board; with modules bought
+elsewhere at 9–10 € each and sent in, considerably less. Either way about half of AISLER's
+1,423 € net.
+
+To order there: pre-order or consign the module and switch, tick "Confirm Parts Placement" (JLCPCB's
+model of the jack sits about 0.7 mm off the pads; their engineers correct it), and keep in mind
+that shipping from China and customs add a few days and the import VAT.
+
 ### Everything else (unchanged estimates)
 
 | Item | Cost |

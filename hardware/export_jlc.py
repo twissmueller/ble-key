@@ -25,7 +25,9 @@ LAYERS = "F.Cu,B.Cu,F.Paste,B.Paste,F.Silkscreen,B.Silkscreen,F.Mask,B.Mask,Edge
 
 # JLCPCB's part models are not always oriented like KiCad's footprints. After uploading, check the
 # placement preview and put corrections (degrees, added to KiCad's rotation) here.
-ROTATION_FIX = {}
+ROTATION_FIX = {
+    "J2": 270,   # SJ-3523-SMT: JLCPCB's model points the barrel along +y at KiCad's rotation
+}
 
 
 def run(*args):
