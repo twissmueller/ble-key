@@ -9,9 +9,9 @@ charger with power path, USB-C, a 3.5 mm paddle jack and a JST-PH socket for the
 | `ble-key-schematic.pdf` | the schematic as a PDF |
 | `ble-key-bom.csv` | parts list with MPNs where chosen |
 | `gen_schematic.py` | generates the schematic; the parts, values and nets live here |
-| `ble-key.kicad_pcb` | the board: 46 × 26 mm, 2 layers, routed |
+| `ble-key.kicad_pcb` | the board: 48 × 27 mm, 2 layers, routed |
 | `gen_board.py` | places the footprints, draws outline, holes, pours and the antenna keep-out |
-| `route.py` | autoroutes the board with Freerouting and refills the pours |
+| `route.py` | autoroutes the board with Freerouting, stitches the ground pours and refills them |
 | `board-top.png`, `board-bottom.png` | renders of the routed board |
 
 **Status:** schematic and a first routed layout. ERC: 0 errors. DRC: 0 errors and 0 unconnected
@@ -37,20 +37,23 @@ configuration" notices.
 
 ## Layout
 
-- **46 × 26 mm, 2 layers, 1.6 mm, ENIG** (AISLER 2-layer ENIG rules: 0.125 mm track and space).
+- **48 × 27 mm, 2 layers, 1.6 mm, ENIG** (AISLER 2-layer ENIG rules: 0.125 mm track and space).
   Ground pour on both sides.
 - **Module** at the top edge, antenna outward, with a copper-free strip along the top edge
-  (12–34 mm, 4.2 mm deep) on both layers, wider than Raytac's minimum.
+  (12–35 mm, 4.2 mm deep) on both layers, wider than Raytac's minimum.
 - **USB-C** on the right edge, **paddle jack** on the left edge, **battery JST** at the top-left
   with the cable entering from the left, **reset button** on the bottom edge (side push).
 - **SWD pads** (Tag-Connect TC2030-NL) on the back, bottom-left. Two M2 mounting holes.
 - Net classes: signals 0.2 mm, power 0.3 mm, the reset line 0.15 mm so it can escape from the
   module's inner pad row.
 
-**This is an autorouted first pass.** Before ordering it should be reviewed by hand, in
-particular: the ground pour on the back is cut up by signal traces (add stitching vias and move
-traces to the front where possible), the USB pair is routed as two single tracks (fine for 12 Mbit/s
-full speed, but keep them short and parallel), and the enclosure has to be redrawn around this board.
+**Ground:** routed like every other net first, so each pad has a real connection. Then about 145
+stitching vias (0.6 mm, on a 1 mm grid wherever both pours have room) tie the front and back pours
+together, a few 0.45 mm vias join pour patches that traces cut off, and the charger's exposed pad
+has four thermal vias. KiCad's connectivity check finds no unconnected copper.
+
+**Still worth a human look before ordering:** the USB pair is routed as two single tracks (fine
+for 12 Mbit/s full speed), and the enclosure in `../enclosure/` is drawn around this board.
 Raytac offers a free layout review.
 
 ## Open points

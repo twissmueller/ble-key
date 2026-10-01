@@ -22,11 +22,11 @@ NETLIST = HERE / "ble-key.net"
 OUT = HERE / "ble-key.kicad_pcb"
 FP_ROOT = Path("/Applications/KiCad/KiCad.app/Contents/SharedSupport/footprints")
 
-W, H = 46.0, 26.0          # board size
+W, H = 48.0, 27.0          # board size
 ORIGIN = (100.0, 100.0)    # where the board sits on KiCad's page
 CORNER = 1.5               # outline corner radius
 MX, MY = 25.0, 8.29        # module centre: antenna flush with the top edge
-ANT_X0, ANT_X1, ANT_DEPTH = 12.0, 34.0, 4.2   # copper-free strip along the top edge around the antenna
+ANT_X0, ANT_X1, ANT_DEPTH = 12.0, 35.0, 4.2   # copper-free strip along the top edge around the antenna
 
 # ref: (x, y, rotation in degrees, side)  — side "F" or "B"
 PLACEMENT = {
@@ -38,29 +38,29 @@ PLACEMENT = {
     "L1": (26.0, 18.2, 90, "F"),
     "C6": (27.8, 18.2, 90, "F"),
     "C8": (29.6, 18.2, 90, "F"),
-    "C5": (27.4, 21.4, 90, "F"),
-    "C7": (29.0, 21.4, 90, "F"),
+    "C5": (27.4, 21.9, 90, "F"),
+    "C7": (29.0, 21.9, 90, "F"),
     # status LEDs below the module
-    "D1": (17.2, 21.4, 0, "F"),
-    "R12": (20.1, 21.4, 0, "F"),
-    "D2": (22.9, 21.4, 0, "F"),
-    "R13": (25.5, 21.4, 0, "F"),
+    "D1": (17.2, 21.9, 0, "F"),
+    "R12": (20.1, 21.9, 0, "F"),
+    "D2": (22.9, 21.9, 0, "F"),
+    "R13": (25.5, 21.9, 0, "F"),
     # USB-C on the right edge, opening to +x, with CC resistors, ESD and series resistors
     "J1": (W - 3.675, 12.0, 90, "F"),
-    "R1": (36.0, 3.8, 0, "F"),
-    "R2": (36.0, 2.2, 0, "F"),
-    "U3": (34.2, 10.5, 0, "F"),
-    "R14": (32.4, 15.4, 90, "F"),
-    "R15": (34.0, 15.4, 90, "F"),
+    "R1": (38.0, 3.8, 0, "F"),
+    "R2": (38.0, 2.2, 0, "F"),
+    "U3": (36.2, 10.5, 0, "F"),
+    "R14": (34.4, 15.4, 90, "F"),
+    "R15": (36.0, 15.4, 90, "F"),
     # charger in the bottom-right corner, reset button on the bottom edge
-    "U2": (35.0, 20.6, 0, "F"),
-    "C1": (39.9, 19.0, 0, "F"),
-    "C2": (31.2, 20.6, 90, "F"),
-    "C3": (34.0, 24.4, 0, "F"),
-    "R3": (37.0, 24.4, 0, "F"),
-    "R4": (31.4, 24.0, 90, "F"),
-    "R5": (30.0, 24.0, 90, "F"),
-    "SW1": (42.0, 23.2, 180, "F"),
+    "U2": (37.0, 21.1, 0, "F"),
+    "C1": (41.9, 19.5, 0, "F"),
+    "C2": (33.2, 21.1, 90, "F"),
+    "C3": (36.0, 24.9, 0, "F"),
+    "R3": (39.0, 24.9, 0, "F"),
+    "R4": (33.4, 24.5, 90, "F"),
+    "R5": (30.0, 24.5, 90, "F"),
+    "SW1": (44.0, 23.7, 180, "F"),
     # battery: JST at the top-left, cable entering from the left edge; divider and pull-ups beside it
     "J3": (5.5, 5.0, 270, "F"),
     "R8": (12.5, 6.2, 90, "F"),
@@ -73,10 +73,10 @@ PLACEMENT = {
     "R10": (17.0, 13.0, 90, "F"),
     "R11": (17.0, 16.0, 90, "F"),
     # SWD pads on the back, below the jack
-    "J4": (5.5, 23.8, 0, "B"),
+    "J4": (5.5, 24.3, 0, "B"),
 }
 
-MOUNTING_HOLES = [(W - 2.6, 2.6), (12.4, 24.1)]
+MOUNTING_HOLES = [(W - 2.6, 2.6), (12.4, 24.6)]
 
 # net classes: (track width, clearance)
 CLASSES = {
@@ -166,6 +166,36 @@ def outline(board):
     arc((r, r), (0, r), 90)
 
 
+def add_via(board, net, x, y, size=0.6, drill=0.3):
+    v = pcbnew.PCB_VIA(board)
+    v.SetPosition(pcbnew.VECTOR2I(x, y))
+    v.SetWidth(pcbnew.FromMM(size))
+    v.SetDrill(pcbnew.FromMM(drill))
+    v.SetNet(net)
+    v.SetLocked(True)
+    board.Add(v)
+
+
+def ground_vias(board, gnd):
+    """Vias the router would not find room for: thermal vias in the charger's exposed pad, and a
+    dog-bone from the ESD chip's ground pin to the back pour."""
+    fps = {fp.GetReference(): fp for fp in board.GetFootprints()}
+    ep = next(p for p in fps["U2"].Pads() if p.GetNumber() == "17")
+    c = ep.GetPosition()
+    d = pcbnew.FromMM(0.45)
+    for dx in (-d, d):
+        for dy in (-d, d):
+            add_via(board, gnd, c.x + dx, c.y + dy, size=0.5, drill=0.25)
+    pin = next(p for p in fps["U3"].Pads() if p.GetNumber() == "2")
+    a = pin.GetPosition()
+    b = pcbnew.VECTOR2I(a.x - pcbnew.FromMM(1.2), a.y)
+    t = pcbnew.PCB_TRACK(board)
+    t.SetStart(a); t.SetEnd(b)
+    t.SetWidth(pcbnew.FromMM(0.3)); t.SetLayer(pcbnew.F_Cu); t.SetNet(gnd); t.SetLocked(True)
+    board.Add(t)
+    add_via(board, gnd, b.x, b.y)
+
+
 def antenna_keepout(board):
     """Raytac: no copper beside the antenna on any layer, extended sideways as far as possible."""
     z = pcbnew.ZONE(board)
@@ -223,7 +253,7 @@ def build():
     ds = board.GetDesignSettings()
     ds.m_MinClearance = pcbnew.FromMM(0.125)
     ds.m_TrackMinWidth = pcbnew.FromMM(0.125)
-    ds.m_ViasMinSize = pcbnew.FromMM(0.5)
+    ds.m_ViasMinSize = pcbnew.FromMM(0.45)
     ds.m_MinThroughDrill = pcbnew.FromMM(0.25)
     ds.m_CopperEdgeClearance = pcbnew.FromMM(0.3)
     ds.m_HoleToHoleMin = pcbnew.FromMM(0.3)
@@ -268,6 +298,7 @@ def build():
         fp.Reference().SetLayer(pcbnew.F_Fab)
         board.Add(fp)
 
+    ground_vias(board, netinfo["GND"])
     antenna_keepout(board)
     outline(board)
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
