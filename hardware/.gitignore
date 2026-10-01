@@ -1,0 +1,8 @@
+.venv/
+.kilib/
+__pycache__/
+erc.rpt
+*.net
+*-backups/
+fp-info-cache
+*.kicad_prl
