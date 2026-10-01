@@ -1,9 +1,8 @@
 # Custom PCB plan — nRF52840 key, built by AISLER
 
-**Status:** plan, nothing ordered. Prices were checked on 1 October 2026 and are **net (no VAT)**
-unless marked. Figures marked *estimate* could not be read from a price list and must be confirmed
-before ordering — mostly the AISLER assembly fee, which their calculator only shows after a project
-is uploaded.
+**Status:** schematic, layout and case done (`hardware/`, `enclosure/`); design uploaded to AISLER
+and quoted on 1 October 2026; nothing ordered. Prices are **net (no VAT)** unless marked. Figures
+marked *estimate* do not come from a price list or quote.
 
 ## Why
 
@@ -23,7 +22,7 @@ quality and no assembly work.
 
 ## The board
 
-About **30 × 20 mm, 2 layers, 1.6 mm, ENIG**, all parts on the top side, all SMD.
+**48 × 27 mm, 2 layers, 1.6 mm, ENIG**, all parts on the top side, all SMD (see `hardware/`).
 
 | Function | Part | Price @30 | Source |
 |---|---|---|---|
@@ -72,47 +71,77 @@ chip, same USB bootloader, and it fits the housing in `enclosure/` unchanged.
 
 ## Housing
 
-The current `enclosure/` script gets a third variant shaped around the new board: the board
-screws or clips to the base, USB-C, the jack and the button sit flush with their openings, the cell
-lies under or beside the board. Printed by an outside service in MJF PA12 (dyed black) — AISLER
-makes no enclosures.
+`enclosure/board_case.py` builds the case around the board, USB-only (52.4 × 31.6 × 12.4 mm) or with
+the cell in the lid above the board (52.4 × 31.6 × 18.8 mm). Printed by an outside service in MJF
+PA12 (dyed black) — AISLER makes no enclosures. See `enclosure/README.md`.
 
 ## Costs
 
-### Prototype run: 3 boards
+### AISLER quote, 1 October 2026
 
-| Item | Cost | Notes |
+From the uploaded design (project TBHYNBKB, revision 1), with every part assigned and prices
+calculated. Net prices, **plus 19 % VAT**, valid 24 hours; dispatch about 18 working days after
+ordering. Service "Amazing Assembly": 2 layers, 1.6 mm, ENIG, green, one-sided assembly, 36 parts
+(24 different).
+
+| Assembled boards | Net total | Per board |
 |---|---|---|
-| PCBs, 2L 1.6 mm ENIG Budget, 6 cm² × 3 | 13.75 € | 12.00 € job fee + 6 cm² × 0.097 €/cm² × 3 ([pricing](https://community.aisler.net/t/our-simple-pricing/102)) |
-| Assembly fee | ~150 € *estimate* | paid mostly per unique part (~20 part numbers); AISLER no longer publishes the rates |
-| Parts, bought by AISLER | ~65 € *estimate* | 3 × 15.60 € plus minimum quantities; leftovers come back with the boards |
-| Stencil | ~5.60 € | 5.00 € + 6 cm² × 0.095 €/cm²; may already be in the assembly fee |
-| 3 housings, MJF or SLA | ~20–30 € *estimate* | small orders pay minimum fees per part |
-| 3 cells LP-552035 | 12.54 € | [Eckstein](https://eckstein-shop.de/LiPo-Battery-Lithium-Ion-Polymer-Battery-37V-350mAh-with-JST-PHR-2-Connector-LP552035-EN), 4.18 € each |
-| Debug probe for the bootloader flash | ~13 € *estimate* | Raspberry Pi Debug Probe; once |
-| Tag-Connect TC2030 cable | ~40 € *estimate* | once |
-| XIAO nRF52840 for porting the firmware | ~10 € *estimate* | once |
-| **Total** | **≈ 330–350 €** | |
+| 1 | 327.18 € | 327.18 € |
+| 3 | 406.56 € | 135.52 € |
+| 10 | 712.19 € | 71.22 € |
+| **30** | **1,423.21 €** | **47.44 €** |
 
-### Production run: 30 keys
+### Where the money goes
 
-| Item | Total | Per key |
-|---|---|---|
-| PCBs, 6 cm² × 30 | 29.46 € | 0.98 € |
-| Assembly fee | ~200 € *estimate* | ~6.70 € |
-| Parts | ~470 € | ~15.60 € |
-| Housings, MJF PA12 | ~90–180 € *estimate* | 3–6 € |
-| Screws | ~10 € | 0.35 € |
-| **Total without battery** | **≈ 800–890 €** | **≈ 27–30 €** |
-| Cells, 30 × LP-552035 | 125.40 € | 4.18 € |
-| **Total with battery** | **≈ 925–1,015 €** | **≈ 31–34 €** |
+The quote splits into three parts. Bare boards and parts come straight from AISLER's own price
+lists; assembly is what is left of the total.
 
-Cheaper with the same design: buying the module from Raytac's DigiKey marketplace listing
-(MDBT50Q-P1MV2, about 6 € including shipping, 14 days, no returns, PCB-trace antenna) brings the
-parts down to about 11 € per board and the total down by about 130 €.
+| Per board | 1 board | 10 boards | 30 boards |
+|---|---|---|---|
+| Bare PCB (ENIG) | 16.42 € *(set of 3)* | ~2.70 € *(set of 12)* | 1.68 € |
+| Parts, as AISLER buys them | 132.28 € | 33.23 € | ~31.40 € *(between their 10 and 50 prices)* |
+| Assembly | ~178 € | ~35.50 € | ~14.40 € |
+| **Total** | **327.18 €** | **71.22 €** | **47.44 €** |
 
-Shipping from AISLER is free within Germany (untracked); UPS is extra. Lead times as of
-September 2026: about **18 working days** for an assembled order (PCB plus parts plus assembly).
+The cost drivers, in order:
+
+1. **Parts at about twice their list price.** The parts add up to about 16 € per board at
+   distributor list prices, but AISLER charges 33.23 € at 10 boards and 29.57 € at 50. Their parts
+   price includes "assembly surplus and sourcing and handling costs" and minimum order quantities.
+   Even at 1,000 boards it is still 23.81 €.
+2. **The radio module.** It is the only part AISLER marks as a large price impact: 8.85 € each as
+   Seeed 113990582. The listing also says "the factory is currently not accepting orders", so stock
+   is finite.
+3. **Assembly setup.** Roughly 180 € for a single board and about 430 € for 30, so it is mostly a
+   fixed cost per order. AISLER does not publish the rates, but the cost is known to grow with the
+   number of *different* parts (24 today), more than with the number of boards.
+4. **The bare board is negligible:** 1.68 € per board at 30.
+
+Compared with the earlier estimate (27–30 € per key including the case), assembled boards alone
+cost about 47 € at 30. The parts surplus and the assembly setup were both underestimated.
+
+### Ways to bring it down
+
+| Change | Effect |
+|---|---|
+| **Order more at once** | Parts drop from 33.23 € (10) to 29.57 € (50) and 26.55 € (100) per board, and the assembly setup spreads further. |
+| **Fewer different parts** (24 → about 17) | Cuts the per-part setup work: <br>– drop the reset button (the bootloader is reachable over USB, recovery over SWD), which also removes the tongue from the case; <br>– use the module's internal pull-ups for PGOOD and CHG (R6, R7); <br>– one 10 µF value for all bulk capacitors (C1–C3 at the charger too, within the BQ24074's ranges); <br>– 1 kΩ instead of 470 Ω for the paddle series resistors; <br>– 5.1 kΩ for ILIM as well (about 300 mA input limit, enough for 175 mA charging); <br>– two LEDs of the same colour. |
+| **Supply the module yourself** | Raytac's own listing is about 6 € including shipping, against 8.85 € plus AISLER's surplus. Costs a one-off 15 € fee per supplied part number, so it pays off from about 10 boards. It also protects the run against the Seeed listing running dry. |
+| **Ask for a personal quote** | AISLER's account management quotes larger or repeat runs individually. |
+
+Each change in the "fewer different parts" row needs a schematic change and a new upload to see
+its real effect; AISLER prices only the design it has.
+
+### Everything else (unchanged estimates)
+
+| Item | Cost |
+|---|---|
+| Cells, LP-552035 | 4.18 € each ([Eckstein](https://eckstein-shop.de/LiPo-Battery-Lithium-Ion-Polymer-Battery-37V-350mAh-with-JST-PHR-2-Connector-LP552035-EN)) |
+| Cases, MJF PA12, from an EU print service | ~3–6 € per case *estimate* |
+| Screws, 2 × M2 × 8 per case | ~0.20 € |
+| Once: Raspberry Pi Debug Probe, Tag-Connect TC2030 cable, XIAO nRF52840 for the firmware port | ~65 € *estimate* |
+
+**Per key at 30, with battery: about 47.44 + 4.18 + ~4.50 + 0.20 ≈ 56 € net.**
 
 ### Not included: selling the keys
 
@@ -132,8 +161,8 @@ Kits the buyer assembles and the open-hardware files themselves are a different 
 
 1. **Firmware port** on a XIAO nRF52840 — proves BLE, sleep and battery life before any money
    goes into boards.
-2. **Schematic and layout in KiCad**, with MPN fields filled in so AISLER matches the parts on
-   upload.
-3. **Upload to AISLER** to get the real assembly price; confirm the module with their support.
+2. ~~Schematic and layout in KiCad~~ — done, with MPN fields filled in.
+3. ~~Upload to AISLER~~ — done, quote above. Still to do: confirm the module's bottom pads with
+   their support, and decide on the cost reductions.
 4. **Prototype run of 3**, housing variant printed alongside. Test charging, range, sleep current.
 5. Fixes, then **production run of 30**.
