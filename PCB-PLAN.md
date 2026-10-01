@@ -155,6 +155,32 @@ To order there: pre-order or consign the module and switch, tick "Confirm Parts 
 model of the jack sits about 0.7 mm off the pads; their engineers correct it), and keep in mind
 that shipping from China and customs add a few days and the import VAT.
 
+### Seeed Fusion quote, 1 October 2026
+
+Same design (`hardware/seeed/`), 30 boards, ENIG, 0.25 mm drill, 4/4 mil, 0.1 mm mask dam. USD,
+free DHL express shipping to Germany, before EU import VAT and coupons:
+
+| Item | 30 boards |
+|---|---|
+| Bare boards | 162.70 $ (the tight drill/trace/mask rules double the board price) |
+| Parts, 17 of 24 lines matched | 207.41 $ |
+| Assembly | 332.70 $ |
+| Setup and consumables | 65.00 $ |
+| **Subtotal** | **767.81 $** |
+
+Not yet priced: the module (Seeed SKU 113990582) and six resistor values, which Seeed checks by
+hand within a working day once the order is in the cart. With the module at about 9–10 $ the total
+comes to roughly **1,050–1,100 $, about 35–37 $ per board.** Per-board prices fall to 18.77 $ (50)
+and 13.28 $ (100) for the matched part of the quote.
+
+### Comparison, 30 assembled boards
+
+| Supplier | Total | Per board | Status |
+|---|---|---|---|
+| AISLER (Germany) | 1,423.21 € net | 47.44 € | complete quote, all parts in stock |
+| Seeed Fusion (China) | ~1,050–1,100 $ | ~35–37 $ | module and 6 resistors priced on manual review |
+| JLCPCB (China) | ~850–870 $ | ~29 $ | module and reset switch out of stock there |
+
 ### Everything else (unchanged estimates)
 
 | Item | Cost |

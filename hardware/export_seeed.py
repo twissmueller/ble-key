@@ -12,6 +12,7 @@ import io
 import shutil
 import subprocess
 import tempfile
+import zipfile
 from pathlib import Path
 
 import export_jlc as jlc
@@ -78,6 +79,18 @@ def pnp(refs):
     return target
 
 
+def assembly(pnp_file):
+    """Seeed takes the pick-and-place file as a ZIP, together with an assembly drawing."""
+    drawing = OUT / "ble-key-assembly-top.pdf"
+    jlc.run("pcb", "export", "pdf", "--layers", "F.Fab,F.Silkscreen,Edge.Cuts,F.Courtyard", "--mode-single",
+            "-o", str(drawing), str(jlc.PCB))
+    target = OUT / "ble-key-assembly.zip"
+    with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as z:
+        z.write(pnp_file, pnp_file.name)
+        z.write(drawing, drawing.name)
+    return target
+
+
 def main():
     if OUT.exists():
         shutil.rmtree(OUT)
@@ -86,7 +99,8 @@ def main():
     g = jlc.gerbers()
     b, refs, missing = bom()
     p = pnp(refs)
-    for f in (g, b, p):
+    a = assembly(p)
+    for f in (g, b, p, a):
         print("wrote", f.relative_to(HERE))
     if missing:
         print("no MPN:", ", ".join(missing))
