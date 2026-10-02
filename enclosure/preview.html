@@ -77,10 +77,10 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
   <div class="controls top">
     <div><span class="lbl">Version</span>
       <div class="group" role="group" aria-label="Version">
-        <button id="var-board-usb" aria-pressed="true">nRF board · USB</button>
-        <button id="var-board-battery" aria-pressed="false">nRF board · battery</button>
-        <button id="var-usb" aria-pressed="false">XIAO · USB</button>
+        <button id="var-usb" aria-pressed="true">XIAO · USB</button>
         <button id="var-battery" aria-pressed="false">XIAO · battery</button>
+        <button id="var-board-usb" aria-pressed="false">nRF board · USB</button>
+        <button id="var-board-battery" aria-pressed="false">nRF board · battery</button>
       </div>
     </div>
   </div>
@@ -180,14 +180,14 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
     },
     usb: {
       dims: '43.0 × 25.0 × 13.6 mm',
-      sub: 'XIAO ESP32-S3 · PJ-392 paddle jack · USB-C power',
+      sub: 'XIAO ESP32-S3 or XIAO nRF52840 · PJ-392 paddle jack · USB-C power',
       parts: [['Base', '43.0 × 25.0 × 11.6'], ['Lid', '43.0 × 25.0 × 2.0 + lip'],
               ['Inside', '39.0 × 21.0 × 9.6'], ['Walls / floor / lid', '2.0 / 2.0 / 2.0'], ['Fit clearance', '0.25']],
       openings: [["USB-C notch", "9.44 wide, closed by lid tab"], ["Plug recess", "12.4 × 7.0 × 0.5"], ["Jack hole", "Ø 6.5, wall 1.5"], ["LED light holes", "2 × Ø 1.6"]],
       held: "<p>No screws or glue touch the XIAO. It is clamped between the base and the lid:</p><ul><li><b>Underneath:</b> four 3 × 3 mm corner pads lift it 3 mm off the floor, so the solder joints and wires on its underside have room.</li><li><b>Sideways:</b> small lips beside the corner pads stop it sliding left or right. They stay clear of the solder pads.</li><li><b>Lengthwise:</b> the USB-C end rests against the end wall with the socket in its notch, so pulling a cable cannot drag the board out. A rib behind the far edge stops a plug from pushing it back.</li><li><b>From above:</b> when the lid is screwed down, its tab sits on top of the USB-C socket and two pins press on the far corners of the board.</li></ul>",
-      files: 'out/usb/ble-key-usb-base.step, ble-key-usb-lid.step',
-      buy: ['PJ-392 3.5 mm stereo panel jack with nut',
-            '2 × M2 × 6 self-tapping screw for plastic'],
+      files: 'out/usb/ble-key-usb-base.step, ble-key-usb-lid.step — for PETG on an FDM printer: out/usb-fdm/',
+      buy: ['PJ-392 3.5 mm stereo panel jack with nut (e.g. TinyTronics)',
+            '2 × self-tapping screw for plastic, 2.2 × 6'],
       steps: ['Solder the jack wires to D1 (tip), D2 (ring) and GND (sleeve).',
               'Push the jack through the end wall from inside and tighten its nut outside.',
               'Lower the XIAO in USB-C first, with the socket in the notch, onto the four corner pads.',
@@ -196,7 +196,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
     },
     battery: {
       dims: '43.0 × 48.0 × 13.6 mm',
-      sub: 'XIAO ESP32-S3 · PJ-392 paddle jack · 350 mAh LiPo beside it',
+      sub: 'XIAO ESP32-S3 or XIAO nRF52840 · PJ-392 paddle jack · 350 mAh LiPo beside it',
       parts: [['Base', '43.0 × 48.0 × 11.6'], ['Lid', '43.0 × 48.0 × 2.0 + lip'],
               ['Electronics bay', '39.0 × 21.0 × 9.6'], ['Battery bay', '36.0 × 21.0, lead slot to board'],
               ['Walls / floor / lid', '2.0 / 2.0 / 2.0'], ['Fit clearance', '0.25']],
@@ -367,7 +367,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
   resize();
 
   const start = (location.hash || '').slice(1);
-  setVariant(VARIANTS[start] ? start : 'board-usb');
+  setVariant(VARIANTS[start] ? start : 'usb');
 
   (function loop() {
     controls.update();
