@@ -20,7 +20,8 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requi
 **Printing the XIAO case in PETG on an FDM printer** (e.g. Bambu Lab A1 mini): use
 `out/usb-fdm/ble-key-usb-fdm-base.stl` upright, floor on the plate, and
 `out/usb-fdm/ble-key-usb-fdm-lid-print.stl` (already turned over). 0.2 mm layers, 3 walls, 20 %
-infill, no supports. Screws: 2 × self-tapping 2.2 × 6 for plastics.
+infill, no supports. Screws: 2 × countersunk self-tapping 2.2 × 6.5 (DIN 7982); the lid has 90°
+countersinks for them.
 
 ## The nRF52840 board case
 

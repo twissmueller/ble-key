@@ -75,8 +75,7 @@ BOSS_R = 2.6
 SCREW_Y = INNER_W / 2 - 0.6
 PILOT_D = 1.7       # M2 self-tapping pilot
 SCREW_D = 2.4       # lid clearance hole
-HEAD_D = 4.2        # counterbore for the screw head
-HEAD_H = 1.2
+CSK_D = 4.6         # 90° countersink for 2.2 mm countersunk screws (DIN 7982, head up to 4.4 mm)
 
 # Lid alignment lip, hanging down inside the walls.
 LIP_T = 1.0
@@ -240,11 +239,13 @@ def lid(v: Variant):
             with Locations((PCB_X0 + 0.8, sy * (PCB_W / 2 - 0.8), INNER_H)):
                 Cylinder(0.7, INNER_H - BOARD_TOP - 0.1, align=(Align.CENTER, Align.CENTER, Align.MAX))
 
-        # screw holes with counterbores
+        # screw holes with countersinks
         for x, y in v.screws:
             with Locations((x, y, INNER_H + LID)):
                 Cylinder(SCREW_D / 2, LID, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
-                Cylinder(HEAD_D / 2, HEAD_H, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
+                # 90° countersink: the cone spreads the load and leaves ~1 mm of solid lid under the head
+                Cone(SCREW_D / 2, CSK_D / 2, (CSK_D - SCREW_D) / 2,
+                     align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
 
         # light holes over the two status LEDs
         for sy in (-1, 1):
