@@ -260,7 +260,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
 
   function loadPart(variant, n) {
     const k = variant + '/' + n;
-    if (!cache[k]) cache[k] = fetch('out/' + variant + '/preview-' + n + '.b64.txt')
+    if (!cache[k]) cache[k] = fetch('out/' + variant + '/preview-' + n + '.b64.txt', { cache: 'no-cache' })
       .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
       .then(t => new Promise((res, rej) => {
         const bin = atob(t.trim()), buf = new Uint8Array(bin.length);

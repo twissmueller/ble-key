@@ -126,12 +126,12 @@ USB = Variant("usb", battery=False)
 BATTERY = Variant("battery", battery=True)
 
 
-def boss_footprint(x, y, grow=0.0):
+def boss_footprint(x, y, grow=0.0, height=INNER_H):
     """Boss cylinder plus the web that joins it to its wall (plain solids, outside any builder)."""
     sy = 1 if y > 0 else -1
     r, web = BOSS_R + grow, 1.2 + grow
-    boss = Pos(x, y, 0) * Solid.make_cylinder(r, INNER_H)
-    joint = Pos(x - r, y + sy * 0.6 - web / 2, 0) * Solid.make_box(2 * r, web, INNER_H)
+    boss = Pos(x, y, 0) * Solid.make_cylinder(r, height)
+    joint = Pos(x - r, y + sy * 0.6 - web / 2, 0) * Solid.make_box(2 * r, web, height)
     return boss + joint
 
 
@@ -212,7 +212,8 @@ def lid(v: Variant):
                 RectangleRounded(lip_l - 2 * LIP_T, lip_w - 2 * LIP_T, 0.3, mode=Mode.SUBTRACT)
             extrude(amount=-LIP_H)
         for x, y in v.screws:
-            insert(Pos(0, 0, INNER_H - LIP_H) * boss_footprint(x, y, CLEAR), mode=Mode.SUBTRACT)
+            # only as tall as the lip: the lid plate above the boss must stay solid
+            insert(Pos(0, 0, INNER_H - LIP_H) * boss_footprint(x, y, CLEAR, LIP_H), mode=Mode.SUBTRACT)
         with Locations(Location((LIP_T + 1.0, 0, JACK_Z), (0, 90, 0))):
             Cylinder(JACK_BODY / 2 + 0.5, 2 * (LIP_T + 1.0), mode=Mode.SUBTRACT)
         if v.battery:
