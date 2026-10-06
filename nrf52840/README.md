@@ -10,15 +10,17 @@ stack, the pins, the battery readings and System OFF.
 
 | Signal      | XIAO pin | nRF pin | Notes                                       |
 |-------------|----------|---------|---------------------------------------------|
-| Dit         | `D1`     | P0.03   | Tip, `INPUT_PULLUP`, pressed = LOW          |
-| Dah         | `D2`     | P0.28   | Ring, `INPUT_PULLUP`, pressed = LOW         |
+| Dit         | `D2`     | P0.28   | `INPUT_PULLUP`, pressed = LOW               |
+| Dah         | `D1`     | P0.03   | `INPUT_PULLUP`, pressed = LOW               |
 | Keying LED  | blue LED | P0.06   | active-low                                  |
 | Low battery | red LED  | P0.26   | active-low, double blink at boot below 3.5 V |
 | Battery     | on board | P0.31   | 1 MΩ / 510 kΩ divider, enabled by P0.14 LOW |
 | Charging    | on board | P0.17   | BQ25100 `~CHG`, LOW while charging          |
 | USB power   | on chip  | —       | the nRF52840's VBUS detector                |
 
-The paddle jack is wired exactly as on the ESP32-S3 (`D1` tip, `D2` ring, `GND` sleeve). For
+The paddle jack is wired exactly as on the ESP32-S3 (`D1` tip, `D2` ring, `GND` sleeve). With
+that wiring, dit and dah came out swapped on the nRF prototype, so the firmware reads dit on
+`D2` and dah on `D1` — the ESP32-S3 sketch does it the other way round. For
 the battery only the cell is soldered on — none of the resistors or wires of the ESP32-S3's
 battery strips are needed here:
 

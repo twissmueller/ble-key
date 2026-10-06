@@ -126,15 +126,16 @@
   <!-- ======================= notes ======================= -->
   <g font-size="13" fill="#334155" transform="translate(480,220)">
     <text y="0"  font-weight="bold" fill="#0f172a">Wiring</text>
-    <text y="26"><tspan fill="#a16207" font-weight="bold">D1 → Tip</tspan> — dit contact (P0.03)</text>
-    <text y="50"><tspan fill="#1d4ed8" font-weight="bold">D2 → Ring</tspan> — dah contact (P0.28)</text>
+    <text y="26"><tspan fill="#a16207" font-weight="bold">D1 → Tip</tspan> — as on the ESP32-S3</text>
+    <text y="50"><tspan fill="#1d4ed8" font-weight="bold">D2 → Ring</tspan> — as on the ESP32-S3</text>
     <text y="74"><tspan fill="#111827" font-weight="bold">GND → Sleeve</tspan> — common</text>
     <text y="110">No external resistors — the inputs use the</text>
     <text y="128">nRF52840's internal pull-ups (pressed = LOW).</text>
     <text y="158">A straight key uses only Tip + Sleeve.</text>
     <text y="188" fill="#64748b">The RGB LED is on the board — no wiring:</text>
     <text y="206" fill="#64748b">blue (P0.06) = keying, red (P0.26) = low battery.</text>
-    <text y="236" fill="#64748b">Same jack wiring as the ESP32-S3 key.</text>
+    <text y="236" fill="#64748b">Firmware: dit on D2, dah on D1 — swapped</text>
+    <text y="254" fill="#64748b">against the ESP32-S3, as measured on the prototype.</text>
   </g>
 
   <!-- ======================= battery (optional) ======================= -->

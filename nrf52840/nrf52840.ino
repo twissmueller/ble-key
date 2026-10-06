@@ -28,8 +28,10 @@
 
 // ---- Pins ----
 // Same XIAO pads as on the ESP32-S3 key, so the wiring and the case are unchanged.
-const int PIN_DIT      = D1;         // P0.03, Tip
-const int PIN_DAH      = D2;         // P0.28, Ring
+// Wired as on the ESP32-S3 (D1 and D2 to the jack the same way), yet on the nRF prototype dit
+// and dah came out swapped (October 2026), so the nRF reads them the other way round.
+const int PIN_DIT      = D2;         // P0.28
+const int PIN_DAH      = D1;         // P0.03
 const int PIN_KEY_LED  = LED_BLUE;   // P0.06, keying feedback
 const int PIN_WARN_LED = LED_RED;    // P0.26, low-battery blink at boot
 const int PIN_CHG      = 23;         // P0.17, BQ25100 ~CHG, LOW = charging (no name in the variant)
