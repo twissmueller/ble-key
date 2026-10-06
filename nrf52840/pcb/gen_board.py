@@ -322,7 +322,7 @@ def build():
 
 
 def write_mechanics():
-    """Board size, part positions and mounting holes for the enclosure script (../enclosure)."""
+    """Board size, part positions and mounting holes for the enclosure script (../../enclosure)."""
     data = {
         "board": {"w": W, "h": H, "thickness": 1.6, "corner": CORNER},
         "parts": {ref: {"x": x, "y": y, "rot": rot, "side": side} for ref, (x, y, rot, side) in PLACEMENT.items()},

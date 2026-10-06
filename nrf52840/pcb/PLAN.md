@@ -1,6 +1,6 @@
 # Custom PCB plan — nRF52840 key, built by AISLER
 
-**Status:** schematic, layout and case done (`hardware/`, `enclosure/`); design uploaded to AISLER
+**Status:** schematic, layout and case done (this folder, `../../enclosure/`); design uploaded to AISLER
 and quoted on 1 October 2026; nothing ordered. Prices are **net (no VAT)** unless marked. Figures
 marked *estimate* do not come from a price list or quote.
 
@@ -22,7 +22,7 @@ quality and no assembly work.
 
 ## The board
 
-**48 × 27 mm, 2 layers, 1.6 mm, ENIG**, all parts on the top side, all SMD (see `hardware/`).
+**48 × 27 mm, 2 layers, 1.6 mm, ENIG**, all parts on the top side, all SMD (see this folder).
 
 | Function | Part | Price @30 | Source |
 |---|---|---|---|
@@ -57,23 +57,25 @@ Design notes:
 
 ## Firmware
 
-Port `ble-key.ino` to the **Adafruit nRF52 Arduino core** (Bluefruit library):
+Port the firmware to the **Adafruit nRF52 Arduino core** (Bluefruit library). Started on the XIAO
+nRF52840 in [`../nrf52840.ino`](../nrf52840.ino), on Seeed's fork of that core; the board needs
+its own pin table on top of it:
 
 - the Longpath contract stays: same service and characteristic UUIDs, same event format, same
   Battery Service;
 - battery level from the divider, USB power from PGOOD, charging from CHG — the three readings
   the current firmware has to infer from analog voltages become plain pin reads;
 - deep sleep becomes nRF52 **System OFF** with wake-up on the dit or dah pin (a few µA);
-- `flash.sh` switches to the Feather nRF52840 board and uploads over USB.
+- `flash.sh` gets a third target with the Feather nRF52840 board and uploads over USB.
 
-The port can start **now, before any board exists**, on a Seeed XIAO nRF52840 — same nRF52840
+The port runs **before any board exists**, on a Seeed XIAO nRF52840 — same nRF52840
 chip, same USB bootloader, and it fits the housing in `enclosure/` unchanged.
 
 ## Housing
 
-`enclosure/board_case.py` builds the case around the board, USB-only (52.4 × 31.6 × 12.4 mm) or with
+`../../enclosure/board_case.py` builds the case around the board, USB-only (52.4 × 31.6 × 12.4 mm) or with
 the cell in the lid above the board (52.4 × 31.6 × 18.8 mm). Printed by an outside service in MJF
-PA12 (dyed black) — AISLER makes no enclosures. See `enclosure/README.md`.
+PA12 (dyed black) — AISLER makes no enclosures. See `../../enclosure/README.md`.
 
 ## Costs
 
@@ -134,7 +136,7 @@ its real effect; AISLER prices only the design it has.
 
 ### JLCPCB quote, 1 October 2026
 
-Same design, uploaded to JLCPCB (`hardware/jlcpcb/`), 30 boards, ENIG, economic assembly on the
+Same design, uploaded to JLCPCB (`jlcpcb/`), 30 boards, ENIG, economic assembly on the
 top side. Prices in USD, before shipping (DHL about 23 $) and EU import VAT:
 
 | Item | 30 boards |
@@ -157,7 +159,7 @@ that shipping from China and customs add a few days and the import VAT.
 
 ### Seeed Fusion quote, 1 October 2026
 
-Same design (`hardware/seeed/`), 30 boards, ENIG, 0.25 mm drill, 4/4 mil, 0.1 mm mask dam. USD,
+Same design (`seeed/`), 30 boards, ENIG, 0.25 mm drill, 4/4 mil, 0.1 mm mask dam. USD,
 free DHL express shipping to Germany, before EU import VAT and coupons:
 
 | Item | 30 boards |
@@ -209,7 +211,7 @@ Kits the buyer assembles and the open-hardware files themselves are a different 
 ## Order of work
 
 1. **Firmware port** on a XIAO nRF52840 — proves BLE, sleep and battery life before any money
-   goes into boards.
+   goes into boards. Written ([`../nrf52840.ino`](../nrf52840.ino)); measurements still open.
 2. ~~Schematic and layout in KiCad~~ — done, with MPN fields filled in.
 3. ~~Upload to AISLER~~ — done, quote above. Still to do: confirm the module's bottom pads with
    their support, and decide on the cost reductions.

@@ -154,7 +154,7 @@ divider: **two 220 kΩ resistors in series from `BAT+` to `GND`, with the midpoi
   the firmware averages 16 samples per reading.
 - **Do not fit the divider without setting `BATTERY_MOD` accordingly.** With `BATTERY_MOD 1`
   and no divider, `A0` floats and the app shows nonsense; with `BATTERY_MOD 0` the resistors
-  are harmless but the level is never read. The default in `ble-key.ino` is `1`.
+  are harmless but the level is never read. The default in `esp32s3.ino` is `1`.
 
 ### The charge-sense wire
 
@@ -216,7 +216,7 @@ biggest power lever here — a Morse key is idle almost all of the time, and 14 
 
 ## Battery level over BLE
 
-Implemented in `ble-key.ino` behind `#define BATTERY_MOD 1`:
+Implemented in `esp32s3.ino` behind `#define BATTERY_MOD 1`:
 
 - The cell is measured through the divider on `A0` every **10 s while the key is idle**
   (never between two paddle edges — the 16-sample ADC burst must not disturb keying), and
@@ -267,7 +267,7 @@ state is unknown, publishing `0xFF` — shows the plain connected chip and no le
 
 ## Idle sleep
 
-Implemented in `ble-key.ino` behind `BATTERY_MOD 1` (a stock USB key never sleeps — there
+Implemented in `esp32s3.ino` behind `BATTERY_MOD 1` (a stock USB key never sleeps — there
 is nothing to save, and sleeping costs the first press):
 
 - **When.** After `IDLE_SLEEP_MS` (10 minutes) without a paddle edge, counted from boot or
@@ -315,7 +315,7 @@ is nothing to save, and sleeping costs the first press):
 
 ## TODO — firmware work
 
-Still open in `ble-key.ino`:
+Still open in `esp32s3.ino`:
 
 - [x] **Sleep when idle, wake on the key** — done, see [Idle sleep](#idle-sleep).
 - [x] **RTC pull-ups for the sleep path** — done, part of the sleep entry.

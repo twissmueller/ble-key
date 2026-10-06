@@ -1,6 +1,6 @@
 # ble-key nRF52840 board — schematic
 
-The custom board from [PCB-PLAN.md](../PCB-PLAN.md): a Raytac MDBT50Q-1MV2 (nRF52840), a BQ24074
+The custom board from [PLAN.md](PLAN.md): a Raytac MDBT50Q-1MV2 (nRF52840), a BQ24074
 charger with power path, USB-C, a 3.5 mm paddle jack and a JST-PH socket for the LiPo.
 
 | File | What |
@@ -55,7 +55,7 @@ together, a few 0.45 mm vias join pour patches that traces cut off, and the char
 has four thermal vias. KiCad's connectivity check finds no unconnected copper.
 
 **Still worth a human look before ordering:** the USB pair is routed as two single tracks (fine
-for 12 Mbit/s full speed), and the enclosure in `../enclosure/` is drawn around this board.
+for 12 Mbit/s full speed), and the enclosure in `../../enclosure/` is drawn around this board.
 Raytac offers a free layout review.
 
 ## Open points

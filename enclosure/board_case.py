@@ -1,4 +1,4 @@
-"""Printable case for the custom nRF52840 board (../hardware), in a USB-only and a battery version.
+"""Printable case for the custom nRF52840 board (../nrf52840/pcb), in a USB-only and a battery version.
 
 Two parts. The base holds the board on two screw standoffs and four support pads; its walls end
 at the board's top surface. The lid's walls come down to that surface, with cut-outs for the
@@ -11,7 +11,7 @@ the battery version the cell sits in a pocket under the lid, above the board, cl
 writes out/board-usb/ and out/board-battery/: STEP and STL per part, a lid STL turned over for
 printing, and base64 GLB meshes for the preview page.
 
-Frame: board coordinates from ../hardware/mechanics.json (x right, y down from the board's top
+Frame: board coordinates from ../nrf52840/pcb/mechanics.json (x right, y down from the board's top
 edge) become X = x, Y = BOARD_H - y. Z = 0 is the base floor's top surface. All dimensions in mm.
 """
 
@@ -25,7 +25,7 @@ from build123d import *
 
 HERE = Path(__file__).parent
 OUT = HERE / "out"
-MECH = json.loads((HERE.parent / "hardware" / "mechanics.json").read_text())
+MECH = json.loads((HERE.parent / "nrf52840" / "pcb" / "mechanics.json").read_text())
 BOARD_STEP = HERE / "vendor" / "ble-key-board.step"
 
 BOARD_W = MECH["board"]["w"]

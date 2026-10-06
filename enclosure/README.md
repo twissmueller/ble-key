@@ -5,7 +5,7 @@ STL turned over for printing. `preview.html` shows all four cases in 3D after th
 
 | Script | Case | Outer size |
 |---|---|---|
-| `board_case.py` | **nRF52840 board** from `../hardware`, USB only | 52.4 × 31.6 × 12.4 mm |
+| `board_case.py` | **nRF52840 board** from `../nrf52840/pcb`, USB only | 52.4 × 31.6 × 12.4 mm |
 | `board_case.py` | **nRF52840 board** with the 350 mAh LP-552035 in the lid | 52.4 × 31.6 × 18.8 mm |
 | `enclosure.py` | XIAO ESP32-S3 **or XIAO nRF52840** + PJ-392 panel jack, USB only | 43.0 × 25.0 × 13.6 mm |
 | `enclosure.py` | XIAO ESP32-S3 or XIAO nRF52840 + PJ-392, battery beside it | 43.0 × 48.0 × 13.6 mm |
@@ -37,7 +37,7 @@ countersinks for them.
   ribs and clear of the antenna strip along the top edge. Its spare lead tucks under the cell next to
   the JST socket.
 
-Positions come from `../hardware/mechanics.json` and the board model from
+Positions come from `../nrf52840/pcb/mechanics.json` and the board model from
 `vendor/ble-key-board.step` (exported with `kicad-cli pcb export step`). Re-export both after a
 layout change. Connector heights are from the Same Sky SJ-352x-SMT, GCT USB4105, JST PH and
 Panasonic EVQ-PU drawings; the cell is sized to the worst case of PKCELL's drawings (37 × 20.3 ×
