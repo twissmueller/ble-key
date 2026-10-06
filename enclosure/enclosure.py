@@ -13,6 +13,7 @@ Run with
 
     .venv/bin/python enclosure.py          # MJF / SLA print service, 0.25 mm fit
     .venv/bin/python enclosure.py --fdm    # own FDM printer (PETG), 0.35 mm fit, out/*-fdm/
+    .venv/bin/python enclosure.py --snap-test   # FDM test pieces for the snap lips, out/snap-test-fdm/
 
 to regenerate everything in out/<variant>/: STEP and STL per part, a lid STL turned over for
 printing, and base64 GLB meshes (including the board, a placeholder jack and battery) for the
@@ -58,7 +59,7 @@ JACK_PANEL = 1.5    # wall thickness at the jack: spot-faced from inside, the PJ
 SPOT_D = 10.0
 
 # --- Battery: LP-552035, 3.7 V 350 mAh, with protection board and JST-PH lead ------------------
-# Worst case of PKCELL's drawings (nominal 5.5 x 20 x 35 mm), as in board_case.py.
+# Worst case of PKCELL's drawings (nominal 5.5 x 20 x 35 mm).
 BAT_T, BAT_W, BAT_L = 5.8, 20.3, 37.0
 BAT_SLACK = 0.5     # each side and on top; pouch cells swell a little
 CONN_L = 10.0       # bay under the jack for the mated JST-PH pair (laid across) and the spare lead
@@ -421,8 +422,61 @@ def export(v: Variant):
             print(f"  overlap {an}/{bn}: {vol:.3f} mm3")
 
 
+def snap_test():
+    """Test pieces for the snap lips, FDM fit only: a short slice of each base around the board's
+    far-end supports (floor, walls, supports, snap lips, end stops), cut just above the lips, plus
+    a stand-in for the board's end to click in. Written to out/snap-test-fdm/, each part flat on
+    the bed. Prints in minutes; tune SNAP_* before printing a whole case."""
+    out = OUT / "snap-test-fdm"
+    out.mkdir(parents=True, exist_ok=True)
+    pieces = {}
+    for v in (Variant("usb-fdm", battery=False), Variant("battery-fdm", battery=True)):
+        x0, x1 = v.pcb_x0 - CLEAR - 1.4, v.pcb_x0 + 4.0
+        top = v.board_top + 1.5
+        keep = Pos((x0 + x1) / 2, 0, (top - FLOOR) / 2) * Box(x1 - x0, 60, top + FLOOR)
+        piece = base(v) & keep
+        bb = piece.bounding_box()
+        pieces[v.name.replace("-fdm", "")] = piece.translate((-bb.min.X, 0, -bb.min.Z))
+    # the board's far end: full width, PCB thickness, long enough to hold on to
+    pieces["board"] = Box(15.0, PCB_W, PCB_T).translate((0, 0, PCB_T / 2))
+    for name, part in pieces.items():
+        export_stl(part, out / f"ble-key-snap-test-{name}.stl", tolerance=0.01, angular_tolerance=0.1)
+        bb = part.bounding_box()
+        print(f"snap test {name}: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm")
+
+    # preview: the two slices side by side across the view from the jack end, each with the stand-in clicked in (it reaches past the
+    # slice towards where the USB end would be)
+    shown, boards = {}, []
+    for i, (name, battery) in enumerate((("usb", False), ("battery", True))):
+        v = Variant(name, battery=battery)
+        dy = (0.5 - i) * 32.0                   # USB slice on the left seen from the jack end
+        # built inside BuildPart so the placement is baked into the geometry; the glTF exporter
+        # mishandles located shapes (see battery())
+        with BuildPart() as piece:
+            with Locations((0, dy, 0)):
+                add(pieces[name])
+        shown[f"test-{name}"] = piece.part
+        boards.append((CLEAR + 1.4 + 7.5, dy, FLOOR + v.board_z + PCB_T / 2))
+    with BuildPart() as stand_ins:
+        with Locations(*boards):
+            Box(15.0, PCB_W, PCB_T)
+    shown["board"] = stand_ins.part
+    for name, part in shown.items():
+        glb = out / f"preview-{name}.glb"
+        export_gltf(part, str(glb), binary=True, linear_deflection=0.01, angular_deflection=0.2)
+        glb.with_suffix(".b64.txt").write_text(base64.b64encode(glb.read_bytes()).decode())
+        glb.unlink()
+    clash = (shown["test-usb"] + shown["test-battery"]) & shown["board"]
+    if clash and clash.volume > 0.01:
+        print(f"  overlap pieces/board: {clash.volume:.3f} mm3")
+
+
 def main():
     global CLEAR
+    if "--snap-test" in sys.argv:
+        CLEAR = 0.35
+        snap_test()
+        return
     if "--fdm" in sys.argv:
         # FDM (e.g. PETG on a Bambu Lab A1 mini) prints a little fat: looser fit, own output folders
         CLEAR = 0.35

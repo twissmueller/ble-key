@@ -63,13 +63,17 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
 .held { margin-top: 18px; max-width: 68ch }
 .held p { margin: 0 0 8px; font-size: .9rem }
 .held b { font-weight: 500 }
+.held ol { margin: 0 0 8px }
+dl.test { margin: 4px 0 8px; max-width: 46ch }
+button.link { font: 500 .88rem var(--body); color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px }
+button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
 </style>
 
 <div class="wrap">
   <header>
     <div>
       <h1>ble-key Housing</h1>
-      <div class="sub" id="sub">XIAO ESP32-S3 · PJ-392 paddle jack · v2</div>
+      <div class="sub" id="sub">XIAO ESP32-S3 or XIAO nRF52840 · PJ-392 paddle jack</div>
     </div>
     <div class="dims" id="dims"></div>
   </header>
@@ -79,8 +83,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
       <div class="group" role="group" aria-label="Version">
         <button id="var-usb" aria-pressed="true">XIAO · USB</button>
         <button id="var-battery" aria-pressed="false">XIAO · battery</button>
-        <button id="var-board-usb" aria-pressed="false">nRF board · USB</button>
-        <button id="var-board-battery" aria-pressed="false">nRF board · battery</button>
+        <button id="var-snap-test-fdm" aria-pressed="false">Snap test pieces</button>
       </div>
     </div>
   </div>
@@ -92,7 +95,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
         <div class="hint">drag to orbit · scroll or pinch to zoom · right-drag to pan</div>
       </div>
       <div class="controls">
-        <div><span class="lbl">Lid</span>
+        <div id="g-lid"><span class="lbl">Lid</span>
           <div class="group" role="group" aria-label="Lid">
             <button id="lid-on" aria-pressed="false">Closed</button>
             <button id="lid-up" aria-pressed="true">Lifted</button>
@@ -108,7 +111,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
           </div>
         </div>
         <label class="chk"><input type="checkbox" id="c-board" checked> Board</label>
-        <label class="chk"><input type="checkbox" id="c-jack" checked> Connectors</label>
+        <label class="chk" id="l-jack"><input type="checkbox" id="c-jack" checked> Connectors</label>
         <label class="chk" id="l-battery"><input type="checkbox" id="c-battery" checked> Battery</label>
         <label class="chk"><input type="checkbox" id="c-cut"> Cut lengthwise</label>
       </div>
@@ -116,6 +119,36 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
       <section class="held">
         <h2>How the board is held</h2>
         <div id="held"></div>
+      </section>
+
+      <section class="held" id="snap-test">
+        <h2>Test the snap lips first</h2>
+        <p><button class="link" id="show-test">Show the test pieces in 3D ↑</button></p>
+        <p>The snap lips are the finest detail of both cases: 0.8 mm thick, a 0.25 mm hook, and 0.6 mm
+          gaps beside them. Whether they click well depends on the printer and the filament, so try them
+          on two small test pieces before printing a whole case. Both use the FDM fit (0.35 mm).</p>
+        <dl class="test">
+          <dt><code>ble-key-snap-test-usb.stl</code></dt><dd>5.8 × 25.0 × 7.8</dd>
+          <dt><code>ble-key-snap-test-battery.stl</code></dt><dd>5.8 × 25.3 × 14.1</dd>
+          <dt><code>ble-key-snap-test-board.stl</code></dt><dd>15.0 × 17.8 × 1.25</dd>
+        </dl>
+        <p class="note">In <code>out/snap-test-fdm/</code>: a 5.8 mm slice of each base around the board's far
+          supports (floor, walls, supports, lips, end stops) and a stand-in for the board's end. All lie flat
+          on the bed as exported. Regenerate after changing the snap values with
+          <code>enclosure.py --snap-test</code>.</p>
+        <p><b>Printing</b> (e.g. Bambu Lab A1 mini, PETG): all three on one plate, 0.2 mm layers — 0.12 mm is
+          better for the lips — 3 walls, no supports. In the slicer preview, check that the gaps beside the
+          lips stay open; PETG strings can bridge them and stiffen the lip.</p>
+        <p><b>Testing</b></p>
+        <ol>
+          <li>Press the board stand-in down onto the supports: it should click in without much force.</li>
+          <li>Pull it up: it should hold, not pop straight out.</li>
+          <li>Push a lip outwards and let go: it should spring back, not crack.</li>
+          <li>Try it with the real XIAO as well; it overhangs the slice, but the edge clicks in the same way.</li>
+        </ol>
+        <p class="note">Tuning in <code>enclosure.py</code>: too loose → raise <code>SNAP_HOOK</code> (0.25 mm);
+          too tight or a lip cracks → lower <code>SNAP_T</code> (0.8 mm) or, in the battery case, deepen the
+          lip's root with <code>SNAP_ROOT</code> (1.6 mm).</p>
       </section>
     </div>
 
@@ -126,7 +159,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
         <p class="note" id="files"></p>
       </section>
       <section>
-        <h2>Openings</h2>
+        <h2 id="openings-title">Openings</h2>
         <dl id="openings"></dl>
       </section>
       <section>
@@ -134,7 +167,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
         <ul id="buy"></ul>
       </section>
       <section>
-        <h2>Assembly</h2>
+        <h2 id="steps-title">Assembly</h2>
         <ol id="steps"></ol>
       </section>
     </aside>
@@ -147,37 +180,6 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
 <script>
 (function () {
   const VARIANTS = {
-    'board-usb': {
-      dims: '52.4 × 31.6 × 12.4 mm',
-      sub: 'nRF52840 board v0.1 · USB-C power',
-      parts: [['Base', '52.4 × 31.6 × 4.7'], ['Lid', '52.4 × 31.6 × 7.7'], ['Walls / floor / lid', '2.0 / 1.6 / 1.6'],
-              ['Board play', '0.25']],
-      openings: [["USB-C", "9.5 × 3.7, wall 1.55 so any plug seats"], ["Paddle jack", "Ø 5.6 arch, barrel flush"], ["Reset", "flexible tongue, 4.8 wide"], ["Status LEDs", "light channel 1.8 × 3.4 to the top"]],
-      held: "<p>The board is clamped between base and lid by the two screws that hold the case together:</p><ul><li><b>Underneath:</b> two standoffs at the mounting holes and four small pads lift it 1.5 mm off the floor, clear of the jack's locating pegs.</li><li><b>Sideways:</b> the base walls surround the board with 0.25 mm play; their top is flush with the board's top surface.</li><li><b>From above:</b> two posts in the lid press on the board around the mounting holes. Two M2 × 8 screws go up through the base, the board and into those posts.</li><li><b>Connectors:</b> the lid's walls arch over the USB-C socket and the jack, whose barrel ends flush with the outside. The reset button is pressed through a flexible tongue in the wall.</li></ul>",
-      files: 'out/board-usb/ble-key-board-usb-base.step, ble-key-board-usb-lid.step',
-      buy: ['2 × M2 × 8 self-tapping screw for plastic'],
-      steps: ['Lay the assembled board in the base, onto the two standoffs and four pads.',
-              'Put the lid on; its walls fit over USB-C and the jack.',
-              'Turn the case over and drive the two M2 × 8 screws in from below.'],
-      names: ['base', 'lid', 'board', 'jack', 'jst'],
-    },
-    'board-battery': {
-      dims: '52.4 × 31.6 × 18.8 mm',
-      sub: 'nRF52840 board v0.1 · 350 mAh LiPo above the board',
-      parts: [['Base', '52.4 × 31.6 × 4.7'], ['Lid', '52.4 × 31.6 × 14.1'], ['Battery pocket', '37.0 × 20.3 × 6.3, ribs on two sides'],
-              ['Walls / floor / lid', '2.0 / 1.6 / 1.6'], ['Board play', '0.25']],
-      openings: [["USB-C", "9.5 × 3.7, wall 1.55 so any plug seats"], ["Paddle jack", "Ø 5.6 arch, barrel flush"], ["Reset", "flexible tongue, 4.8 wide"], ["Status LEDs", "light channel 1.8 × 3.4 to the top"]],
-      held: "<p>The board is clamped between base and lid by the two screws that hold the case together:</p><ul><li><b>Underneath:</b> two standoffs at the mounting holes and four small pads lift it 1.5 mm off the floor, clear of the jack's locating pegs.</li><li><b>Sideways:</b> the base walls surround the board with 0.25 mm play; their top is flush with the board's top surface.</li><li><b>From above:</b> two posts in the lid press on the board around the mounting holes. Two M2 × 8 screws go up through the base, the board and into those posts.</li><li><b>Connectors:</b> the lid's walls arch over the USB-C socket and the jack, whose barrel ends flush with the outside. The reset button is pressed through a flexible tongue in the wall.</li></ul>",
-      files: 'out/board-battery/ble-key-board-battery-base.step, ble-key-board-battery-lid.step',
-      buy: ['LiPo LP-552035, 3.7 V 350 mAh, JST-PH, protected — check its plug polarity against the board',
-            '2 × M2 × 8 self-tapping screw for plastic',
-            'Double-sided foam tape for the cell'],
-      steps: ['Lay the assembled board in the base, onto the two standoffs and four pads.',
-              'Stick the cell into the lid pocket with foam tape, lead end against the rib near the jack.',
-              'Plug the cell into the JST socket and tuck the spare lead under the cell, next to the socket.',
-              'Close the lid and drive the two M2 × 8 screws in from below.'],
-      names: ['base', 'lid', 'board', 'jack', 'jst', 'battery'],
-    },
     usb: {
       dims: '43.0 × 25.0 × 13.6 mm',
       sub: 'XIAO ESP32-S3 or XIAO nRF52840 · PJ-392 paddle jack · USB-C power',
@@ -218,6 +220,26 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
               'Put the lid on and fasten the four countersunk screws.'],
       names: ['base', 'lid', 'board', 'jack', 'battery'],
     },
+    'snap-test-fdm': {
+      dims: 'two slices + board stand-in',
+      sub: 'Snap-lip test pieces for FDM (PETG, 0.35 mm fit) · USB case left, battery case right',
+      parts: [['USB slice', '5.8 × 25.0 × 7.8'], ['Battery slice', '5.8 × 25.3 × 14.1'],
+              ['Board stand-in', '15.0 × 17.8 × 1.25'], ['Fit clearance', '0.35']],
+      openingsTitle: 'Snap lip',
+      openings: [['Hook over the board edge', '0.25'], ['Lip thickness', '0.8'], ['Gap beside the lip', '0.6'],
+                 ['Lip root (battery)', '1.6 below the bracket']],
+      held: "<p>Each piece is a 5.8 mm slice of its case around the board's far supports: floor, walls, supports, the two snap lips and the end stops, cut just above the lips. The board stand-in is shown clicked in; it reaches past the slice towards where the USB end would be.</p><ul><li><b>USB slice:</b> corner pads on the floor, the lips stand free beside them.</li><li><b>Battery slice:</b> 45° wall brackets above the empty cell bay; each lip springs from a slot between it and the wall.</li></ul>",
+      files: 'out/snap-test-fdm/ble-key-snap-test-usb.stl, ble-key-snap-test-battery.stl, ble-key-snap-test-board.stl',
+      process: 'Print all three on one plate, flat as exported: PETG, 0.2 mm layers (0.12 mm better for the lips), 3 walls, no supports.',
+      buy: ['Nothing — or use your real XIAO instead of the stand-in'],
+      steps: ['Press the board stand-in down onto the supports: it should click in without much force.',
+              'Pull it up: it should hold, not pop straight out.',
+              'Push a lip outwards and let go: it should spring back, not crack.',
+              'Try it with the real XIAO as well.'],
+      names: ['test-usb', 'test-battery', 'board'],
+      view: 'jack',
+      stepsTitle: 'Testing',
+    },
   };
 
   const looks = {
@@ -225,8 +247,9 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
     lid:     { color: 0xd9dcd6, opacity: 0.55 },
     board:   { color: 0x1f2a26, opacity: 1 },
     jack:    { color: 0xb08a3e, opacity: 1, metal: true },
-    jst:     { color: 0xece6d6, opacity: 1 },
     battery: { color: 0x9aa3b5, opacity: 1, metal: true },
+    'test-usb':     { color: 0xd9dcd6, opacity: 1 },
+    'test-battery': { color: 0xd9dcd6, opacity: 1 },
   };
 
   const $ = id => document.getElementById(id);
@@ -290,7 +313,12 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
     $('dims').textContent = d.dims;
     $('sub').textContent = d.sub;
     $('spec-parts').innerHTML = d.parts.map(([k, val]) => '<dt>' + k + '</dt><dd>' + val + '</dd>').join('');
-    $('files').innerHTML = 'Files: <code>' + d.files + '</code> (plus STL). Suggested process: SLA resin or MJF nylon.';
+    $('files').innerHTML = 'Files: <code>' + d.files + '</code>' +
+      (d.process ? '. ' + d.process : ' (plus STL). Suggested process: SLA resin or MJF nylon.');
+    $('openings-title').textContent = d.openingsTitle || 'Openings';
+    $('steps-title').textContent = d.stepsTitle || 'Assembly';
+    $('g-lid').hidden = !d.names.includes('lid');
+    $('l-jack').hidden = !d.names.includes('jack');
     $('buy').innerHTML = d.buy.map(s => '<li>' + s + '</li>').join('');
     $('steps').innerHTML = d.steps.map(s => '<li>' + s + '</li>').join('');
     $('l-battery').hidden = !VARIANTS[v].names.includes('battery');
@@ -302,6 +330,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
     current = v;
     press('var-', v, Object.keys(VARIANTS));
     fillSpecs(v);
+    if (VARIANTS[v].view) view = VARIANTS[v].view;
     status.hidden = false;
     status.textContent = 'Loading model…';
     const names = VARIANTS[v].names;
@@ -311,7 +340,7 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
       parts = {};
       names.forEach((n, i) => { parts[n] = objs[i]; root.add(objs[i]); });
       status.hidden = true;
-      parts.lid.position.y = 0;
+      if (parts.lid) parts.lid.position.y = 0;
       frame();
       setLid(lidMode);
       applyToggles();
@@ -346,7 +375,6 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
 
   function applyToggles() {
     ['board', 'jack', 'battery'].forEach(n => { if (parts[n]) parts[n].visible = $('c-' + n).checked; });
-    if (parts.jst) parts.jst.visible = $('c-jack').checked;
     const on = $('c-cut').checked;
     root.traverse(m => { if (m.isMesh) { m.material.clippingPlanes = on ? [cutPlane] : []; m.material.needsUpdate = true; } });
   }
@@ -356,6 +384,10 @@ code { font: .82rem var(--mono); overflow-wrap: anywhere }
   }
 
   Object.keys(VARIANTS).forEach(k => $('var-' + k).addEventListener('click', () => { if (k !== current) setVariant(k); }));
+  $('show-test').addEventListener('click', () => {
+    if (current !== 'snap-test-fdm') setVariant('snap-test-fdm');
+    stage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
   ['on', 'up', 'off'].forEach(k => $('lid-' + k).addEventListener('click', () => setLid(k)));
   Object.keys(views).forEach(k => $('v-' + k).addEventListener('click', () => setView(k)));
   ['c-board', 'c-jack', 'c-battery', 'c-cut'].forEach(id => $(id).addEventListener('change', applyToggles));

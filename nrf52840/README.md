@@ -6,9 +6,6 @@ contract, the build tools and the case are shared with the ESP32-S3 key and desc
 [`../lib/BleKeyCore`](../lib/BleKeyCore/src/BleKeyCore.h); this sketch adds the Bluefruit BLE
 stack, the pins, the battery readings and System OFF.
 
-[`pcb/`](pcb/) is the custom nRF52840 board that is meant to replace the XIAO later
-([plan](pcb/PLAN.md)); this firmware is the port its plan calls for.
-
 ## Pins and wiring
 
 | Signal      | XIAO pin | nRF pin | Notes                                       |
