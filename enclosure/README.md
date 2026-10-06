@@ -1,19 +1,27 @@
 # Printable cases
 
 `enclosure.py` (build123d, Python CAD) builds the case for a XIAO ESP32-S3 or XIAO nRF52840 with a
-PJ-392 panel jack, in two versions. It writes STEP and STL per part to `out/`, plus a lid STL turned
+3.5 mm paddle jack, in two versions. It writes STEP and STL per part to `out/`, plus a lid STL turned
 over for printing. `preview.html` shows both cases in 3D after the script has run.
 
-| Case | Outer size |
-|---|---|
-| USB only | 43.0 × 25.0 × 13.6 mm |
-| Battery under the board | 53.2 × 25.3 × 19.2 mm |
+| Case | Outer size, Cliff FC681374V (default) | with `--jack pj392` |
+|---|---|---|
+| USB only | 48.5 × 25.0 × 14.1 mm | 43.0 × 25.0 × 13.6 mm |
+| Battery under the board | 53.2 × 25.3 × 20.2 mm | 53.2 × 25.3 × 19.2 mm |
+
+**The jack.** The default is the **Cliff FC681374V** (Reichelt 228160): M8 × 0.75 thread through an
+8.5 mm hole in the full 2 mm wall, ring nut outside, square body 10.5 × 9 × 13.5 mm plus 4 mm pins
+inside. A block under the lid sits on the body's flat top, so tightening the nut cannot turn it.
+Pins: 3 = tip (D1), 2 = ring (D2), 1 = sleeve (GND), 4 = switch contact, unused. The **PJ-392**
+(TinyTronics; round 8 mm body, 6.5 mm hole, 12 mm deep) still works with `--jack pj392`, which
+writes the same file names, so regenerate before printing.
 
 ```bash
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.txt
 .venv/bin/python enclosure.py          # MJF / SLA print service, 0.25 mm fit
 .venv/bin/python enclosure.py --fdm    # own FDM printer (PETG), 0.35 mm fit → out/usb-fdm/, out/battery-fdm/
 .venv/bin/python enclosure.py --snap-test   # FDM test pieces for the snap lips → out/snap-test-fdm/
+.venv/bin/python enclosure.py --jack pj392   # any of the above for the PJ-392 instead of the Cliff jack
 ```
 
 **Printing the XIAO case in PETG on an FDM printer** (e.g. Bambu Lab A1 mini): use

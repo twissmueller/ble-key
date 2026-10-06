@@ -14,6 +14,7 @@ Run with
     .venv/bin/python enclosure.py          # MJF / SLA print service, 0.25 mm fit
     .venv/bin/python enclosure.py --fdm    # own FDM printer (PETG), 0.35 mm fit, out/*-fdm/
     .venv/bin/python enclosure.py --snap-test   # FDM test pieces for the snap lips, out/snap-test-fdm/
+    ... --jack pj392                       # for the PJ-392 jack instead of the Cliff FC681374V
 
 to regenerate everything in out/<variant>/: STEP and STL per part, a lid STL turned over for
 printing, and base64 GLB meshes (including the board, a placeholder jack and battery) for the
@@ -51,12 +52,34 @@ USB_Z1 = 4.46       # receptacle top above PCB bottom
 PCB_LIFT = 3.0      # PCB bottom above the floor: room for solder joints and wires underneath
 SIDE_GAP = 1.6      # room beside the castellated edges for wires
 
-# --- 3.5 mm panel jack: PJ-392 (1/4" hole, panels up to 1.9 mm, body 8 mm, 16 mm overall) -------
-JACK_HOLE = 6.5     # through-hole for the thread
-JACK_BODY = 8.0     # body diameter behind the panel
-JACK_DEPTH = 12.0   # body plus solder lugs behind the panel
-JACK_PANEL = 1.5    # wall thickness at the jack: spot-faced from inside, the PJ-392 takes at most 1.9
-SPOT_D = 10.0
+# --- 3.5 mm panel jack ------------------------------------------------------------------------
+# Both go in from inside, thread through the end wall, nut outside. Choose with --jack.
+@dataclass(frozen=True)
+class Jack:
+    name: str
+    hole: float         # through-hole for the thread
+    body_w: float       # body across (y) behind the panel; equal to body_h for a round body
+    body_h: float       # body height (z)
+    round: bool
+    depth: float        # body plus solder lugs / pins behind the panel
+    panel: float        # wall thickness at the jack (spot-faced from inside where thinner than WALL)
+    thread_d: float     # for the preview model
+    nut_d: float
+    nut_t: float
+
+
+JACKS = {
+    # PJ-392: 1/4" hole, panels up to 1.9 mm, round body 8 mm, 16 mm overall (TinyTronics)
+    "pj392": Jack("pj392", hole=6.5, body_w=8.0, body_h=8.0, round=True, depth=12.0, panel=1.5,
+                  thread_d=6.0, nut_d=9.0, nut_t=1.8),
+    # Cliff FC681374V: M8 x 0.75 thread 4.5 long, ring nut 10 x 2, square body 10.5 x 9.0 x 13.5
+    # (5.0 / 5.5 either side of the axis) plus 4 mm pins (Reichelt). The full 2 mm wall leaves
+    # 0.5 mm of thread beyond the nut; the body's front face rests against the inside of the wall.
+    "cliff": Jack("cliff", hole=8.5, body_w=11.0, body_h=9.0, round=False, depth=17.5, panel=WALL,
+                  thread_d=8.0, nut_d=10.0, nut_t=2.0),
+}
+JACK = JACKS["cliff"]
+SPOT_D = 10.0       # spot face inside the wall where the jack needs a thinner panel
 
 # --- Battery: LP-552035, 3.7 V 350 mAh, with protection board and JST-PH lead ------------------
 # Worst case of PKCELL's drawings (nominal 5.5 x 20 x 35 mm).
@@ -103,7 +126,7 @@ class Variant:
     def inner_l(self):
         if self.battery:
             return CONN_L + RIB_T + BAT_L + 2 * BAT_SLACK
-        return JACK_DEPTH + WIRE_BAY + PCB_L
+        return JACK.depth + WIRE_BAY + PCB_L
 
     @property
     def inner_w(self):
@@ -126,11 +149,11 @@ class Variant:
     @property
     def jack_z(self):
         """Jack axis above the floor; with a cell the jack body clears it."""
-        return max(5.0, self.bay_h + 0.3 + JACK_BODY / 2)
+        return max(5.0, self.bay_h + 0.3 + JACK.body_h / 2)
 
     @property
     def inner_h(self):
-        return max(self.jack_z + JACK_BODY / 2 + 0.6, self.board_z + USB_Z1 + 1.0)
+        return max(self.jack_z + JACK.body_h / 2 + 0.6, self.board_z + USB_Z1 + 1.0)
 
     @property
     def pcb_x0(self):
@@ -146,9 +169,9 @@ class Variant:
         """Bosses against the long walls. USB: one pair in the wiring bay. Battery: a pair beside
         the jack and a pair between the jack and the board, both hung above the cell bay."""
         if self.battery:
-            xs = [5.0, (JACK_DEPTH + self.pcb_x0) / 2]
+            xs = [5.0, (JACK.depth + self.pcb_x0) / 2]
         else:
-            xs = [JACK_DEPTH + WIRE_BAY / 2]
+            xs = [JACK.depth + WIRE_BAY / 2]
         return [(x, sy * self.screw_y) for x in xs for sy in (-1, 1)]
 
     @property
@@ -288,11 +311,12 @@ def base(v: Variant):
         with Locations((L + WALL, 0, v.board_z + (USB_Z0 + USB_Z1) / 2)):
             Box(1.0, 12.4, 7.0, mode=Mode.SUBTRACT)
 
-        # 3.5 mm jack through the end wall, spot-faced inside so the thread reaches the nut
+        # 3.5 mm jack through the end wall, spot-faced inside where the thread needs a thinner panel
         with Locations(Location((-WALL / 2, 0, v.jack_z), (0, 90, 0))):
-            Cylinder(JACK_HOLE / 2, WALL + 2, mode=Mode.SUBTRACT)
-        with Locations(Location((0, 0, v.jack_z), (0, 90, 0))):
-            Cylinder(SPOT_D / 2, 2 * (WALL - JACK_PANEL), mode=Mode.SUBTRACT)
+            Cylinder(JACK.hole / 2, WALL + 2, mode=Mode.SUBTRACT)
+        if JACK.panel < WALL:
+            with Locations(Location((0, 0, v.jack_z), (0, 90, 0))):
+                Cylinder(SPOT_D / 2, 2 * (WALL - JACK.panel), mode=Mode.SUBTRACT)
     return p.part
 
 
@@ -316,8 +340,20 @@ def lid(v: Variant):
         for x, y in v.screws:
             # only as tall as the lip: the lid plate above the boss must stay solid
             insert(boss_footprint(x, y, CLEAR, LIP_H, H - LIP_H), mode=Mode.SUBTRACT)
-        with Locations(Location((LIP_T + 1.0, 0, v.jack_z), (0, 90, 0))):
-            Cylinder(JACK_BODY / 2 + 0.5, 2 * (LIP_T + 1.0), mode=Mode.SUBTRACT)
+        if JACK.round:
+            with Locations(Location((LIP_T + 1.0, 0, v.jack_z), (0, 90, 0))):
+                Cylinder(JACK.body_w / 2 + 0.5, 2 * (LIP_T + 1.0), mode=Mode.SUBTRACT)
+        else:
+            # square body: cut the lip back over it, and hold it with a block that sits on its flat
+            # top, so tightening the nut cannot turn the jack
+            body_top = v.jack_z + JACK.body_h / 2
+            if body_top + CLEAR > H - LIP_H:
+                with Locations((0, 0, H - LIP_H)):
+                    Box(LIP_T + CLEAR + 1.0, JACK.body_w + 2 * CLEAR + 1.0, body_top + CLEAR - (H - LIP_H),
+                        align=(Align.MIN, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+            with Locations((1.5, 0, H)):
+                Box(min(10.0, JACK.depth - 5.0), JACK.body_w - 2.0, H - body_top - 0.1,
+                    align=(Align.MIN, Align.CENTER, Align.MAX))
         # where the board sits high (battery variant), the lip would come down onto the USB-C socket
         usb_top = v.board_z + USB_Z1 + 0.1
         if usb_top > H - LIP_H:
@@ -371,13 +407,20 @@ def board(v: Variant):
 
 
 def jack(v: Variant):
-    """PJ-392 stand-in for the preview: body, thread and nut."""
+    """Stand-in for the preview: body, lugs or pins, thread and nut."""
     z = v.jack_z
-    body = Cylinder(JACK_BODY / 2, JACK_DEPTH - 2, rotation=(0, 90, 0)).translate(
-        ((JACK_DEPTH - 2) / 2 - (WALL - JACK_PANEL), 0, z))
-    lugs = Box(2.5, 6.0, 0.6).translate((JACK_DEPTH - 1.5, 0, z))
-    thread = Cylinder(3.0, 4.5, rotation=(0, 90, 0)).translate((-WALL - 0.25, 0, z))
-    nut = Cylinder(4.5, 1.8, rotation=(0, 90, 0)).translate((-WALL - 0.9, 0, z))
+    if JACK.round:
+        body = Cylinder(JACK.body_w / 2, JACK.depth - 2, rotation=(0, 90, 0)).translate(
+            ((JACK.depth - 2) / 2 - (WALL - JACK.panel), 0, z))
+        lugs = Box(2.5, 6.0, 0.6).translate((JACK.depth - 1.5, 0, z))
+    else:
+        body_l = JACK.depth - 4.0
+        # 10.5 wide in reality (5.0 / 5.5 either side of the axis); the pocket allows 11
+        body = Box(body_l, 10.5, JACK.body_h).translate((body_l / 2, 0.25, z))
+        lugs = Box(4.0, 8.6, 1.0).translate((body_l + 2.0, 0, z - 1.0))
+    thread = Cylinder(JACK.thread_d / 2, 4.5, rotation=(0, 90, 0)).translate((-2.25, 0, z))
+    nut = Cylinder(JACK.nut_d / 2, JACK.nut_t, rotation=(0, 90, 0)).translate(
+        (-WALL - JACK.nut_t / 2, 0, z))
     return body + lugs + thread + nut
 
 
@@ -454,7 +497,7 @@ def snap_test():
         # mishandles located shapes (see battery())
         with BuildPart() as piece:
             with Locations((0, dy, 0)):
-                add(pieces[name])
+                insert(pieces[name])
         shown[f"test-{name}"] = piece.part
         boards.append((CLEAR + 1.4 + 7.5, dy, FLOOR + v.board_z + PCB_T / 2))
     with BuildPart() as stand_ins:
@@ -472,7 +515,9 @@ def snap_test():
 
 
 def main():
-    global CLEAR
+    global CLEAR, JACK
+    if "--jack" in sys.argv:
+        JACK = JACKS[sys.argv[sys.argv.index("--jack") + 1]]
     if "--snap-test" in sys.argv:
         CLEAR = 0.35
         snap_test()
