@@ -1,0 +1,11 @@
+{
+  "name": "ble-key",
+  "description": "Open-Hardware-Firmware für einen Seeed XIAO ESP32-S3 oder XIAO nRF52840, die eine Morsetaste ausliest und die getakteten Tastflanken per BLE an die Longpath-App streamt.",
+  "delivery": {
+    "github": {
+      "status": "live",
+      "monetization": []
+    }
+  },
+  "increments": []
+}
