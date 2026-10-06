@@ -18,7 +18,7 @@ Both boards implement it identically; the app cannot tell them apart.
 | Path | What |
 |------|------|
 | [`esp32s3/`](esp32s3/) | XIAO ESP32-S3: firmware, pins and wiring, the battery mod ([BATTERY.md](esp32s3/BATTERY.md)) |
-| [`nrf52840/`](nrf52840/) | XIAO nRF52840: firmware, pins, battery |
+| [`nrf52840/`](nrf52840/) | XIAO nRF52840: firmware, pins and wiring, battery |
 | [`lib/BleKeyCore/`](lib/BleKeyCore/src/BleKeyCore.h) | Shared firmware: the BLE contract, debounce, LiPo curve, power states |
 | [`enclosure/`](enclosure/) | Printable cases — the XIAO case fits both boards |
 | `flash.sh`, `monitor.sh` | Build, flash and watch either board |

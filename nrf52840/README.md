@@ -18,9 +18,11 @@ stack, the pins, the battery readings and System OFF.
 | Charging    | on board | P0.17   | BQ25100 `~CHG`, LOW while charging          |
 | USB power   | on chip  | —       | the nRF52840's VBUS detector                |
 
-The paddle jack is wired exactly as on the ESP32-S3 (`D1` tip, `D2` ring, `GND` sleeve), so
-the wiring diagram in [`../esp32s3/wiring.svg`](../esp32s3/wiring.svg) applies up to the
-battery strip — none of the resistors or wires from that strip are needed here.
+The paddle jack is wired exactly as on the ESP32-S3 (`D1` tip, `D2` ring, `GND` sleeve). For
+the battery only the cell is soldered on — none of the resistors or wires of the ESP32-S3's
+battery strips are needed here:
+
+![Wiring: XIAO nRF52840 to a 3.5 mm TRS jack — D1 to tip (dit), D2 to ring (dah), GND to sleeve; optional LiPo on the BAT pads, with the battery divider on P0.31, the BQ25100's ~CHG on P0.17 and the VBUS detector already on the board](wiring.svg)
 
 ## Battery
 
