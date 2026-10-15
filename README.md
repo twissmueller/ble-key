@@ -13,6 +13,17 @@ key interface. The onboard LED gives instant, BLE-independent visual feedback wh
 The BLE contract below is simple and app-agnostic — anything that speaks GATT can consume it.
 Both boards implement it identically; the app cannot tell them apart.
 
+## Setting up your key
+
+![Setup: your key or paddle with its 3.5 mm stereo plug (tip = dit, ring = dah, sleeve = ground) goes into the jack on the BLE key; USB-C gives power and charges a fitted battery; the key connects over Bluetooth LE as "Paddle" to the Longpath app on a phone, tablet or Mac, which plays the sidetone](docs/setup.svg)
+
+Plug your key or paddle (for example a Xiegu VK-5) into the 3.5 mm jack: tip is dit, ring is
+dah, sleeve is ground; a straight key uses tip and sleeve only. Power the key from USB-C, then
+connect to it from the Longpath app — it shows up as `Paddle`. The LED lights while you key,
+so you can check the paddle before Bluetooth is involved. If dit and dah come out swapped,
+switch your paddle's reverse setting (or its cable), not the key. A battery key sleeps after
+ten idle minutes off USB; the first press only wakes it.
+
 ## Repository layout
 
 | Path | What |
