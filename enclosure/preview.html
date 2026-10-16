@@ -111,6 +111,8 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
             <button id="v-top" aria-pressed="false">Top</button>
           </div>
         </div>
+        <label class="chk" id="l-base"><input type="checkbox" id="c-base" checked> Enclosure</label>
+        <label class="chk" id="l-frame"><input type="checkbox" id="c-frame" checked> Frame</label>
         <label class="chk"><input type="checkbox" id="c-board" checked> Board</label>
         <label class="chk" id="l-jack"><input type="checkbox" id="c-jack" checked> Connectors</label>
         <label class="chk" id="l-battery"><input type="checkbox" id="c-battery" checked> Battery</label>
@@ -125,31 +127,32 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
       <section class="held" id="snap-test">
         <h2>Test the snap lips first</h2>
         <p><button class="link" id="show-test">Show the test pieces in 3D ↑</button></p>
-        <p>The snap lips are the finest detail of both cases: 0.8 mm thick, a 0.25 mm hook, and 0.6 mm
-          gaps beside them. Whether they click well depends on the printer and the filament, so try them
+        <p>The snap lips are the finest detail of both cases: 0.8 mm thick, a 0.52 mm hook in both
+          cases, and a gap of 0.6–0.8 mm behind them. Whether they click well depends on the printer and the filament, so try them
           on two small test pieces before printing a whole case. Both use the FDM fit (0.35 mm).</p>
         <dl class="test">
-          <dt><code>ble-key-snap-test-usb.stl</code></dt><dd>5.8 × 25.0 × 7.8</dd>
-          <dt><code>ble-key-snap-test-battery.stl</code></dt><dd>5.8 × 25.3 × 14.1</dd>
+          <dt><code>ble-key-snap-test-usb.stl</code></dt><dd>7.4 × 25.0 × 8.8</dd>
+          <dt><code>ble-key-snap-test-battery.stl</code></dt><dd>7.3 × 25.3 × 15.1</dd>
           <dt><code>ble-key-snap-test-board.stl</code></dt><dd>15.0 × 17.8 × 1.25</dd>
         </dl>
-        <p class="note">In <code>out/snap-test-fdm/</code>: a 5.8 mm slice of each base around the board's far
+        <p class="note">In <code>out/snap-test-fdm/</code>: a 7 mm slice of each base around the board's far
           supports (floor, walls, supports, lips, end stops) and a stand-in for the board's end. All lie flat
           on the bed as exported. Regenerate after changing the snap values with
           <code>enclosure.py --snap-test</code>.</p>
         <p><b>Printing</b> (e.g. Bambu Lab A1 mini, PETG): all three on one plate, 0.2 mm layers — 0.12 mm is
-          better for the lips — 3 walls, no supports. In the slicer preview, check that the gaps beside the
+          better for the lips — 3 walls, no supports. In the slicer preview, check that the gaps behind the
           lips stay open; PETG strings can bridge them and stiffen the lip.</p>
         <p><b>Testing</b></p>
         <ol>
           <li>Press the board stand-in down onto the supports: it should click in without much force.</li>
           <li>Pull it up: it should hold, not pop straight out.</li>
-          <li>Push a lip outwards and let go: it should spring back, not crack.</li>
+          <li>Push a lip's tab outwards with a small screwdriver and let go: it should spring back, not crack.</li>
           <li>Try it with the real XIAO as well; it overhangs the slice, but the edge clicks in the same way.</li>
         </ol>
-        <p class="note">Tuning in <code>enclosure.py</code>: too loose → raise <code>SNAP_HOOK</code> (0.25 mm);
-          too tight or a lip cracks → lower <code>SNAP_T</code> (0.8 mm) or, in the battery case, deepen the
-          lip's root with <code>SNAP_ROOT</code> (1.6 mm).</p>
+        <p class="note">Tuning in <code>enclosure.py</code>: each hook is as big as its lip's free
+          height allows within <code>SNAP_STRAIN</code> (4 %, what PETG takes), and by the room behind the lip, at most
+          <code>SNAP_HOOK</code> (0.7 mm). Too loose → raise <code>SNAP_HOOK</code> or <code>SNAP_STRAIN</code>; too tight or a lip
+          cracks → lower <code>SNAP_STRAIN</code>.</p>
       </section>
     </div>
 
@@ -186,50 +189,49 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
       sub: 'XIAO ESP32-S3 or XIAO nRF52840 · Cliff FC681374V paddle jack · USB-C power',
       parts: [['Base', '48.5 × 25.0 × 12.1'], ['Lid', '48.5 × 25.0 × 2.0 + lip'],
               ['Inside', '44.5 × 21.0 × 10.1'], ['Walls / floor / lid', '2.0 / 2.0 / 2.0'], ['Fit clearance', '0.25']],
-      openings: [["USB-C notch", "9.44 wide, closed by lid tab"], ["Plug recess", "12.4 × 7.0 × 0.5"], ["Jack hole", "Ø 8.5 for the M8 thread, wall 2.0, ring nut outside"], ["Jack hold-down", "lid block on the flat top, stops the jack turning"], ["LED light holes", "2 × Ø 1.6"]],
-      held: "<p>No screws or glue touch the XIAO. It clicks into the base and is clamped by the lid:</p><ul><li><b>Underneath:</b> four 3 × 3 mm corner pads lift it 3 mm off the floor, so the solder joints and wires on its underside have room.</li><li><b>Snap lips:</b> beside each corner pad a springy lip stands free from the floor, with a 0.25 mm hook over the board's edge and a lead-in on top. Press the board down and it clicks in; it stays put with the lid off. To take it out, push one lip outwards.</li><li><b>Lengthwise:</b> the USB-C end rests against the end wall with the socket in its notch, so pulling a cable cannot drag the board out. A rib behind the far edge stops a plug from pushing it back.</li><li><b>From above:</b> when the lid is screwed down, its tab sits on top of the USB-C socket and two stiff L-shaped ribs, hung from the lid's lip, press on the far corners of the board.</li></ul>",
+      openings: [["USB-C notch", "9.44 wide, closed by lid tab"], ["Plug recess", "12.4 × 7.0 × 0.5"], ["Jack slot", "Ø 8.5 for the M8 thread, open to the top so the jack drops in; wall 2.0, ring nut outside; closed by a lid tab"], ["LED light holes", "2 × Ø 1.6"]],
+      held: "<p>No screws or glue touch the XIAO. It clicks into the base and is clamped by the lid:</p><ul><li><b>Underneath:</b> four 3 × 3 mm corner pads lift it 3 mm off the floor, so the solder joints and wires on its underside have room.</li><li><b>Snap lips:</b> four springy lips stand free from the floor beside the long edges, 4 mm in from each end where the edge is straight (the board's corners are rounded), with a 0.52 mm hook over the edge, a lead-in above it and a tab 2 mm above the board. Press the board down and it clicks in; it stays put with the lid off. To take it out, push the tabs outwards with a small screwdriver.</li><li><b>Lengthwise:</b> the USB-C end rests against the end wall with the socket in its notch, so pulling a cable cannot drag the board out. A rib behind the far edge stops a plug from pushing it back.</li><li><b>From above:</b> when the lid is screwed down, its tab sits on top of the USB-C socket and two stiff L-shaped ribs, hung from the lid's lip, press on the far corners of the board.</li></ul>",
       files: 'out/usb/ble-key-usb-base.step, ble-key-usb-lid.step — for PETG on an FDM printer: out/usb-fdm/',
       buy: ['Cliff FC681374V 3.5 mm stereo jack with ring nut (Reichelt 228160)',
             '2 × countersunk self-tapping screw 2.2 × 6.5 (DIN 7982), 6 mm long works too — <a href="https://www.ebay.de/itm/286747669467" target="_blank" rel="noopener">eBay V2A</a>, <a href="https://www.ebay.de/itm/197472994496" target="_blank" rel="noopener">eBay V4A</a>, <a href="https://www.ehorst.de/en/Technischer-Handel/Befestigung-und-Beschlaege/Verbindungstechnik/Schrauben-und-Schraubenkomponenten/Blechschrauben/Edelstahl-A2/3" target="_blank" rel="noopener">ehorst A2</a>'],
       steps: ['Solder the jack wires: pin 3 (T) to D1, pin 2 (R) to D2, pin 1 (S) to GND; pin 4 (switch) stays free.',
-              'Push the jack through the end wall from inside, square body flat, and tighten the ring nut outside.',
+              'Lower the jack into the slot in the end wall, square body flat on the floor, and tighten the ring nut outside.',
               'Lower the XIAO in USB-C first, with the socket in the notch, onto the four corner pads, and press it down until the snap lips click.',
               'Put the lid on and fasten the two countersunk screws.'],
       names: ['base', 'lid', 'board', 'jack'],
     },
     battery: {
-      dims: '53.2 × 25.3 × 20.2 mm',
-      sub: 'XIAO ESP32-S3 or XIAO nRF52840 · Cliff FC681374V paddle jack · 350 mAh LiPo under the board',
-      parts: [['Base', '53.2 × 25.3 × 18.2'], ['Lid', '53.2 × 25.3 × 2.0 + lip'],
-              ['Inside', '49.2 × 21.3 × 16.2'], ['Cell bay (floor)', '38.0 × 21.3 × 6.3'],
-              ['Wiring layer', '3.0 between cell and board'], ['Connector bay (under the jack)', '10.0 × 21.3 × 6.3'],
+      dims: '53.2 × 27.3 × 21.1 mm',
+      sub: 'XIAO ESP32-S3 or XIAO nRF52840 · Cliff FC681374V paddle jack · 350 mAh LiPo under the board, in a drop-in frame',
+      parts: [['Base', '53.2 × 27.3 × 19.1'], ['Frame', '48.5 × 22.6 × 10.8'], ['Lid', '53.2 × 27.3 × 2.0 + lip'],
+              ['Inside (above the cell)', '49.2 × 23.3 × 10.8'], ['Cell pocket (floor)', '49.2 × 21.3 × 6.3'],
+              ['Wiring layer', '3.0 between cell and board'], ['Lead bay (under the jack)', '10.0 × 21.3 × 6.3'],
               ['Walls / floor / lid', '2.0 / 2.0 / 2.0'], ['Fit clearance', '0.25']],
-      openings: [["USB-C notch", "9.44 wide, closed by lid tab"], ["Plug recess", "12.4 × 7.0 × 0.5"], ["Jack hole", "Ø 8.5 for the M8 thread, wall 2.0, ring nut outside"], ["Jack hold-down", "lid block on the flat top, stops the jack turning"], ["LED light holes", "2 × Ø 1.6"]],
-      held: "<p>Three layers: the cell on the floor, a 3 mm wiring layer, the XIAO on top. No screws or glue touch the XIAO:</p><ul><li><b>Underneath:</b> four 45° brackets on the side walls carry the board's corners 3 mm above the cell. The space between cell and board is free for the BAT joints and for the paddle wires, soldered to D1, D2 and GND from below.</li><li><b>Snap lips:</b> each bracket carries a springy lip outside the board's long edge, with a 0.25 mm hook and a lead-in on top. Press the board down and it clicks in; it stays put with the lid off. To take it out, push one lip outwards.</li><li><b>Lengthwise:</b> the USB-C end rests against the end wall with the socket in its notch; stops on the far brackets keep a plug from pushing it back.</li><li><b>From above:</b> the lid's tab sits on the USB-C socket, and two stiff L-shaped ribs, hung from the lid's lip, press on the far corners right above the brackets.</li><li><b>The cell</b> lies flat on the floor against the USB end, on a strip of double-sided tape. Its lead goes through the gap in the low rib into the connector bay under the jack, where the JST pair and the spare lead lie across the case.</li></ul>",
-      files: 'out/battery/ble-key-battery-base.step, ble-key-battery-lid.step — for PETG on an FDM printer: out/battery-fdm/',
+      openings: [["USB-C notch", "9.44 wide, closed by lid tab"], ["Plug recess", "12.4 × 7.0 × 0.5"], ["Jack slot", "Ø 8.5 for the M8 thread, open to the top so the jack drops in; wall 2.0, ring nut outside; closed by a lid tab"], ["Jack cradle", "plate and cheeks on the frame, the jack rests on it"], ["LED light holes", "2 × Ø 1.6"]],
+      held: "<p>Three layers: the cell in a pocket on the floor, a 3 mm wiring layer, the XIAO on top in a frame that drops in over the cell. Nothing in the base hangs over the cell, so it goes in and out straight from above. No screws or glue touch the XIAO:</p><ul><li><b>The frame:</b> two low rails on 1 mm shoulders along the long walls, 0.5 mm above the cell, joined by a cross bar in the middle (the wires pass over it), by the jack's cradle at the jack end and by a cross wall at the USB end that carries the board's end; a web along the outside of each rail makes the rails L-shaped and stiff. It carries the board brackets, the snap lips, the jack and the four screw bosses; the lid's screws go into those bosses and clamp the frame down. To change the cell, unscrew the lid and lift the frame out with the board.</li><li><b>Underneath:</b> four 45° brackets on the frame carry the board's corners 3 mm above the cell. The space between cell and board is free for the BAT joints and for the paddle wires, soldered to D1, D2 and GND from below.</li><li><b>Snap lips:</b> four springy lips rise free from a thin floor in pockets in the rails, just above the frame's underside, 4 mm in from each end where the board's edge is straight (its corners are rounded), with a 0.52 mm hook, a lead-in above it and a tab 2 mm above the board. Press the board down and it clicks into the frame. To take it out, push the tabs outwards with a small screwdriver.</li><li><b>Lengthwise:</b> the USB-C end rests against the end wall with the socket in its notch; stops on the far brackets keep a plug from pushing it back.</li><li><b>From above:</b> the lid's tab sits on the USB-C socket, and two stiff L-shaped ribs, hung from the lid's lip, press on the far corners right above the brackets.</li><li><b>The jack</b> rests on the cradle's plate between two cheeks, and its thread drops into a slot in the end wall that is open to the top; the lid closes the slot with a tab. So board, jack and frame are put together outside the case and go in as one.</li><li><b>The cell</b> lies flat in its pocket against the USB end, on a strip of double-sided tape. Its lead is soldered straight to the BAT pads; the spare length goes through the gap in the low rib into the bay under the jack.</li></ul>",
+      files: 'out/battery/ble-key-battery-base.step, ble-key-battery-frame.step, ble-key-battery-lid.step — for PETG on an FDM printer: out/battery-fdm/ (base and frame as they sit, lid-print turned over; no supports)',
       buy: ['Cliff FC681374V 3.5 mm stereo jack with ring nut (Reichelt 228160)',
-            'LiPo LP-552035, 3.7 V 350 mAh, JST-PH, protected (see esp32s3/BATTERY.md)',
-            'JST-PH pigtail for the BAT pads',
+            'LiPo LP-552035, 3.7 V 350 mAh, protected (see esp32s3/BATTERY.md); its plug is cut off and the lead soldered to the board',
             'ESP32-S3 only: 2 × 220 kΩ + 2 × 220 kΩ + 100 kΩ resistors (dividers and charge sense); the nRF52840 needs none',
-            '4 × countersunk self-tapping screw 2.2 × 6.5 (DIN 7982), 6 mm works too, not 8 mm: the hung bosses are only 5.8 mm deep — <a href="https://www.ebay.de/itm/286747669467" target="_blank" rel="noopener">eBay V2A</a>, <a href="https://www.ebay.de/itm/197472994496" target="_blank" rel="noopener">eBay V4A</a>, <a href="https://www.ehorst.de/en/Technischer-Handel/Befestigung-und-Beschlaege/Verbindungstechnik/Schrauben-und-Schraubenkomponenten/Blechschrauben/Edelstahl-A2/3" target="_blank" rel="noopener">ehorst A2</a>',
+            '4 × countersunk self-tapping screw 2.2 × 6.5 (DIN 7982), 6 mm works too — <a href="https://www.ebay.de/itm/286747669467" target="_blank" rel="noopener">eBay V2A</a>, <a href="https://www.ebay.de/itm/197472994496" target="_blank" rel="noopener">eBay V4A</a>, <a href="https://www.ehorst.de/en/Technischer-Handel/Befestigung-und-Beschlaege/Verbindungstechnik/Schrauben-und-Schraubenkomponenten/Blechschrauben/Edelstahl-A2/3" target="_blank" rel="noopener">ehorst A2</a>',
             'Double-sided foam tape for the cell'],
-      steps: ['Solder the paddle wires from the jack (pin 3 T, pin 2 R, pin 1 S; pin 4 stays free) to the underside of D1, D2 and GND, and the JST pigtail to the BAT pads. Keep the joints flat: they sit in a 3 mm layer.',
-              'Tape the cell to the floor against the USB end, lead towards the jack, and pass the lead through the gap in the rib.',
-              'Push the jack through the end wall from inside, square body flat, and tighten the ring nut outside; it sits above the connector bay.',
-              'Plug the JST pair together and lay it across the connector bay with the spare lead.',
-              'Lower the XIAO in USB-C first, with the socket in the notch, guiding the wires underneath, and press it down until the four snap lips click.',
-              'Put the lid on and fasten the four countersunk screws.'],
-      names: ['base', 'lid', 'board', 'jack', 'battery'],
+      steps: ['On the bench: solder the paddle wires from the jack (pin 3 T, pin 2 R, pin 1 S; pin 4 stays free) to the underside of D1, D2 and GND. Cut the cell\'s plug off and solder its lead to the BAT pads, one wire at a time so the bare ends never touch. Keep the joints flat: they sit in a 3 mm layer.',
+              'Click the XIAO into the frame (USB-C end at the end without the cradle), with the wires underneath and over the cross bar, and set the jack into its cradle, square body flat.',
+              'Tape the cell into its pocket against the USB end, lead towards the jack, and lay the spare lead through the gap in the rib into the bay under the jack.',
+              'Lower the frame with board and jack into the base: the USB-C socket into its notch, the jack thread into the slot. The frame rests on the shoulders above the cell.',
+              'Tighten the ring nut on the jack outside.',
+              'Put the lid on and fasten the four countersunk screws into the frame. To change the cell, undo them and lift the frame out with everything on it.'],
+      names: ['base', 'frame', 'lid', 'board', 'jack', 'battery'],
     },
     'snap-test-fdm': {
       dims: 'two slices + board stand-in',
       sub: 'Snap-lip test pieces for FDM (PETG, 0.35 mm fit) · USB case left, battery case right',
-      parts: [['USB slice', '5.8 × 25.0 × 7.8'], ['Battery slice', '5.8 × 25.3 × 14.1'],
+      parts: [['USB slice', '7.4 × 25.0 × 8.8'], ['Battery slice', '7.3 × 22.6 × 6.3'],
               ['Board stand-in', '15.0 × 17.8 × 1.25'], ['Fit clearance', '0.35']],
       openingsTitle: 'Snap lip',
-      openings: [['Hook over the board edge', '0.25'], ['Lip thickness', '0.8'], ['Gap beside the lip', '0.6'],
-                 ['Lip root (battery)', '1.6 below the bracket']],
-      held: "<p>Each piece is a 5.8 mm slice of its case around the board's far supports: floor, walls, supports, the two snap lips and the end stops, cut just above the lips. The board stand-in is shown clicked in; it reaches past the slice towards where the USB end would be.</p><ul><li><b>USB slice:</b> corner pads on the floor, the lips stand free beside them.</li><li><b>Battery slice:</b> 45° wall brackets above the empty cell bay; each lip springs from a slot between it and the wall.</li></ul>",
+      openings: [['Hook (USB / battery)', '0.52 / 0.52'], ['Lip thickness', '0.8'], ['Lip length', '1.6'], ['Tab above the board', '2.0'], ['Lip centre from board end', '4.0'], ['Gap behind the lip', '0.6 / 0.8'],
+                 ['Lip free from (battery)', '0.4 mm pocket floor, 2.6 below the board']],
+      held: "<p>Each piece is a 7 mm slice around the board's far supports, cut just above the lips' tabs: of the USB base, and of the battery case's frame. The board stand-in is shown clicked in; it reaches past the slice towards where the USB end would be.</p><ul><li><b>USB slice:</b> corner pads on the floor; the lips stand free 4 mm in from the board's end, where its edge is straight.</li><li><b>Battery slice:</b> the frame's rails with the 45° corner brackets, end stops and lips, on a thin plate that holds the rails apart the way the case walls do.</li></ul>",
       files: 'out/snap-test-fdm/ble-key-snap-test-usb.stl, ble-key-snap-test-battery.stl, ble-key-snap-test-board.stl',
       process: 'Print all three on one plate, flat as exported: PETG, 0.2 mm layers (0.12 mm better for the lips), 3 walls, no supports.',
       buy: ['Nothing — or use your real XIAO instead of the stand-in'],
@@ -245,6 +247,7 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 
   const looks = {
     base:    { color: 0xd9dcd6, opacity: 1 },
+    frame:   { color: 0xb9c7c0, opacity: 1 },
     lid:     { color: 0xd9dcd6, opacity: 0.55 },
     board:   { color: 0x1f2a26, opacity: 1 },
     jack:    { color: 0xb08a3e, opacity: 1, metal: true },
@@ -323,6 +326,8 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
     $('buy').innerHTML = d.buy.map(s => '<li>' + s + '</li>').join('');
     $('steps').innerHTML = d.steps.map(s => '<li>' + s + '</li>').join('');
     $('l-battery').hidden = !VARIANTS[v].names.includes('battery');
+    $('l-base').hidden = !VARIANTS[v].names.includes('base');
+    $('l-frame').hidden = !VARIANTS[v].names.includes('frame');
     $('openings').innerHTML = d.openings.map(([k, val]) => '<dt>' + k + '</dt><dd>' + val + '</dd>').join('');
     $('held').innerHTML = d.held;
   }
@@ -375,7 +380,7 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
   }
 
   function applyToggles() {
-    ['board', 'jack', 'battery'].forEach(n => { if (parts[n]) parts[n].visible = $('c-' + n).checked; });
+    ['base', 'frame', 'board', 'jack', 'battery'].forEach(n => { if (parts[n]) parts[n].visible = $('c-' + n).checked; });
     const on = $('c-cut').checked;
     root.traverse(m => { if (m.isMesh) { m.material.clippingPlanes = on ? [cutPlane] : []; m.material.needsUpdate = true; } });
   }
@@ -391,7 +396,7 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
   });
   ['on', 'up', 'off'].forEach(k => $('lid-' + k).addEventListener('click', () => setLid(k)));
   Object.keys(views).forEach(k => $('v-' + k).addEventListener('click', () => setView(k)));
-  ['c-board', 'c-jack', 'c-battery', 'c-cut'].forEach(id => $(id).addEventListener('change', applyToggles));
+  ['c-base', 'c-frame', 'c-board', 'c-jack', 'c-battery', 'c-cut'].forEach(id => $(id).addEventListener('change', applyToggles));
 
   function resize() {
     const w = stage.clientWidth, h = stage.clientHeight;

@@ -7,11 +7,12 @@ over for printing. `preview.html` shows both cases in 3D after the script has ru
 | Case | Outer size, Cliff FC681374V (default) | with `--jack pj392` |
 |---|---|---|
 | USB only | 48.5 × 25.0 × 14.1 mm | 43.0 × 25.0 × 13.6 mm |
-| Battery under the board | 53.2 × 25.3 × 20.2 mm | 53.2 × 25.3 × 19.2 mm |
+| Battery under the board | 53.2 × 27.3 × 21.1 mm | 53.2 × 27.3 × 20.1 mm |
 
 **The jack.** The default is the **Cliff FC681374V** (Reichelt 228160): M8 × 0.75 thread through an
-8.5 mm hole in the full 2 mm wall, ring nut outside, square body 10.5 × 9 × 13.5 mm plus 4 mm pins
-inside. A block under the lid sits on the body's flat top, so tightening the nut cannot turn it.
+8.5 mm slot in the full 2 mm wall, open to the top and closed by a tab on the lid, ring nut outside,
+square body 10.5 × 9 × 13.5 mm plus 4 mm pins inside. The floor (USB case) or the frame's cradle
+(battery case) keeps the square body from turning when the nut is tightened.
 Pins: 3 = tip (D1), 2 = ring (D2), 1 = sleeve (GND), 4 = switch contact, unused. The **PJ-392**
 (TinyTronics; round 8 mm body, 6.5 mm hole, 12 mm deep) still works with `--jack pj392`, which
 writes the same file names, so regenerate before printing.
@@ -28,27 +29,44 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requi
 `out/usb-fdm/ble-key-usb-fdm-base.stl` upright, floor on the plate, and
 `out/usb-fdm/ble-key-usb-fdm-lid-print.stl` (already turned over). 0.2 mm layers, 3 walls, 20 %
 infill, no supports. Screws: 2 × countersunk self-tapping 2.2 × 6.5 (DIN 7982); the lid has 90°
-countersinks for them.
+countersinks for them. The jack drops into a slot in the end wall that is open to the top (the lid
+closes it with a tab), so it goes in already soldered to the board; then tighten its ring nut.
 
-**Holding the board:** in both XIAO cases the board clicks in: four springy snap lips beside its
-corners hook 0.25 mm over the long edges, so it stays put with the lid off. With the lid on, the
-tab presses on the USB-C socket and two stiff L-shaped ribs press on the far corners. If a lip
-holds too little or breaks, tune `SNAP_HOOK`, `SNAP_T` and `SNAP_ROOT` in `enclosure.py`. Try the
-fit first with the test pieces from `--snap-test`: a 5.8 mm slice of each base around the far
-supports, and a 15 mm stand-in for the board's end (or use the real XIAO).
+**Holding the board:** in both XIAO cases the board clicks in: four springy snap lips hook over the
+long edges (0.52 mm in the USB case, 0.52 mm in the battery case), so it stays put with the lid off;
+each lip goes on as a tab 2 mm above the board, to push it open with a small screwdriver. They sit 4
+mm in from each end, between the first and second castellated pad, where the edge is straight; the
+XIAO's corners are rounded (r ≈ 2 mm), so a lip there would not reach the edge. With the lid on, the
+tab presses on the USB-C socket and two stiff L-shaped ribs press on the far corners. If a lip holds
+too little or breaks, tune `SNAP_STRAIN` and `SNAP_HOOK` in `enclosure.py`: each hook is as big as
+its lip's free height allows within `SNAP_STRAIN` (4 %), at most `SNAP_HOOK`. Try the fit first with
+the test pieces from `--snap-test`: a 7 mm slice of the USB base and of the battery frame around the
+far supports, and a 15 mm stand-in for the board's end (or use the real XIAO).
 
 ## The XIAO battery case
 
-Three layers instead of a second compartment: the LP-552035 lies flat on the floor, a 3 mm wiring
-layer sits above it, and the XIAO rests on four 45° brackets on the side walls on top (no
-supports needed when printing). Each bracket has a springy snap lip with a 0.25 mm hook over the
-board's edge, so the board clicks in and stays put with the lid off; with the lid on, two stiff
-ribs hung from its lip press the far corners down right above the brackets. The BAT pads and the
-paddle wires are soldered on the board's underside, so every wire runs in that layer, out of sight. The jack sits above the cell; under it
-is a 10 mm bay for the mated JST-PH pair and the spare lead, separated from the cell by a low rib
-with a gap for the lead. Four countersunk screws go into bosses that hang from the side walls
-above the cell. Keep the joints under the board flat — 3 mm is the limit — and tape the cell to
-the floor, it has 0.5 mm of play upwards.
+Three layers and three parts: the LP-552035 lies flat in a pocket on the floor of the base, a 3 mm
+wiring layer sits above it, and the XIAO sits on top in a **frame** that drops into the base on top
+of the cell. Nothing in the base hangs over the cell, so the cell goes in and out straight from
+above; everything that holds the board and the screws is on the frame. Its two low rails rest on 1
+mm shoulders along the long walls, 0.5 mm above the cell, and are joined by a cross bar between the
+middle bosses (the wires pass over it), by the jack's cradle at the jack end and by a cross wall at
+the USB end that carries the board's end; a web along the outside of each rail, up to the board,
+makes the rails L-shaped and stiff. On the rails: four 45° brackets under the board's corners, the
+four snap lips (rising free from a thin floor in pockets in the rails, just above the frame's
+underside, 0.52 mm hook), the cradle the jack rests in, and four screw bosses that reach up to the
+lid, so the lid's screws clamp the frame down. With the lid on, two stiff ribs hung from its lip
+press the board's far corners down right above the brackets. The frame is flat underneath and prints
+as it sits, without supports; print base, frame and lid in one go.
+
+Everything is soldered directly, no connectors: the jack's wires to D1 / D2 / GND and the cell's
+lead (plug cut off) to the BAT pads, all on the board's underside, so every wire runs in the wiring
+layer, out of sight. Board, jack and frame are put together on the bench and lowered in as one
+module: the jack's thread drops into a slot in the end wall that is open to the top (the lid closes
+it with a tab), then the ring nut goes on outside. To change the cell, unscrew the lid and lift the
+frame out with everything on it. Under the jack is a 10 mm bay for the cell's spare lead, separated
+from the cell by a low rib with a gap for the lead. Keep the joints under the board flat (3 mm is
+the limit) and tape the cell to the floor; it has 0.5 mm of play up to the frame.
 
 ## XIAO ESP32-S3 and XIAO nRF52840
 
