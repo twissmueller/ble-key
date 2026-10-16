@@ -3,10 +3,11 @@ DONAU PPH4) clamps like a board, with the XIAO clicked in on top.
 
 The XIAO rests on two ledges under its short ends, 3 mm above the plate, over a window: its long
 edges with all the castellated pads are free from above, from the side and from below (turn the
-holder over to reach the underside). Two springy clips hold it, both at the short ends, away from
-the pads, so the iron cannot melt them: a wide one that hooks over the USB-C socket's metal shell
-where it reaches past the board, and one at the far end, in the one gap that is free of parts on
-both boards. Two posts beside the socket's shell centre the board.
+holder over to reach the underside). Two stiff clips hold it, both at the short ends, away from
+the pads, so the iron cannot melt them: one hooks over the USB-C socket's metal shell where it
+reaches past the board, the other over the board's far end, in the one gap that is free of parts
+on both boards. Both stand on wide bodies beyond the board, so they do not wobble. Two posts beside
+the socket's shell centre the board.
 
 Run with
 
@@ -27,7 +28,7 @@ HERE = Path(__file__).parent
 OUT = HERE / "out" / "jig"
 
 CLEAR = 0.3         # FDM fit around the board
-PLATE_L, PLATE_W, PLATE_T = 60.0, 40.0, 1.6     # clamped like a 1.6 mm board
+PLATE_L, PLATE_W, PLATE_T = 80.0, 40.0, 1.6     # clamped like a 1.6 mm board
 LIFT = 3.0          # board underside above the plate: room for wires and the iron underneath
 LEDGE = 1.2         # how far each ledge reaches under the board's end
 LEDGE_W = 13.0      # ledge width (y): inside the rounded corners
@@ -38,14 +39,17 @@ USB_OVER = 1.53     # USB-C shell beyond the board's end
 USB_HALF = 4.47     # half its width
 USB_TOP = 4.46      # its top above the board's underside
 
-CLIP_T = 0.8        # clip thickness
+CLIP_T = 1.2        # clip thickness: stiff, so the board sits firm while soldering
 CLIP_STRAIN = 0.04  # bending strain a clip may take while the board clicks in (PETG)
-CLIP_HOOK = 0.5     # at most this far over the shell or the board's end
+CLIP_HOOK = 0.8     # at most this far over the shell or the board's end
 CLIP_LEAD = 1.0     # lead-in above the hook
-USB_CLIP_W = 6.0    # clip over the USB-C shell, centred
-# far-end clip (centre y, width): in the gap that is free of parts on both the XIAO ESP32-S3 and the
+HOOK_FLAT = 0.4     # flat front on the hook tip instead of a sharp edge
+USB_CLIP_W = 12.0   # clip body at the USB end, centred
+USB_HOOK_W = 8.0    # its hook, over the USB-C shell (8.94 wide)
+FAR_CLIP_W = 10.0   # clip body at the far end, centred: it stands beyond the board, so it can be wide
+# far-end hook (centre y, width): in the gap that is free of parts on both the XIAO ESP32-S3 and the
 # XIAO nRF52840 (checked against the STEP models in main)
-FAR_CLIP = (-1.3, 2.3)
+FAR_HOOK = (-1.3, 2.3)
 
 Z_PLATE = PLATE_T
 Z_BOARD = PLATE_T + LIFT
@@ -59,25 +63,28 @@ def clip_hook(top):
     return min(CLIP_HOOK, math.floor(CLIP_STRAIN * h * h / (1.5 * CLIP_T) * 100) / 100)
 
 
-def clip(end, yc, width):
+def clip(end, body_w, hook_yc, hook_w):
     """Springy clip beyond one short end (end = +1 at the USB end, -1 at the far end), standing
-    free from the plate: it hooks over the USB-C shell or over the board's end, with a lead-in
-    above the hook and a tab above that to push it open."""
+    free from the plate: a wide body for stiffness, centred, with a hook only where there is room
+    for it, over the USB-C shell or over the board's end; a lead-in above the hook and a tab above
+    that to push it open."""
     edge, top = (PCB_L + USB_OVER, USB_TOP) if end > 0 else (0.0, PCB_T)
     xi = edge + end * CLEAR                     # inner face, towards the board
     xo = xi + end * CLIP_T                      # outer face
     xt = edge - end * clip_hook(top)            # hook tip
     zh = Z_BOARD + top + 0.1                    # hook underside
-    zl = zh + CLIP_LEAD                         # top of the lead-in
+    zl = zh + HOOK_FLAT + CLIP_LEAD             # top of the lead-in
     zt = zl + 1.0                               # tab top
-    pts = [(xi, Z_PLATE), (xi, zh), (xt, zh), (xi, zl), (xi, zt), (xo, zt), (xo, Z_PLATE)]
+    body = [(xi, Z_PLATE), (xi, zt), (xo, zt), (xo, Z_PLATE)]
+    hook = [(xi, zh), (xt, zh), (xt, zh + HOOK_FLAT), (xi, zl)]
     with BuildPart() as p:
-        # Plane.XZ faces -y: start at the clip's +y side and extrude towards -y
-        with BuildSketch(Plane.XZ.offset(-(yc + width / 2))):
-            Polygon(*pts, align=None)
-        extrude(amount=width)
+        # Plane.XZ faces -y: start at the +y side and extrude towards -y
+        for pts, yc, w in ((body, 0.0, body_w), (hook, hook_yc, hook_w)):
+            with BuildSketch(Plane.XZ.offset(-(yc + w / 2))):
+                Polygon(*pts, align=None)
+            extrude(amount=w)
     bb = p.part.bounding_box()
-    assert abs(bb.min.Y - (yc - width / 2)) < 0.01, "clip extruded the wrong way"
+    assert abs(bb.min.Y + body_w / 2) < 0.01, "clip extruded the wrong way"
     return p.part
 
 
@@ -94,8 +101,8 @@ def jig():
         for x0 in (0.0, PCB_L - LEDGE):
             with Locations((x0, 0, Z_PLATE)):
                 Box(LEDGE, LEDGE_W, LIFT, align=(Align.MIN, Align.CENTER, Align.MIN))
-        insert(clip(+1, 0.0, USB_CLIP_W))
-        insert(clip(-1, *FAR_CLIP))
+        insert(clip(+1, USB_CLIP_W, 0.0, USB_HOOK_W))
+        insert(clip(-1, FAR_CLIP_W, *FAR_HOOK))
         # posts beside the USB-C shell where it reaches past the board: they centre the board
         for sy in (-1, 1):
             with Locations((PCB_L + CLEAR, sy * (USB_HALF + CLEAR), Z_PLATE)):
