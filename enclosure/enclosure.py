@@ -7,9 +7,9 @@ variant has a third part, the frame):
 - battery:  three layers: a 350 mAh LP-552035 LiPo in a pocket on the floor, a 3 mm wiring
             layer above it for the joints and wires on the board's underside (BAT pads, and the
             paddle wires soldered to D1 / D2 / GND from below), and the board on top. The board
-            sits in a frame that drops in on top of the cell, so nothing hangs over the cell and
-            it goes in and out straight from above. The jack sits above the cell in a cradle on
-            the frame, and the cell's spare lead has a bay of its own under the jack.
+            sits in a frame that drops in on top of the cell. The lid is screwed into bosses that
+            hang in the base's four corners. The jack sits above the cell in a cradle on the
+            frame, and the cell's spare lead has a bay of its own under the jack.
 
 Both variants take the jack through a slot in the end wall, open to the top and closed by a tab on
 the lid, so the jack drops in from above already soldered to the board. In the battery variant,
@@ -100,7 +100,6 @@ WIRE_H = 3.0        # wiring layer between the cell and the board's underside
 BRACKET_IN = 1.2    # how far the brackets reach under the board's long edges
 FRAME_LEDGE = 1.0   # shoulder along each long wall, above the cell pocket, that the frame rests on
 RAIL_H = 1.2        # height of the frame's rails
-FRAME_SCREW_IN = 1.8  # screw axes in from the frame's outer faces
 FRAME_WEB = 0.6     # web along the outside of each rail, up to the board: makes the rails L-shaped
 SNAP_GAP = 0.4      # gap around a snap lip where it rises through its rail
 SNAP_BASE = 0.4     # floor left under that pocket: it ties the lip to the rail (two 0.2 mm layers)
@@ -113,15 +112,21 @@ SNAP_TAB = 2.0      # lip top above the board's top: a tab to push the lip open 
 SNAP_X = 4.0        # lip centre from each end of the board: the corners are rounded (r ≈ 2) and
                     # the first castellated pad notches the edge 2.5-3.0 from the end, so the lips
                     # sit on the straight stretch between the first and second pad (3.1-5.0)
+SNAP_X_USB = 6.7    # battery: lip centre from the USB end, between the second and third pad
+                    # (5.65-7.75): the corner bosses there leave no room for the lips at SNAP_X
 
 # --- Layout ---------------------------------------------------------------------------------
 WIRE_BAY = 6.0                              # USB variant: between jack body and board
 SIDE_W = PCB_W + 2 * SIDE_GAP               # compartment width around the board
 
-# Screws: M2 self-tapping into bosses that stand against a wall, intruding only into the
-# electronics compartment.
+# Screws: M2 self-tapping into bosses. USB: bosses that stand against a wall, intruding only into
+# the electronics compartment. Battery: bosses that hang in the case's four corners from the top,
+# so the lid is screwed to the case itself.
 BOSS_R = 2.6
 PILOT_D = 1.7       # M2 self-tapping pilot
+CORNER_IN = 1.5     # battery: screw axes in from both walls of a corner
+CORNER_DEPTH = 6.5  # battery: corner boss from the lid down; below it a 45° slope back to the walls
+CORNER_PILOT = 5.5  # its pilot hole: a 6.5 mm screw reaches 4.5 below the lid's underside
 SCREW_D = 2.4       # lid clearance hole
 CSK_D = 4.6         # 90° countersink for 2.2 mm countersunk screws (DIN 7982, head up to 4.4 mm)
 
@@ -153,9 +158,13 @@ class Variant:
 
     @property
     def inner_w(self):
-        """Width above the cell pocket; the battery variant is wider by the shoulders the frame
-        rests on."""
-        return max(SIDE_W, self.bay_w + 2 * FRAME_LEDGE) if self.battery else SIDE_W
+        """Width above the cell pocket. The battery variant is wider: by the shoulders the frame
+        rests on, and so that the corner bosses at the USB end stand clear beside the board, which
+        reaches right up to that wall."""
+        if not self.battery:
+            return SIDE_W
+        beside_board = 2 * (PCB_W / 2 + CLEAR + CORNER_IN + BOSS_R)
+        return max(SIDE_W, self.bay_w + 2 * FRAME_LEDGE, beside_board)
 
     @property
     def bay_h(self):
@@ -191,7 +200,8 @@ class Variant:
     @property
     def lip_xs(self):
         """Start x of the snap lips: one pair near the far end, one near the USB end."""
-        return (self.pcb_x0 + SNAP_X - SNAP_L / 2, self.inner_l - SNAP_X - SNAP_L / 2)
+        usb = SNAP_X_USB if self.battery else SNAP_X
+        return (self.pcb_x0 + SNAP_X - SNAP_L / 2, self.inner_l - usb - SNAP_L / 2)
 
     @property
     def lip_root(self):
@@ -214,20 +224,19 @@ class Variant:
         return min(SNAP_HOOK, math.floor(min(by_strain, self.lip_room - 0.1) * 100) / 100)
 
     @property
-    def screw_y(self):
+    def screws(self):
+        """Screw axes. USB: one pair of bosses along the long walls in the wiring bay, from the
+        floor. Battery: one in each corner of the case, hanging from the top."""
         if self.battery:
-            return self.inner_w / 2 - CLEAR - FRAME_SCREW_IN
-        return self.inner_w / 2 - 0.6
+            xs, y = (CORNER_IN, self.inner_l - CORNER_IN), self.inner_w / 2 - CORNER_IN
+        else:
+            xs, y = (JACK.depth + WIRE_BAY / 2,), self.inner_w / 2 - 0.6
+        return [(x, sy * y) for x in xs for sy in (-1, 1)]
 
     @property
-    def screws(self):
-        """Bosses along the long walls. USB: one pair in the wiring bay, from the floor. Battery:
-        on the frame, a pair beside the jack and a pair between the jack and the board."""
-        if self.battery:
-            xs = [5.0, (JACK.depth + self.pcb_x0) / 2]
-        else:
-            xs = [JACK.depth + WIRE_BAY / 2]
-        return [(x, sy * self.screw_y) for x in xs for sy in (-1, 1)]
+    def frame_bar_x(self):
+        """Battery: the frame's cross bar, between the jack and the board."""
+        return (JACK.depth + self.pcb_x0) / 2
 
     @property
     def outer(self):
@@ -246,6 +255,34 @@ def boss_footprint(x, y, grow=0.0, height=0.0, z0=0.0):
     boss = Pos(x, y, z0) * Solid.make_cylinder(r, height)
     joint = Pos(x - r, y + sy * 0.6 - web / 2, z0) * Solid.make_box(2 * r, web, height)
     return boss + joint
+
+
+def corner_boss(v: Variant, x, y, grow=0.0, z0=0.0, z1=0.0, slope=False):
+    """Battery: the footprint of the boss in the corner nearest (x, y), from z0 to z1: the boss
+    cylinder filled out to both walls (plain solid, outside any builder). It reaches past the walls,
+    to be trimmed to the case outline or cut from parts inside. With slope, a 45° slope hangs below
+    z0 and runs back into the walls, so the boss prints without supports."""
+    sx = 1 if x < v.inner_l / 2 else -1        # into the room from the end wall
+    sy = 1 if y > 0 else -1                     # towards the long wall
+    xw, yw = (0.0 if sx > 0 else v.inner_l), sy * v.inner_w / 2
+    r = BOSS_R + grow
+    reach = CORNER_IN + BOSS_R + 0.5            # past the walls, so the slope still meets them
+
+    def rect(xa, xb, ya, yb):
+        with Locations(((xa + xb) / 2, (ya + yb) / 2)):
+            Rectangle(abs(xb - xa), abs(yb - ya))
+
+    with BuildPart() as p:
+        with BuildSketch(Plane.XY.offset(z0)) as s:
+            rect(xw - sx * reach, x + sx * r, y, yw + sy * reach)
+            rect(xw - sx * reach, x, y - sy * r, yw + sy * reach)
+            with Locations((x, y)):
+                Circle(r)
+        extrude(amount=z1 - z0)
+        if slope:
+            # down until the inner edge has receded to the walls
+            extrude(s.sketch, amount=CORNER_IN + r, dir=(0, 0, -1), taper=45)
+    return p.part
 
 
 def snap_lip(v: Variant, x0, length, sy, zr):
@@ -272,12 +309,12 @@ def snap_lip(v: Variant, x0, length, sy, zr):
 
 
 def frame(v: Variant):
-    """Battery variant: drops in on top of the cell and carries everything that would otherwise
-    hang over it, so the cell goes in and out straight from above. Two low rails rest on the
-    shoulders above the cell pocket, joined by a cross bar between the middle bosses and by the
-    jack's cradle at the jack end; on them stand the board brackets, the snap lips and the screw
-    bosses. The bosses reach up to the lid, so its screws clamp the frame. Flat underneath: it
-    prints as it sits, without supports.
+    """Battery variant: drops in on top of the cell, past the base's corner bosses (it is cut away
+    round them), and carries the board and the jack. Two low rails rest on the shoulders above the
+    cell pocket, joined by a cross bar between the jack and the board, by the jack's cradle at the
+    jack end and by a cross wall at the USB end; on them stand the board brackets and the snap
+    lips. The lid's screws go into the base; the lid holds the frame down through the board. Flat
+    underneath: it prints as it sits, without supports.
 
     Brackets: four 45° wedges carry the board's corners; 2 mm long at the USB end so they stay
     clear of the first castellated pad, which may carry a wire soldered from below. The far pair
@@ -305,12 +342,16 @@ def frame(v: Variant):
         # board across its full width
         with Locations((L - CLEAR, 0, z0)):
             Box(1.2, 2 * yi, v.board_z - z0, align=(Align.MAX, Align.CENTER, Align.MIN))
-        # cross bar between the middle bosses, so the frame is one part; wires pass over it
-        with Locations((v.screws[-1][0], 0, z0)):
+        # the corner bosses at the USB end cut the rails short of the cross wall there: a bar under
+        # each of the board's long edges ties the cross wall back to the rails
+        x_cut = L - (CORNER_IN + BOSS_R + CLEAR)
+        for sy in (-1, 1):
+            y0, y1 = PCB_W / 2 - 1.3, yi + 0.5
+            with Locations(((x_cut - 1.0 + L - CLEAR) / 2, sy * (y0 + y1) / 2, z0)):
+                Box(L - CLEAR - (x_cut - 1.0), y1 - y0, RAIL_H, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        # cross bar between the jack and the board, so the frame is one part; wires pass over it
+        with Locations((v.frame_bar_x, 0, z0)):
             Box(1.5, 2 * yi, RAIL_H, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        for x, y in v.screws:
-            with Locations((x, y, z0)):
-                Cylinder(BOSS_R, H - z0, align=(Align.CENTER, Align.CENTER, Align.MIN))
         # cradle for the jack: a plate it rests on, over the connector bay, and a cheek either side,
         # so board, jack and frame go in as one; the plate also ties the rails at this end
         cradle_l = JACK.depth - 5.0
@@ -340,16 +381,14 @@ def frame(v: Variant):
                     Box(SNAP_L + 2 * SNAP_GAP, y_back - yi, zt - v.lip_root,
                         align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
                 insert(snap_lip(v, x0, SNAP_L, sy, v.lip_root))
-        # trim to the space above the shoulders, rounded like the case's inside (cuts the bosses
-        # flat against the walls)
+        # trim to the space above the shoulders, rounded like the case's inside
         with Locations((L / 2, 0, z0)):
             with BuildSketch(mode=Mode.PRIVATE) as trim:
                 RectangleRounded(L - 2 * CLEAR, 2 * yo, CORNER_R - WALL - CLEAR)
         extrude(trim.sketch, amount=H - z0, mode=Mode.INTERSECT)
+        # leave the case's corner bosses free over the frame's whole height, so it drops in past them
         for x, y in v.screws:
-            with Locations((x, y, H)):
-                Cylinder(PILOT_D / 2, H - z0 - 1.0, align=(Align.CENTER, Align.CENTER, Align.MAX),
-                         mode=Mode.SUBTRACT)
+            insert(corner_boss(v, x, y, CLEAR, z0, H), mode=Mode.SUBTRACT)
     return p.part
 
 
@@ -361,6 +400,7 @@ def base(v: Variant):
             with BuildSketch():
                 RectangleRounded(outer_l, outer_w, CORNER_R)
             extrude(amount=FLOOR + H)
+        outline = copy.copy(p.part)
         # battery: a pocket for the cell, and above it shoulders along the long walls for the frame
         z_wide = v.bay_h if v.battery else 0.0
         with Locations((L / 2, 0, z_wide)):
@@ -378,6 +418,13 @@ def base(v: Variant):
             for sy in (-1, 1):
                 with Locations((CONN_L, sy * (LEAD_GAP / 2 + seg / 2), 0)):
                     Box(RIB_T, seg, RIB_H, align=(Align.MIN, Align.CENTER, Align.MIN))
+            # a boss hanging in each corner from the top, for the lid's screws; the cell goes in
+            # tilted, USB end first, as its far corners reach under the bosses at that end
+            for x, y in v.screws:
+                insert(corner_boss(v, x, y, z0=H - CORNER_DEPTH, z1=H, slope=True) & outline)
+                with Locations((x, y, H)):
+                    Cylinder(PILOT_D / 2, CORNER_PILOT, align=(Align.CENTER, Align.CENTER, Align.MAX),
+                             mode=Mode.SUBTRACT)
         else:
             for x, y in v.screws:
                 insert(boss_footprint(x, y, height=H))
@@ -443,7 +490,10 @@ def lid(v: Variant):
             extrude(amount=-LIP_H)
         for x, y in v.screws:
             # only as tall as the lip: the lid plate above the boss must stay solid
-            insert(boss_footprint(x, y, CLEAR, LIP_H, H - LIP_H), mode=Mode.SUBTRACT)
+            if v.battery:
+                insert(corner_boss(v, x, y, CLEAR, H - LIP_H, H), mode=Mode.SUBTRACT)
+            else:
+                insert(boss_footprint(x, y, CLEAR, LIP_H, H - LIP_H), mode=Mode.SUBTRACT)
         if JACK.round:
             with Locations(Location((LIP_T + 1.0, 0, v.jack_z), (0, 90, 0))):
                 Cylinder(JACK.body_w / 2 + 0.5, 2 * (LIP_T + 1.0), mode=Mode.SUBTRACT)

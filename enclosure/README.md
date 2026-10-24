@@ -7,7 +7,7 @@ over for printing. `preview.html` shows both cases in 3D after the script has ru
 | Case | Outer size, Cliff FC681374V (default) | with `--jack pj392` |
 |---|---|---|
 | USB only | 48.5 × 25.0 × 14.1 mm | 43.0 × 25.0 × 13.6 mm |
-| Battery under the board | 53.2 × 27.3 × 21.1 mm | 53.2 × 27.3 × 20.1 mm |
+| Battery under the board | 53.2 × 30.5 × 21.1 mm | 53.2 × 30.5 × 20.1 mm |
 
 **The jack.** The default is the **Cliff FC681374V** (Reichelt 228160): M8 × 0.75 thread through an
 8.5 mm slot in the full 2 mm wall, open to the top and closed by a tab on the lid, ring nut outside,
@@ -36,7 +36,8 @@ closes it with a tab), so it goes in already soldered to the board; then tighten
 long edges (0.52 mm in the USB case, 0.52 mm in the battery case), so it stays put with the lid off;
 each lip goes on as a tab 2 mm above the board, to push it open with a small screwdriver. They sit 4
 mm in from each end, between the first and second castellated pad, where the edge is straight; the
-XIAO's corners are rounded (r ≈ 2 mm), so a lip there would not reach the edge. With the lid on, the
+XIAO's corners are rounded (r ≈ 2 mm), so a lip there would not reach the edge. In the battery case
+the pair at the USB end sits 6.7 mm in, between the second and third pad, clear of the corner bosses. With the lid on, the
 tab presses on the USB-C socket and two stiff L-shaped ribs press on the far corners. If a lip holds
 too little or breaks, tune `SNAP_STRAIN` and `SNAP_HOOK` in `enclosure.py`: each hook is as big as
 its lip's free height allows within `SNAP_STRAIN` (4 %), at most `SNAP_HOOK`. Try the fit first with
@@ -47,17 +48,27 @@ far supports, and a 15 mm stand-in for the board's end (or use the real XIAO).
 
 Three layers and three parts: the LP-552035 lies flat in a pocket on the floor of the base, a 3 mm
 wiring layer sits above it, and the XIAO sits on top in a **frame** that drops into the base on top
-of the cell. Nothing in the base hangs over the cell, so the cell goes in and out straight from
-above; everything that holds the board and the screws is on the frame. Its two low rails rest on 1
-mm shoulders along the long walls, 0.5 mm above the cell, and are joined by a cross bar between the
-middle bosses (the wires pass over it), by the jack's cradle at the jack end and by a cross wall at
-the USB end that carries the board's end; a web along the outside of each rail, up to the board,
-makes the rails L-shaped and stiff. On the rails: four 45° brackets under the board's corners, the
-four snap lips (rising free from a thin floor in pockets in the rails, just above the frame's
-underside, 0.52 mm hook), the cradle the jack rests in, and four screw bosses that reach up to the
-lid, so the lid's screws clamp the frame down. With the lid on, two stiff ribs hung from its lip
-press the board's far corners down right above the brackets. The frame is flat underneath and prints
-as it sits, without supports; print base, frame and lid in one go.
+of the cell. Everything that holds the board is on the frame.
+
+**Screws:** 4 × countersunk self-tapping 2.2 × 6.5 (DIN 7982; 6 mm works too, 8 mm does not), one in
+each corner. The lid is screwed to the base itself: a boss hangs in each of the base's corners from
+the top, 6.5 mm deep with a 5.5 mm pilot hole, and below it a 45° slope runs back into the walls, so
+it prints without supports. The case is 3 mm wider than the cell needs, so the two bosses at the USB
+end stand clear beside the board, which reaches right up to that wall; the frame is cut away round
+all four bosses and drops in past them. The cell's far corners at the USB end reach about 1 mm under
+those two bosses: put the cell in tilted, USB end first, then lower the jack end.
+
+The frame's two low rails rest on shoulders along the long walls, 0.5 mm above the cell, and are
+joined by a cross bar between the jack and the board (the wires pass over it), by the jack's cradle
+at the jack end and by a cross wall at the USB end that carries the board's end; the corner bosses
+cut the rails short of that wall, so a bar under each of the board's long edges ties it back to
+them. A web along the outside of each rail, up to the board, makes the rails L-shaped and stiff. On
+the rails: four 45° brackets under the board's corners, the four snap lips (rising free from a thin
+floor in pockets in the rails, just above the frame's underside, 0.52 mm hook) and the cradle the jack
+rests in. With the lid on, its tab presses on the USB-C socket and two stiff ribs hung from its lip
+press the board's far corners down right above the brackets, so the lid holds the frame down
+through the board. The frame is flat underneath and prints as it sits, without supports; print
+base, frame and lid in one go.
 
 Everything is soldered directly, no connectors: the jack's wires to D1 / D2 / GND and the cell's
 lead (plug cut off) to the BAT pads, all on the board's underside, so every wire runs in the wiring
