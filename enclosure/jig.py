@@ -36,12 +36,13 @@ HERE = Path(__file__).parent
 OUT = HERE / "out" / "jig"
 
 CLEAR = 0.3         # FDM fit around the board
-PLATE_L, PLATE_W, PLATE_T = 100.0, 40.0, 1.6     # clamped like a 1.6 mm board
+PLATE_L, PLATE_W, PLATE_T = 100.0, 60.0, 1.6     # clamped like a 1.6 mm board
 LIFT = 5.0          # board underside above the plate: room for wires and the iron underneath,
                     # and a long enough spring for the far clip
 LEDGE = 1.2         # how far each ledge reaches under the board's end
 LEDGE_W = 13.0      # ledge width (y): inside the rounded corners
-WINDOW_W = 26.0     # window across (y): wider than the board, so the pads are free from below
+WINDOW_W = 46.0     # window across (y): well wider than the board, so the iron reaches the pads
+                    # from below at an angle
 
 PCB_L, PCB_T = 20.95, 1.25                      # Seeed's STEP models
 USB_OVER = 1.53     # USB-C shell beyond the board's end
