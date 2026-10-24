@@ -36,7 +36,7 @@ HERE = Path(__file__).parent
 OUT = HERE / "out" / "jig"
 
 CLEAR = 0.3         # FDM fit around the board
-PLATE_L, PLATE_W, PLATE_T = 80.0, 40.0, 1.6     # clamped like a 1.6 mm board
+PLATE_L, PLATE_W, PLATE_T = 100.0, 40.0, 1.6     # clamped like a 1.6 mm board
 LIFT = 5.0          # board underside above the plate: room for wires and the iron underneath,
                     # and a long enough spring for the far clip
 LEDGE = 1.2         # how far each ledge reaches under the board's end
