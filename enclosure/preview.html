@@ -82,7 +82,8 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
   <div class="controls top">
     <div><span class="lbl">Version</span>
       <div class="group" role="group" aria-label="Version">
-        <button id="var-usb" aria-pressed="true">Modular · USB + tray</button>
+        <button id="var-usb" aria-pressed="true">USB · small case</button>
+        <button id="var-modular" aria-pressed="false">Modular · USB + tray</button>
         <button id="var-battery" aria-pressed="false">Battery case · frame</button>
         <button id="var-snap-test-fdm" aria-pressed="false">Snap test pieces</button>
       </div>
@@ -132,7 +133,7 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
           cases, and a gap of 0.6–0.8 mm behind them. Whether they click well depends on the printer and the filament, so try them
           on two small test pieces before printing a whole case. Both use the FDM fit (0.35 mm).</p>
         <dl class="test">
-          <dt><code>ble-key-snap-test-usb.stl</code></dt><dd>7.4 × 30.7 × 10.8</dd>
+          <dt><code>ble-key-snap-test-usb.stl</code></dt><dd>7.4 × 25.0 × 8.8</dd>
           <dt><code>ble-key-snap-test-battery.stl</code></dt><dd>7.3 × 26.0 × 6.3</dd>
           <dt><code>ble-key-snap-test-board.stl</code></dt><dd>15.0 × 17.8 × 1.25</dd>
         </dl>
@@ -186,6 +187,22 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 (function () {
   const VARIANTS = {
     usb: {
+      dims: '48.5 × 25.0 × 14.1 mm',
+      sub: 'XIAO ESP32-S3 or XIAO nRF52840 · Cliff FC681374V paddle jack · USB-C power',
+      parts: [['Base', '48.5 × 25.0 × 12.1'], ['Lid', '48.5 × 25.0 × 2.0 + lip'],
+              ['Inside', '44.5 × 21.0 × 10.1'], ['Walls / floor / lid', '2.0 / 2.0 / 2.0'], ['Fit clearance', '0.25']],
+      openings: [["USB-C notch", "9.44 wide, closed by lid tab"], ["Plug recess", "12.4 × 7.0 × 0.5"], ["Jack slot", "Ø 8.5 for the M8 thread, open to the top so the jack drops in; wall 2.0, ring nut outside; closed by a lid tab"], ["LED light holes", "2 × Ø 1.6"]],
+      held: "<p>No screws or glue touch the XIAO. It clicks into the base and is clamped by the lid:</p><ul><li><b>Underneath:</b> four 3 × 3 mm corner pads lift it 3 mm off the floor, so the solder joints and wires on its underside have room.</li><li><b>Snap lips:</b> four springy lips stand free from the floor beside the long edges, 4 mm in from each end where the edge is straight (the board's corners are rounded), with a 0.52 mm hook over the edge, a lead-in above it and a tab 2 mm above the board. Press the board down and it clicks in; it stays put with the lid off. To take it out, push the tabs outwards with a small screwdriver.</li><li><b>Lengthwise:</b> the USB-C end rests against the end wall with the socket in its notch, so pulling a cable cannot drag the board out. A rib behind the far edge stops a plug from pushing it back.</li><li><b>From above:</b> when the lid is screwed down, its tab sits on top of the USB-C socket and two stiff L-shaped ribs, hung from the lid's lip, press on the far corners of the board.</li></ul>",
+      files: 'out/usb/ble-key-usb-base.step, ble-key-usb-lid.step — for PETG on an FDM printer: out/usb-fdm/',
+      buy: ['Cliff FC681374V 3.5 mm stereo jack with ring nut (Reichelt 228160)',
+            '2 × countersunk self-tapping screw 2.2 × 6.5 (DIN 7982), 6 mm long works too — <a href="https://www.ebay.de/itm/286747669467" target="_blank" rel="noopener">eBay V2A</a>, <a href="https://www.ebay.de/itm/197472994496" target="_blank" rel="noopener">eBay V4A</a>, <a href="https://www.ehorst.de/en/Technischer-Handel/Befestigung-und-Beschlaege/Verbindungstechnik/Schrauben-und-Schraubenkomponenten/Blechschrauben/Edelstahl-A2/3" target="_blank" rel="noopener">ehorst A2</a>'],
+      steps: ['Solder the jack wires: pin 3 (T) to D1, pin 2 (R) to D2, pin 1 (S) to GND; pin 4 (switch) stays free.',
+              'Lower the jack into the slot in the end wall, square body flat on the floor, and tighten the ring nut outside.',
+              'Lower the XIAO in USB-C first, with the socket in the notch, onto the four corner pads, and press it down until the snap lips click.',
+              'Put the lid on and fasten the two countersunk screws.'],
+      names: ['base', 'lid', 'board', 'jack'],
+    },
+    modular: {
       dims: '57.9 × 30.5 × 14.5 mm · 22.8 with the battery tray',
       sub: 'XIAO nRF52840 (the ESP32-S3 fits too) · Cliff FC681374V paddle jack · USB-C power, battery tray to add at once or later',
       parts: [['Base', '57.9 × 30.5 × 12.5'], ['Lid', '57.9 × 30.5 × 2.0 + lip'], ['Battery tray', '57.9 × 30.5 × 8.3'],
@@ -193,7 +210,7 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
               ['Plug bay (tray, USB end)', '10.0 between the screw columns'], ['Walls / floor / lid', '2.0 / 2.0 / 2.0'], ['Fit clearance', '0.25']],
       openings: [["USB-C notch", "9.44 wide, closed by lid tab"], ["Plug recess", "12.4 × 7.0 × 0.5"], ["Jack slot", "Ø 8.5 for the M8 thread, open to the top so the jack drops in; wall 2.0, ring nut outside; closed by a lid tab"], ["Knock-out", "5.4 × 7.5 in the floor under the BAT pads, 0.3 rim, dimple below"], ["Corner columns", "4, floor to lid; lid screws from above, tray screws from below through a 0.4 skin with a centring dimple"], ["LED light holes", "2 × Ø 1.6"]],
       held: "<p>No screws or glue touch the XIAO. It clicks into the base and is clamped by the lid:</p><ul><li><b>Underneath:</b> four 3 × 3 mm corner pads lift it 5 mm off the floor, so the solder joints, the wires and the battery lead's plug on its underside have room.</li><li><b>Snap lips:</b> four springy lips stand free from the floor beside the long edges where the edge is straight (the board's corners are rounded): 4 mm in from the far end, 6.7 mm in from the USB end, with a 0.7 mm hook over the edge, a lead-in above it and a tab 2 mm above the board. Press the board down and it clicks in; it stays put with the lid off. To take it out, push the tabs outwards with a small screwdriver.</li><li><b>Lengthwise:</b> the USB-C end rests against the end wall with the socket in its notch, so pulling a cable cannot drag the board out. A rib behind the far edge stops a plug from pushing it back.</li><li><b>From above:</b> when the lid is screwed down, its tab sits on top of the USB-C socket and two stiff L-shaped ribs, hung from the lid's lip, press on the far corners of the board.</li><li><b>The battery lead</b> is soldered to the BAT pads (underside, between D2 and D3) on every key and waits under the board with its JST-PH plug, right above the knock-out.</li><li><b>The battery tray</b> screws on underneath: the cell between the jack-end corner columns, its plug in a bay at the USB end. Four countersunk screws from below, one in each corner, into the same corner columns as the lid's screws. The base's floor closes the tray.</li></ul>",
-      files: 'out/usb/ble-key-usb-base.step, ble-key-usb-lid.step, ble-key-usb-tray.step — for PETG on an FDM printer: out/usb-fdm/ (tray floor down, no supports)',
+      files: 'out/modular/ble-key-modular-base.step, ble-key-modular-lid.step, ble-key-modular-tray.step — for PETG on an FDM printer: out/modular-fdm/ (tray floor down, no supports)',
       buy: ['Cliff FC681374V 3.5 mm stereo jack with ring nut (Reichelt 228160)',
             '4 × countersunk self-tapping screw 2.2 × 6.5 (DIN 7982), 6 mm long works too — <a href="https://www.ebay.de/itm/286747669467" target="_blank" rel="noopener">eBay V2A</a>, <a href="https://www.ebay.de/itm/197472994496" target="_blank" rel="noopener">eBay V4A</a>, <a href="https://www.ehorst.de/en/Technischer-Handel/Befestigung-und-Beschlaege/Verbindungstechnik/Schrauben-und-Schraubenkomponenten/Blechschrauben/Edelstahl-A2/3" target="_blank" rel="noopener">ehorst A2</a>',
             'Short JST-PH lead (2 wires) for the BAT pads, on every key',
@@ -231,10 +248,10 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
     'snap-test-fdm': {
       dims: 'two slices + board stand-in',
       sub: 'Snap-lip test pieces for FDM (PETG, 0.35 mm fit) · USB case left, battery case right',
-      parts: [['USB slice', '7.4 × 30.7 × 10.8'], ['Battery slice', '7.3 × 26.0 × 6.3'],
+      parts: [['USB slice', '7.4 × 25.0 × 8.8'], ['Battery slice', '7.3 × 26.0 × 6.3'],
               ['Board stand-in', '15.0 × 17.8 × 1.25'], ['Fit clearance', '0.35']],
       openingsTitle: 'Snap lip',
-      openings: [['Hook (USB / battery)', '0.7 / 0.52'], ['Lip thickness', '0.8'], ['Lip length', '1.6'], ['Tab above the board', '2.0'], ['Lip centre from board end', '4.0'], ['Gap behind the lip', '3.4 / 0.8'],
+      openings: [['Hook (USB / battery)', '0.52 / 0.52'], ['Lip thickness', '0.8'], ['Lip length', '1.6'], ['Tab above the board', '2.0'], ['Lip centre from board end', '4.0'], ['Gap behind the lip', '0.6 / 0.8'],
                  ['Lip free from (battery)', '0.4 mm pocket floor, 2.6 below the board']],
       held: "<p>Each piece is a 7 mm slice around the board's far supports, cut just above the lips' tabs: of the USB base, and of the battery case's frame. The board stand-in is shown clicked in; it reaches past the slice towards where the USB end would be.</p><ul><li><b>USB slice:</b> corner pads on the floor; the lips stand free 4 mm in from the board's end, where its edge is straight.</li><li><b>Battery slice:</b> the frame's rails with the 45° corner brackets, end stops and lips, on a thin plate that holds the rails apart the way the case walls do.</li></ul>",
       files: 'out/snap-test-fdm/ble-key-snap-test-usb.stl, ble-key-snap-test-battery.stl, ble-key-snap-test-board.stl',

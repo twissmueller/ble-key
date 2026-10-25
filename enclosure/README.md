@@ -1,19 +1,20 @@
 # Printable cases
 
-`enclosure.py` (build123d, Python CAD) builds the case for a XIAO ESP32-S3 or XIAO nRF52840 with a
+`enclosure.py` (build123d, Python CAD) builds the cases for a XIAO ESP32-S3 or XIAO nRF52840 with a
 3.5 mm paddle jack. It writes STEP and STL per part to `out/`, plus a lid STL turned over for
-printing. `preview.html` shows the cases in 3D after the script has run.
+printing. `preview.html` shows the cases in 3D after the script has run. Three cases, all kept:
 
-The case for the keys that are sold is the **modular** one (XIAO nRF52840): a USB base unit, and a
-battery tray that screws on underneath, at once or as a later upgrade (see
-[The battery tray](#the-battery-tray)). The older battery case with a drop-in frame is still
-generated for the ESP32-S3.
+- **USB** (`out/usb/`): the small case without a battery, the official version today.
+- **Battery, drop-in frame** (`out/battery/`): the cell soldered in, under the board in a frame.
+- **Modular** (`out/modular/`, XIAO nRF52840): a USB base unit and a battery tray that screws on
+  underneath, at once or as a later upgrade (see [The battery tray](#the-battery-tray)).
 
 | Case | Outer size, Cliff FC681374V (default) | with `--jack pj392` |
 |---|---|---|
-| Base unit (USB) | 57.9 × 30.5 × 14.5 mm | 57.9 × 30.5 × 14.5 mm |
-| Base unit with battery tray | 57.9 × 30.5 × 22.8 mm | 57.9 × 30.5 × 22.8 mm |
-| Battery under the board, drop-in frame (ESP32-S3) | 53.2 × 30.5 × 21.1 mm | 53.2 × 30.5 × 20.1 mm |
+| USB | 48.5 × 25.0 × 14.1 mm | 43.0 × 25.0 × 13.6 mm |
+| Battery under the board, drop-in frame | 53.2 × 30.5 × 21.1 mm | 53.2 × 30.5 × 20.1 mm |
+| Modular base unit | 57.9 × 30.5 × 14.5 mm | 57.9 × 30.5 × 14.5 mm |
+| Modular base unit with battery tray | 57.9 × 30.5 × 22.8 mm | 57.9 × 30.5 × 22.8 mm |
 
 **The jack.** The default is the **Cliff FC681374V** (Reichelt 228160): M8 × 0.75 thread through an
 8.5 mm slot in the full 2 mm wall, open to the top and closed by a tab on the lid, ring nut outside,
@@ -26,26 +27,28 @@ writes the same file names, so regenerate before printing.
 ```bash
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.txt
 .venv/bin/python enclosure.py          # MJF / SLA print service, 0.25 mm fit
-.venv/bin/python enclosure.py --fdm    # own FDM printer (PETG), 0.35 mm fit → out/usb-fdm/, out/battery-fdm/
+.venv/bin/python enclosure.py --fdm    # own FDM printer (PETG), 0.35 mm fit → out/usb-fdm/, out/modular-fdm/, out/battery-fdm/
 .venv/bin/python enclosure.py --snap-test   # FDM test pieces for the snap lips → out/snap-test-fdm/
 .venv/bin/python enclosure.py --jack pj392   # any of the above for the PJ-392 instead of the Cliff jack
 ```
 
-**Printing the XIAO case in PETG on an FDM printer** (e.g. Bambu Lab A1 mini): use
-`out/usb-fdm/ble-key-usb-fdm-base.stl` upright, floor on the plate, and
-`out/usb-fdm/ble-key-usb-fdm-lid-print.stl` (already turned over); for a battery key also
-`out/usb-fdm/ble-key-usb-fdm-tray.stl`, floor on the plate. 0.2 mm layers, 3 walls, 20 % infill, no
-supports. Screws: 4 × countersunk self-tapping 2.2 × 6.5 (DIN 7982), one in each corner; the lid has 90°
+**Printing in PETG on an FDM printer** (e.g. Bambu Lab A1 mini): use the base upright, floor on
+the plate, and the lid's `-lid-print.stl` (already turned over), from `out/usb-fdm/`,
+`out/modular-fdm/` or `out/battery-fdm/`; for the modular case's battery key also
+`ble-key-modular-fdm-tray.stl`, floor on the plate. 0.2 mm layers, 3 walls, 20 % infill, no
+supports. Screws: countersunk self-tapping 2.2 × 6.5 (DIN 7982): 2 for the USB case, 4 for the
+battery case, 4 for the modular case plus 4 for its tray, one in each corner; the lid has 90°
 countersinks for them. The jack drops into a slot in the end wall that is open to the top (the lid
 closes it with a tab), so it goes in already soldered to the board; then tighten its ring nut.
 
-**Holding the board:** in both XIAO cases the board clicks in: four springy snap lips hook over the
-long edges (0.7 mm in the USB case, 0.52 mm in the battery case), so it stays put with the lid off;
-each lip goes on as a tab 2 mm above the board, to push it open with a small screwdriver. They sit
-where the edge is straight: 4 mm in from the far end, between the first and second castellated pad,
-and 6.7 mm in from the USB end, between the second and third pad, clear of the corner bosses there;
-the XIAO's corners are rounded (r ≈ 2 mm), so a lip at a corner would not reach the edge. In the USB
-case the board sits 5 mm above the floor. With the lid on, the
+**Holding the board:** in all three cases the board clicks in: four springy snap lips hook over the
+long edges (0.52 mm in the USB and battery cases, 0.7 mm in the modular one), so it stays put with
+the lid off; each lip goes on as a tab 2 mm above the board, to push it open with a small
+screwdriver. They sit where the edge is straight: 4 mm in from each end, between the first and
+second castellated pad; in the battery and modular cases the pair at the USB end sits 6.7 mm in,
+between the second and third pad, clear of the corner bosses there. The XIAO's corners are rounded
+(r ≈ 2 mm), so a lip at a corner would not reach the edge. The board sits 3 mm above the floor in
+the USB case and 5 mm in the modular one. With the lid on, the
 tab presses on the USB-C socket and two stiff L-shaped ribs press on the far corners. If a lip holds
 too little or breaks, tune `SNAP_STRAIN` and `SNAP_HOOK` in `enclosure.py`: each hook is as big as
 its lip's free height allows within `SNAP_STRAIN` (4 %), at most `SNAP_HOOK`. Try the fit first with

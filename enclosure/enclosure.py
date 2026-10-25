@@ -56,8 +56,9 @@ PCB_T = 1.25
 USB_W = 8.94        # receptacle width (y)
 USB_Z0 = 0.26       # receptacle bottom above PCB bottom
 USB_Z1 = 4.46       # receptacle top above PCB bottom
-PCB_LIFT = 5.0      # PCB bottom above the floor: room for solder joints and wires underneath, and
-                    # for the battery lead's JST-PH plug, which waits there above the knock-out
+PCB_LIFT = 3.0      # PCB bottom above the floor: room for solder joints and wires underneath
+PCB_LIFT_MODULAR = 5.0  # modular: also room for the battery lead's JST-PH plug, which waits there
+                        # above the knock-out
 SIDE_GAP = 1.6      # room beside the castellated edges for wires
 
 # --- 3.5 mm panel jack ------------------------------------------------------------------------
@@ -117,11 +118,11 @@ SNAP_X_USB = 6.7    # lip centre from the USB end, between the second and third 
                     # the corner bosses there leave no room for the lips at SNAP_X
 
 # --- Layout ---------------------------------------------------------------------------------
-WIRE_BAY = 11.0                             # USB variant: between jack body and board, at least;
-                                            # the battery tray may need more (see Variant.inner_l)
+WIRE_BAY = 6.0                              # USB and modular: between jack body and board, at
+                                            # least; the battery tray needs more (Variant.inner_l)
 SIDE_W = PCB_W + 2 * SIDE_GAP               # compartment width around the board
 
-# --- Battery tray (USB variant): screwed on under the base to add a cell later ------------------
+# --- Battery tray (modular): screwed on under the base to add a cell later ------------------
 # The cell lies between the jack-end corners, its plug in a bay at the USB end, under a knock-out
 # in the base's floor below the BAT pads (between D2 and D3, 7.7-10.7 mm from the USB end, on the
 # +y half). Four screws, one in each corner, from below into the same corner columns of the base
@@ -164,6 +165,12 @@ LED_HOLE = 1.6
 class Variant:
     name: str
     battery: bool
+    modular: bool = False   # USB base unit with a battery tray to screw on underneath
+
+    @property
+    def plain(self):
+        """The small USB case: no battery, no tray."""
+        return not (self.battery or self.modular)
 
     @property
     def inner_l(self):
@@ -171,8 +178,11 @@ class Variant:
             return CONN_L + RIB_T + BAT_L + 2 * BAT_SLACK
         # the battery tray: the cell between the corner columns at the jack end, then the rib and
         # the plug bay at the USB end
+        usb = JACK.depth + WIRE_BAY + PCB_L
+        if self.plain:
+            return usb
         tray = CORNER_IN + TRAY_COL_R + BAT_L + 2 * BAT_SLACK + RIB_T + CONN_L
-        return max(JACK.depth + WIRE_BAY + PCB_L, tray)
+        return max(usb, tray)
 
     @property
     def bay_w(self):
@@ -185,7 +195,9 @@ class Variant:
         rests on, and so that the corner bosses at the USB end stand clear beside the board, which
         reaches right up to that wall."""
         beside_board = 2 * (PCB_W / 2 + CLEAR + CORNER_IN + BOSS_R)
-        if not self.battery:
+        if self.plain:
+            return SIDE_W
+        if self.modular:
             return max(SIDE_W, self.bay_w, beside_board)    # the tray under it holds the cell
         return max(SIDE_W, self.bay_w + 2 * FRAME_LEDGE, beside_board)
 
@@ -197,7 +209,9 @@ class Variant:
     @property
     def board_z(self):
         """PCB bottom above the floor."""
-        return self.bay_h + WIRE_H if self.battery else PCB_LIFT
+        if self.battery:
+            return self.bay_h + WIRE_H
+        return PCB_LIFT_MODULAR if self.modular else PCB_LIFT
 
     @property
     def board_top(self):
@@ -223,7 +237,8 @@ class Variant:
     @property
     def lip_xs(self):
         """Start x of the snap lips: one pair near the far end, one near the USB end."""
-        return (self.pcb_x0 + SNAP_X - SNAP_L / 2, self.inner_l - SNAP_X_USB - SNAP_L / 2)
+        usb = SNAP_X if self.plain else SNAP_X_USB
+        return (self.pcb_x0 + SNAP_X - SNAP_L / 2, self.inner_l - usb - SNAP_L / 2)
 
     @property
     def lip_root(self):
@@ -247,14 +262,18 @@ class Variant:
 
     @property
     def screws(self):
-        """Screw axes, one in each corner. USB: the lid's screws from above and the battery
-        tray's from below go into the same corner columns. Battery: bosses hanging from the top."""
-        xs, y = (CORNER_IN, self.inner_l - CORNER_IN), self.inner_w / 2 - CORNER_IN
+        """Screw axes. USB: one pair of bosses along the long walls in the wiring bay, from the
+        floor. Modular: one in each corner; the lid's screws from above and the battery tray's from
+        below go into the same corner columns. Battery: one in each corner, hanging from the top."""
+        if self.plain:
+            xs, y = (JACK.depth + WIRE_BAY / 2,), self.inner_w / 2 - 0.6
+        else:
+            xs, y = (CORNER_IN, self.inner_l - CORNER_IN), self.inner_w / 2 - CORNER_IN
         return [(x, sy * y) for x in xs for sy in (-1, 1)]
 
     @property
     def tray_h(self):
-        """USB variant: the battery tray's height, floor plus cell bay; the base's floor closes it."""
+        """Modular: the battery tray's height, floor plus cell bay; the base's floor closes it."""
         return FLOOR + BAT_T + BAT_SLACK
 
     @property
@@ -268,7 +287,18 @@ class Variant:
 
 
 USB = Variant("usb", battery=False)
+MODULAR = Variant("modular", battery=False, modular=True)
 BATTERY = Variant("battery", battery=True)
+
+
+def boss_footprint(x, y, grow=0.0, height=0.0, z0=0.0):
+    """Boss cylinder plus the web that joins it to its wall, from z0 up (plain solids, outside any
+    builder)."""
+    sy = 1 if y > 0 else -1
+    r, web = BOSS_R + grow, 1.2 + grow
+    boss = Pos(x, y, z0) * Solid.make_cylinder(r, height)
+    joint = Pos(x - r, y + sy * 0.6 - web / 2, z0) * Solid.make_box(2 * r, web, height)
+    return boss + joint
 
 
 def corner_boss(v: Variant, x, y, grow=0.0, z0=0.0, z1=0.0, slope=False):
@@ -439,6 +469,12 @@ def base(v: Variant):
                 with Locations((x, y, H)):
                     Cylinder(PILOT_D / 2, CORNER_PILOT, align=(Align.CENTER, Align.CENTER, Align.MAX),
                              mode=Mode.SUBTRACT)
+        elif v.plain:
+            for x, y in v.screws:
+                insert(boss_footprint(x, y, height=H))
+                with Locations((x, y, H)):
+                    Cylinder(PILOT_D / 2, H - 1.0, align=(Align.CENTER, Align.CENTER, Align.MAX),
+                             mode=Mode.SUBTRACT)
         else:
             # a column in each corner from the floor to the lid: the lid's screws go in from above,
             # the battery tray's from below, through a skin that closes the hole without a tray
@@ -470,18 +506,19 @@ def base(v: Variant):
             with Locations((v.pcb_x0 - CLEAR - 0.6, 0, 0)):
                 Box(1.2, 6.0, bz + 1.2, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
-            # knock-out under the BAT pads: the battery lead's plug goes through it into the tray.
-            # A thin plate in a groove that leaves only KNOCK_RIM of floor, so it breaks out clean
-            x0, x1 = L - KNOCK_X[0], L - KNOCK_X[1]
-            y0, y1 = KNOCK_Y
-            with Locations(((x0 + x1) / 2, (y0 + y1) / 2, 0)):
-                Box(x1 - x0 + 1.2, y1 - y0 + 1.2, FLOOR - KNOCK_RIM,
-                    align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
-            with Locations(((x0 + x1) / 2, (y0 + y1) / 2, -FLOOR + KNOCK_RIM)):
-                Box(x1 - x0, y1 - y0, KNOCK_SKIN - KNOCK_RIM, align=(Align.CENTER, Align.CENTER, Align.MIN))
-            # a dimple in its middle, so it can be found from below
-            with Locations(((x0 + x1) / 2, (y0 + y1) / 2, -FLOOR)):
-                Cylinder(1.0, 0.2, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+            if v.modular:
+                # knock-out under the BAT pads: the battery lead's plug goes through it into the tray.
+                # A thin plate in a groove that leaves only KNOCK_RIM of floor, so it breaks out clean
+                x0, x1 = L - KNOCK_X[0], L - KNOCK_X[1]
+                y0, y1 = KNOCK_Y
+                with Locations(((x0 + x1) / 2, (y0 + y1) / 2, 0)):
+                    Box(x1 - x0 + 1.2, y1 - y0 + 1.2, FLOOR - KNOCK_RIM,
+                        align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
+                with Locations(((x0 + x1) / 2, (y0 + y1) / 2, -FLOOR + KNOCK_RIM)):
+                    Box(x1 - x0, y1 - y0, KNOCK_SKIN - KNOCK_RIM, align=(Align.CENTER, Align.CENTER, Align.MIN))
+                # a dimple in its middle, so it can be found from below
+                with Locations(((x0 + x1) / 2, (y0 + y1) / 2, -FLOOR)):
+                    Cylinder(1.0, 0.2, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
 
         # USB-C: a notch open to the top so the board drops in; the lid closes it with a tab
         with Locations((L + WALL / 2, 0, v.board_z + USB_Z0 - CLEAR)):
@@ -526,7 +563,10 @@ def lid(v: Variant):
             extrude(amount=-LIP_H)
         for x, y in v.screws:
             # only as tall as the lip: the lid plate above the boss must stay solid
-            insert(corner_boss(v, x, y, CLEAR, H - LIP_H, H), mode=Mode.SUBTRACT)
+            if v.plain:
+                insert(boss_footprint(x, y, CLEAR, LIP_H, H - LIP_H), mode=Mode.SUBTRACT)
+            else:
+                insert(corner_boss(v, x, y, CLEAR, H - LIP_H, H), mode=Mode.SUBTRACT)
         if JACK.round:
             with Locations(Location((LIP_T + 1.0, 0, v.jack_z), (0, 90, 0))):
                 Cylinder(JACK.body_w / 2 + 0.5, 2 * (LIP_T + 1.0), mode=Mode.SUBTRACT)
@@ -627,7 +667,7 @@ def battery(v: Variant):
 
 
 def tray(v: Variant):
-    """USB variant: the battery tray, screwed on under the base to add a cell later. The base's
+    """Modular: the battery tray, screwed on under the base to add a cell later. The base's
     floor closes it. The cell lies between the corner columns at the jack end, held across by two
     low rails; a low rib with a gap for its lead separates it from the bay at the USB end where its
     plug meets the board's lead, which comes down through the knock-out. Four screws, one in each
@@ -677,7 +717,7 @@ def tray(v: Variant):
 
 
 def tray_cell(v: Variant):
-    """USB variant: the cell in the battery tray, against the jack-end columns (preview and fit
+    """Modular: the cell in the battery tray, against the jack-end columns (preview and fit
     check)."""
     with BuildPart() as p:
         with Locations((CORNER_IN + TRAY_COL_R + BAT_SLACK, 0, -FLOOR - v.tray_h + FLOOR)):
@@ -692,7 +732,7 @@ def export(v: Variant):
     printed = {"base": b, "lid": l}
     if v.battery:
         printed["frame"] = frame(v)
-    else:
+    elif v.modular:
         printed["tray"] = tray(v)
     for name, part in printed.items():
         assert len(part.solids()) == 1, f"{v.name} {name} is in {len(part.solids())} pieces"
@@ -703,7 +743,10 @@ def export(v: Variant):
                tolerance=0.01, angular_tolerance=0.1)
 
     others = {"board": board(v), "jack": jack(v)}
-    others["battery"] = battery(v) if v.battery else tray_cell(v)
+    if v.battery:
+        others["battery"] = battery(v)
+    elif v.modular:
+        others["battery"] = tray_cell(v)
     # one mesh per part for the preview page, which colours and toggles them separately; as
     # base64 text because the published page can only serve text files
     for name, part in {**printed, **others}.items():
@@ -793,9 +836,10 @@ def main():
     if "--fdm" in sys.argv:
         # FDM (e.g. PETG on a Bambu Lab A1 mini) prints a little fat: looser fit, own output folders
         CLEAR = 0.35
-        variants = (Variant("usb-fdm", battery=False), Variant("battery-fdm", battery=True))
+        variants = (Variant("usb-fdm", battery=False), Variant("modular-fdm", battery=False, modular=True),
+                    Variant("battery-fdm", battery=True))
     else:
-        variants = (USB, BATTERY)
+        variants = (USB, MODULAR, BATTERY)
     for v in variants:
         export(v)
 
