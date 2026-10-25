@@ -11,8 +11,8 @@ generated for the ESP32-S3.
 
 | Case | Outer size, Cliff FC681374V (default) | with `--jack pj392` |
 |---|---|---|
-| Base unit (USB) | 53.5 × 25.3 × 14.5 mm | 48.0 × 25.3 × 14.5 mm |
-| Base unit with battery tray | 53.5 × 25.3 × 22.8 mm | 48.0 × 25.3 × 22.8 mm |
+| Base unit (USB) | 57.9 × 30.5 × 14.5 mm | 57.9 × 30.5 × 14.5 mm |
+| Base unit with battery tray | 57.9 × 30.5 × 22.8 mm | 57.9 × 30.5 × 22.8 mm |
 | Battery under the board, drop-in frame (ESP32-S3) | 53.2 × 30.5 × 21.1 mm | 53.2 × 30.5 × 20.1 mm |
 
 **The jack.** The default is the **Cliff FC681374V** (Reichelt 228160): M8 × 0.75 thread through an
@@ -35,7 +35,7 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requi
 `out/usb-fdm/ble-key-usb-fdm-base.stl` upright, floor on the plate, and
 `out/usb-fdm/ble-key-usb-fdm-lid-print.stl` (already turned over); for a battery key also
 `out/usb-fdm/ble-key-usb-fdm-tray.stl`, floor on the plate. 0.2 mm layers, 3 walls, 20 % infill, no
-supports. Screws: 2 × countersunk self-tapping 2.2 × 6.5 (DIN 7982); the lid has 90°
+supports. Screws: 4 × countersunk self-tapping 2.2 × 6.5 (DIN 7982), one in each corner; the lid has 90°
 countersinks for them. The jack drops into a slot in the end wall that is open to the top (the lid
 closes it with a tab), so it goes in already soldered to the board; then tighten its ring nut.
 
@@ -62,22 +62,23 @@ can get one later without soldering:
   waits under the board, which sits 5 mm above the floor so the plug fits there.
 - **Knock-out:** right under the plug, a 5.4 × 7.5 mm plate in the floor, held only by 0.3 mm of
   floor in a groove round it. A small dimple in its middle marks it from below.
-- **Bosses:** two in the USB-end corners of the floor, under the board's corners, for the tray's
-  screws.
-- **Hook:** at the jack end, a rebate at the foot of the end wall with a groove for the tray's tabs,
-  either side of the jack's ring nut.
+- **Corner columns:** one in each corner, from the floor to the lid. The lid's four screws go in
+  from above, the tray's four from below, into the same columns. Without a tray the holes from
+  below stay closed by a 0.3 mm skin; the tray's screws go through it.
 
-The tray is the base's footprint and 8.3 mm tall; the base's floor closes it. The LP-552035 lies at
-the jack end; a low rib with a gap for its lead separates it from the 10 mm bay at the USB end where
-its JST-PH plug meets the board's lead. The corners at the jack end are full of cell, so the tray
-is screwed only at the USB end: two countersunk 2.2 × 6.5 screws (DIN 7982; 6 mm works too) from
-below, their heads in counterbores, into the base's bosses. At the jack end two tabs with a lip
-hook into the groove in the base's end wall. Prints floor down, without supports.
+The case is as wide as the corner columns need beside the board at the USB end (the board reaches
+right up to that wall) and as long as the tray needs to hold the cell between the corner columns
+at the jack end.
+
+The tray is the base's footprint and 8.3 mm tall; the base's floor closes it. The LP-552035 lies
+between the jack-end corner columns, held across by two low rails; a low rib with a gap for its
+lead separates it from the 10 mm bay at the USB end where its JST-PH plug meets the board's lead.
+Four countersunk 2.2 × 6.5 screws (DIN 7982; 6 mm works too), one in each corner, from below, their
+heads in counterbores. Prints floor down, without supports.
 
 To fit a battery: push the knock-out out from below with a small screwdriver and pull the plug
-through; the case stays closed. Tape the cell into the tray and plug the leads together in the bay.
-Hook the tray's tabs into the groove at the jack end, fold the tray up against the base and screw
-it on at the USB end.
+through; the case stays closed. Tape the cell into the tray, plug the leads together in the bay and
+screw the tray on with its four screws.
 
 ## The XIAO battery case (drop-in frame)
 
