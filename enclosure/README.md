@@ -1,13 +1,19 @@
 # Printable cases
 
 `enclosure.py` (build123d, Python CAD) builds the case for a XIAO ESP32-S3 or XIAO nRF52840 with a
-3.5 mm paddle jack, in two versions. It writes STEP and STL per part to `out/`, plus a lid STL turned
-over for printing. `preview.html` shows both cases in 3D after the script has run.
+3.5 mm paddle jack. It writes STEP and STL per part to `out/`, plus a lid STL turned over for
+printing. `preview.html` shows the cases in 3D after the script has run.
+
+The case for the keys that are sold is the **modular** one (XIAO nRF52840): a USB base unit, and a
+battery tray that screws on underneath, at once or as a later upgrade (see
+[The battery tray](#the-battery-tray)). The older battery case with a drop-in frame is still
+generated for the ESP32-S3.
 
 | Case | Outer size, Cliff FC681374V (default) | with `--jack pj392` |
 |---|---|---|
-| USB only | 48.5 × 25.0 × 14.1 mm | 43.0 × 25.0 × 13.6 mm |
-| Battery under the board | 53.2 × 30.5 × 21.1 mm | 53.2 × 30.5 × 20.1 mm |
+| Base unit (USB) | 53.5 × 25.3 × 14.5 mm | 48.0 × 25.3 × 14.5 mm |
+| Base unit with battery tray | 53.5 × 25.3 × 22.8 mm | 48.0 × 25.3 × 22.8 mm |
+| Battery under the board, drop-in frame (ESP32-S3) | 53.2 × 30.5 × 21.1 mm | 53.2 × 30.5 × 20.1 mm |
 
 **The jack.** The default is the **Cliff FC681374V** (Reichelt 228160): M8 × 0.75 thread through an
 8.5 mm slot in the full 2 mm wall, open to the top and closed by a tab on the lid, ring nut outside,
@@ -27,24 +33,53 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requi
 
 **Printing the XIAO case in PETG on an FDM printer** (e.g. Bambu Lab A1 mini): use
 `out/usb-fdm/ble-key-usb-fdm-base.stl` upright, floor on the plate, and
-`out/usb-fdm/ble-key-usb-fdm-lid-print.stl` (already turned over). 0.2 mm layers, 3 walls, 20 %
-infill, no supports. Screws: 2 × countersunk self-tapping 2.2 × 6.5 (DIN 7982); the lid has 90°
+`out/usb-fdm/ble-key-usb-fdm-lid-print.stl` (already turned over); for a battery key also
+`out/usb-fdm/ble-key-usb-fdm-tray.stl`, floor on the plate. 0.2 mm layers, 3 walls, 20 % infill, no
+supports. Screws: 2 × countersunk self-tapping 2.2 × 6.5 (DIN 7982); the lid has 90°
 countersinks for them. The jack drops into a slot in the end wall that is open to the top (the lid
 closes it with a tab), so it goes in already soldered to the board; then tighten its ring nut.
 
 **Holding the board:** in both XIAO cases the board clicks in: four springy snap lips hook over the
-long edges (0.52 mm in the USB case, 0.52 mm in the battery case), so it stays put with the lid off;
-each lip goes on as a tab 2 mm above the board, to push it open with a small screwdriver. They sit 4
-mm in from each end, between the first and second castellated pad, where the edge is straight; the
-XIAO's corners are rounded (r ≈ 2 mm), so a lip there would not reach the edge. In the battery case
-the pair at the USB end sits 6.7 mm in, between the second and third pad, clear of the corner bosses. With the lid on, the
+long edges (0.7 mm in the USB case, 0.52 mm in the battery case), so it stays put with the lid off;
+each lip goes on as a tab 2 mm above the board, to push it open with a small screwdriver. They sit
+where the edge is straight: 4 mm in from the far end, between the first and second castellated pad,
+and 6.7 mm in from the USB end, between the second and third pad, clear of the corner bosses there;
+the XIAO's corners are rounded (r ≈ 2 mm), so a lip at a corner would not reach the edge. In the USB
+case the board sits 5 mm above the floor. With the lid on, the
 tab presses on the USB-C socket and two stiff L-shaped ribs press on the far corners. If a lip holds
 too little or breaks, tune `SNAP_STRAIN` and `SNAP_HOOK` in `enclosure.py`: each hook is as big as
 its lip's free height allows within `SNAP_STRAIN` (4 %), at most `SNAP_HOOK`. Try the fit first with
 the test pieces from `--snap-test`: a 7 mm slice of the USB base and of the battery frame around the
 far supports, and a 15 mm stand-in for the board's end (or use the real XIAO).
 
-## The XIAO battery case
+## The battery tray
+
+The base unit has everything the battery needs from the start, so a key bought without a battery
+can get one later without soldering:
+
+- **Battery lead:** every key gets a short lead with a JST-PH plug, soldered to the XIAO
+  nRF52840's `BAT` pads (on the underside between D2 and D3) when it is built. Without a battery it
+  waits under the board, which sits 5 mm above the floor so the plug fits there.
+- **Knock-out:** right under the plug, a 5.4 × 7.5 mm plate in the floor, held only by 0.3 mm of
+  floor in a groove round it. A small dimple in its middle marks it from below.
+- **Bosses:** two in the USB-end corners of the floor, under the board's corners, for the tray's
+  screws.
+- **Hook:** at the jack end, a rebate at the foot of the end wall with a groove for the tray's tabs,
+  either side of the jack's ring nut.
+
+The tray is the base's footprint and 8.3 mm tall; the base's floor closes it. The LP-552035 lies at
+the jack end; a low rib with a gap for its lead separates it from the 10 mm bay at the USB end where
+its JST-PH plug meets the board's lead. The corners at the jack end are full of cell, so the tray
+is screwed only at the USB end: two countersunk 2.2 × 6.5 screws (DIN 7982; 6 mm works too) from
+below, their heads in counterbores, into the base's bosses. At the jack end two tabs with a lip
+hook into the groove in the base's end wall. Prints floor down, without supports.
+
+To fit a battery: push the knock-out out from below with a small screwdriver and pull the plug
+through; the case stays closed. Tape the cell into the tray and plug the leads together in the bay.
+Hook the tray's tabs into the groove at the jack end, fold the tray up against the base and screw
+it on at the USB end.
+
+## The XIAO battery case (drop-in frame)
 
 Three layers and three parts: the LP-552035 lies flat in a pocket on the floor of the base, a 3 mm
 wiring layer sits above it, and the XIAO sits on top in a **frame** that drops into the base on top
