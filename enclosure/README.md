@@ -64,7 +64,7 @@ can get one later without soldering:
   floor in a groove round it. A small dimple in its middle marks it from below.
 - **Corner columns:** one in each corner, from the floor to the lid. The lid's four screws go in
   from above, the tray's four from below, into the same columns. Without a tray the holes from
-  below stay closed by a 0.3 mm skin; the tray's screws go through it.
+  below stay closed by a 0.4 mm skin with a centring dimple; the tray's screws go through it.
 
 The case is as wide as the corner columns need beside the board at the USB end (the board reaches
 right up to that wall) and as long as the tray needs to hold the cell between the corner columns

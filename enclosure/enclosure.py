@@ -131,8 +131,9 @@ CBORE_D = 4.8       # counterbore from below for the screw head
 TRAY_COL_R = CBORE_D / 2 + 0.8                  # the tray's corner columns round the counterbores
 TRAY_PILOT = 2.9    # pilot for the tray's screws, up to this far above the base's floor (a 6.5 mm
                     # screw reaches 2.3)
-PILOT_SKIN = 0.3    # that pilot starts this far above the base's underside: closed below without
+PILOT_SKIN = 0.4    # that pilot starts this far above the base's underside: closed below without
                     # a tray; the screw goes through when one is fitted
+PILOT_DIMPLE = 0.2  # a centring dimple in that skin, Ø 1.2, so the holes can be found from below
 KNOCK_X = (10.0, 4.6)   # knock-out from / to, measured from the USB end
 KNOCK_Y = (-3.0, 4.5)   # its extent across
 KNOCK_SKIN = 0.6    # the knock-out's thickness
@@ -449,6 +450,9 @@ def base(v: Variant):
                 with Locations((x, y, -FLOOR + PILOT_SKIN)):
                     Cylinder(PILOT_D / 2, FLOOR - PILOT_SKIN + TRAY_PILOT,
                              align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+                with Locations((x, y, -FLOOR)):
+                    Cylinder(0.6, PILOT_DIMPLE, align=(Align.CENTER, Align.CENTER, Align.MIN),
+                             mode=Mode.SUBTRACT)
                 assert H - CORNER_PILOT > TRAY_PILOT + 1.0, "the two pilots meet in the column"
 
         if not v.battery:
