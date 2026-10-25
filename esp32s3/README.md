@@ -23,6 +23,27 @@ uses both. The tip/ring assignment matches a standard 3.5 mm TRS paddle plug:
 
 ![Wiring: XIAO ESP32-S3 to a 3.5 mm TRS jack — D1 to tip (dit), D2 to ring (dah), GND to sleeve; optional LiPo on the BAT pads with a 2 × 220 kΩ divider into A0, a second 2 × 220 kΩ divider from 5V into D10 to sense USB power, and the optional charge-sense wire from the charge LED's cathode pad through 100 kΩ into D3](wiring.svg)
 
+## The USB key, built
+
+The key without a battery, in the printed USB case ([`../enclosure/`](../enclosure/)): the XIAO
+ESP32-S3 with its flexible 2.4 GHz antenna on the U.FL socket, the Cliff FC681374V jack, and a
+base and lid held by two countersunk 2.2 × 6.5 mm screws.
+
+<p>
+<img src="photos/usb-key-parts.webp" width="49%" alt="The parts laid out: lid, base, two countersunk screws, and the XIAO ESP32-S3 with its flexible antenna, soldered to the Cliff jack with a red, a white and a black wire">
+<img src="photos/usb-key-board-in-base.webp" width="49%" alt="The XIAO clicked into the base, USB-C at one end, the jack's thread through the other end wall, the lid beside it">
+</p>
+
+<p>
+<img src="photos/usb-key-usb-plugged-in.webp" width="49%" alt="The open key with a USB-C cable plugged in and the antenna lying outside the case">
+<img src="photos/usb-key-wiring-close-up.webp" width="49%" alt="Close-up of the wiring: the three wires run from the XIAO's pads over the board to the jack's solder tags">
+</p>
+
+<p>
+<img src="photos/usb-key-closed-jack-end.webp" width="49%" alt="The closed key from the jack end: the jack's ring nut on the end wall, two countersunk screws in the lid">
+<img src="photos/usb-key-closed-usb-end.webp" width="49%" alt="The closed key from the USB end: the USB-C socket in its notch, flush with the end wall">
+</p>
+
 ## Battery (optional)
 
 The key runs from USB-C as it is. For a cordless key, solder a single-cell LiPo to the
