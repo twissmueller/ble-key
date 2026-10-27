@@ -52,15 +52,13 @@ The ESP32-S3 key stays supported.
 
 The BLE key is open hardware — get one in whichever way suits you:
 
-1. **Build it yourself** — source the parts ([Hardware](#hardware)) and flash the firmware
+1. **Buy a ready-built key** in the [Ramus Labs Shop](https://shop.ramuslabs.com/ble-key/):
+   assembled, flashed, and tested, in three cases (Mini, Compact, Modular).
+2. **Build it yourself** — source the parts ([Hardware](#hardware)) and flash the firmware
    ([Build & flash](#build--flash)); everything you need is in this repository.
-2. **Order a parts kit** — I'll send you the board and connectors, you assemble and flash.
-3. **Order a ready-built key** — assembled, flashed, and tested.
 
-For a parts kit or a ready-built key, email
-[hello@wissmueller.net](mailto:hello@wissmueller.net) with your shipping address. The Longpath
-app offers the same three options (with pre-filled order emails) in its BLE-key dialog — keep
-that dialog and this section in sync.
+The Longpath app's BLE-key dialog offers only the shop (its address is set in Longpath's Darwin
+config, `ble_key_shop_url`); building it yourself is documented here.
 
 ## BLE contract
 
