@@ -60,9 +60,10 @@ far supports, and a 15 mm stand-in for the board's end (or use the real XIAO).
 The base unit has everything the battery needs from the start, so a key bought without a battery
 can get one later without soldering:
 
-- **Battery lead:** every key gets a short lead with a JST-PH plug, soldered to the XIAO
-  nRF52840's `BAT` pads (on the underside between D2 and D3) when it is built. Without a battery it
-  waits under the board, which sits 5 mm above the floor so the plug fits there.
+- **Battery lead:** every key gets a lead with a JST-PH plug, about 60 mm of wire so it reaches
+  the tray's plug bay at the jack end, soldered to the XIAO nRF52840's `BAT` pads (on the underside
+  between D2 and D3) when it is built. Without a battery it waits coiled under the board, which
+  sits 5 mm above the floor so the plug fits there.
 - **Knock-out:** right under the plug, a 5.4 × 7.5 mm plate in the floor, held only by 0.3 mm of
   floor in a groove round it. A small dimple in its middle marks it from below.
 - **Corner columns:** one in each corner, from the floor to the lid. The lid's four screws go in
@@ -71,12 +72,13 @@ can get one later without soldering:
 
 The case is as wide as the corner columns need beside the board at the USB end (the board reaches
 right up to that wall) and as long as the tray needs to hold the cell between the corner columns
-at the jack end.
+at the USB end.
 
 The tray is the base's footprint and 10.3 mm tall; the base's floor closes it. The LP-552035 lies
-between the jack-end corner columns, held across by two low rails; a low rib with a gap for its
-lead separates it from the 10 mm bay at the USB end where its JST-PH plug meets the board's lead.
-Above the cell, 2 mm of free height takes a layer of cables, so the leads' slack can lie on it.
+between the USB-end corner columns, held across by two low rails; a low rib with a gap for its
+lead separates it from the 10 mm bay at the jack end, under the jack, where its JST-PH plug meets
+the board's lead. That lead comes down through the knock-out and runs over the cell: above the
+cell, 2 mm of free height takes a layer of cables.
 Four countersunk 2.2 × 6.5 screws (DIN 7982; 6 mm works too), one in each corner, from below, their
 heads in counterbores. Prints floor down, without supports.
 

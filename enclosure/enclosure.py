@@ -123,9 +123,9 @@ WIRE_BAY = 6.0                              # USB and modular: between jack body
 SIDE_W = PCB_W + 2 * SIDE_GAP               # compartment width around the board
 
 # --- Battery tray (modular): screwed on under the base to add a cell later ------------------
-# The cell lies between the jack-end corners, its plug in a bay at the USB end, under a knock-out
-# in the base's floor below the BAT pads (between D2 and D3, 7.7-10.7 mm from the USB end, on the
-# +y half). Four screws, one in each corner, from below into the same corner columns of the base
+# The cell lies between the USB-end corners, its plug in a bay at the jack end, under the jack. The
+# board's lead comes down through a knock-out in the base's floor below the BAT pads (between D2
+# and D3, 7.7-10.7 mm from the USB end, on the +y half) and runs over the cell to that bay. Four screws, one in each corner, from below into the same corner columns of the base
 # that the lid's screws go into from above.
 TRAY_CABLE_H = 2.0  # free height above the cell, so the leads' slack can lie on top of it
 TRAY_SEAT = 1.2     # tray material between the screw head's seat and the tray's top
@@ -177,8 +177,8 @@ class Variant:
     def inner_l(self):
         if self.battery:
             return CONN_L + RIB_T + BAT_L + 2 * BAT_SLACK
-        # the battery tray: the cell between the corner columns at the jack end, then the rib and
-        # the plug bay at the USB end
+        # the battery tray: the plug bay at the jack end, then the rib and the cell between the
+        # corner columns at the USB end
         usb = JACK.depth + WIRE_BAY + PCB_L
         if self.plain:
             return usb
@@ -670,8 +670,8 @@ def battery(v: Variant):
 
 def tray(v: Variant):
     """Modular: the battery tray, screwed on under the base to add a cell later. The base's
-    floor closes it. The cell lies between the corner columns at the jack end, held across by two
-    low rails; a low rib with a gap for its lead separates it from the bay at the USB end where its
+    floor closes it. The cell lies between the corner columns at the USB end, held across by two
+    low rails; a low rib with a gap for its lead separates it from the bay at the jack end where its
     plug meets the board's lead, which comes down through the knock-out. Four screws, one in each
     corner, from below into the base's corner columns, their heads in counterbores. Prints as it
     sits, floor on the bed, without supports."""
@@ -693,10 +693,10 @@ def tray(v: Variant):
         # low rib between the cell and the plug bay, with a gap for the cell's lead
         seg = (v.inner_w - LEAD_GAP) / 2
         for sy in (-1, 1):
-            with Locations((L - CONN_L, sy * (LEAD_GAP / 2 + seg / 2), z0)):
-                Box(RIB_T, seg, RIB_H, align=(Align.MAX, Align.CENTER, Align.MIN))
+            with Locations((CONN_L, sy * (LEAD_GAP / 2 + seg / 2), z0)):
+                Box(RIB_T, seg, RIB_H, align=(Align.MIN, Align.CENTER, Align.MIN))
         # two low rails either side of the cell: the tray is wider than the cell
-        x0, x1 = CORNER_IN + TRAY_COL_R, L - CONN_L - RIB_T
+        x0, x1 = CONN_L + RIB_T, L - CORNER_IN - TRAY_COL_R
         for sy in (-1, 1):
             with Locations(((x0 + x1) / 2, sy * (v.bay_w / 2 + 0.6), z0)):
                 Box(x1 - x0, 1.2, RIB_H, align=(Align.CENTER, Align.CENTER, Align.MIN))
@@ -719,11 +719,11 @@ def tray(v: Variant):
 
 
 def tray_cell(v: Variant):
-    """Modular: the cell in the battery tray, against the jack-end columns (preview and fit
+    """Modular: the cell in the battery tray, against the USB-end columns (preview and fit
     check)."""
     with BuildPart() as p:
-        with Locations((CORNER_IN + TRAY_COL_R + BAT_SLACK, 0, -FLOOR - v.tray_h + FLOOR)):
-            Box(BAT_L, BAT_W, BAT_T, align=(Align.MIN, Align.CENTER, Align.MIN))
+        with Locations((v.inner_l - CORNER_IN - TRAY_COL_R - BAT_SLACK, 0, -FLOOR - v.tray_h + FLOOR)):
+            Box(BAT_L, BAT_W, BAT_T, align=(Align.MAX, Align.CENTER, Align.MIN))
     return p.part
 
 
