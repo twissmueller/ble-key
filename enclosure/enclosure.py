@@ -127,6 +127,7 @@ SIDE_W = PCB_W + 2 * SIDE_GAP               # compartment width around the board
 # in the base's floor below the BAT pads (between D2 and D3, 7.7-10.7 mm from the USB end, on the
 # +y half). Four screws, one in each corner, from below into the same corner columns of the base
 # that the lid's screws go into from above.
+TRAY_CABLE_H = 2.0  # free height above the cell, so the leads' slack can lie on top of it
 TRAY_SEAT = 1.2     # tray material between the screw head's seat and the tray's top
 CBORE_D = 4.8       # counterbore from below for the screw head
 TRAY_COL_R = CBORE_D / 2 + 0.8                  # the tray's corner columns round the counterbores
@@ -273,8 +274,9 @@ class Variant:
 
     @property
     def tray_h(self):
-        """Modular: the battery tray's height, floor plus cell bay; the base's floor closes it."""
-        return FLOOR + BAT_T + BAT_SLACK
+        """Modular: the battery tray's height, floor plus cell bay plus a layer of cables above the
+        cell; the base's floor closes it."""
+        return FLOOR + BAT_T + BAT_SLACK + TRAY_CABLE_H
 
     @property
     def frame_bar_x(self):

@@ -14,7 +14,7 @@ printing. `preview.html` shows the cases in 3D after the script has run. Three c
 | USB | 48.5 × 25.0 × 14.1 mm | 43.0 × 25.0 × 13.6 mm |
 | Battery under the board, drop-in frame | 53.2 × 30.5 × 21.1 mm | 53.2 × 30.5 × 20.1 mm |
 | Modular base unit | 57.9 × 30.5 × 14.5 mm | 57.9 × 30.5 × 14.5 mm |
-| Modular base unit with battery tray | 57.9 × 30.5 × 22.8 mm | 57.9 × 30.5 × 22.8 mm |
+| Modular base unit with battery tray | 57.9 × 30.5 × 24.8 mm | 57.9 × 30.5 × 24.8 mm |
 
 **The jack.** The default is the **Cliff FC681374V** (Reichelt 228160): M8 × 0.75 thread through an
 8.5 mm slot in the full 2 mm wall, open to the top and closed by a tab on the lid, ring nut outside,
@@ -73,9 +73,10 @@ The case is as wide as the corner columns need beside the board at the USB end (
 right up to that wall) and as long as the tray needs to hold the cell between the corner columns
 at the jack end.
 
-The tray is the base's footprint and 8.3 mm tall; the base's floor closes it. The LP-552035 lies
+The tray is the base's footprint and 10.3 mm tall; the base's floor closes it. The LP-552035 lies
 between the jack-end corner columns, held across by two low rails; a low rib with a gap for its
 lead separates it from the 10 mm bay at the USB end where its JST-PH plug meets the board's lead.
+Above the cell, 2 mm of free height takes a layer of cables, so the leads' slack can lie on it.
 Four countersunk 2.2 × 6.5 screws (DIN 7982; 6 mm works too), one in each corner, from below, their
 heads in counterbores. Prints floor down, without supports.
 
