@@ -113,7 +113,9 @@ static void publishBattery(uint8_t value, const char* why) {
 // every VBAT_PERIOD_MS and whenever the power state changes; the first call after boot
 // always publishes.
 void updateBattery() {
+  static CellLevel cellLevel;   // on the cell the level only goes down, see BleKeyCore.h
   bool onUsb = usbPowered();
+  if (onUsb) cellLevel.reset();
   if (onUsb && powerState != POWER_CHARGING && powerState != POWER_CHARGED) {
     // The pin sees the charger's output now and the key cannot vouch for a cell: no level.
     publishBattery(BATTERY_LEVEL_UNKNOWN, "on USB — level unknown");
@@ -129,6 +131,7 @@ void updateBattery() {
   // While charging this is the cell under charge — a few points high, and climbing; the app
   // shows it as-is next to "charging" and forces 100 % once the key reports charged.
   int percent = batteryPercent(mv);
+  if (!onUsb) percent = cellLevel.onCell((uint8_t)percent);
   char why[48];
   snprintf(why, sizeof(why), "%u mV -> %d %%%s", mv, percent, onUsb ? " (under charge)" : "");
   publishBattery((uint8_t)percent, why);

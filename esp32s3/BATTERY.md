@@ -222,7 +222,7 @@ Implemented in `esp32s3.ino` behind `#define BATTERY_MOD 1`:
   (never between two paddle edges — the 16-sample ADC burst must not disturb keying), and
   once at boot.
 - The voltage is mapped to a percentage through an **open-circuit LiPo discharge curve**
-  (3.30 V → 0 %, 3.70 V → 20 %, 3.85 V → 50 %, 4.00 V → 80 %, 4.20 V → 100 %, linearly
+  (3.30 V → 0 %, 3.70 V → 20 %, 3.85 V → 50 %, 4.00 V → 80 %, 4.12 V → 100 %, linearly
   interpolated). A plain linear map would sit at "60 %" for hours and then collapse,
   because the cell spends most of its life between 3.6 V and 3.9 V. Under load the cell
   sags a little, so the reading is slightly pessimistic while keying — fine for a key.

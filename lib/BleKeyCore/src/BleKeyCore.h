@@ -88,11 +88,16 @@ const uint16_t VBAT_PLAUSIBLE_MAX_MV = 4600;   // treated as "no cell / no divid
 // SIG's 0–100 range on purpose; Longpath reads it as unknown.
 const uint8_t  BATTERY_LEVEL_UNKNOWN = 0xFF;
 
-// Open-circuit LiPo discharge curve (single cell, light load), linearly interpolated.
+// LiPo discharge curve (single cell, as the running key sees it), linearly interpolated.
 // Flat between 3.6 V and 3.9 V, which is where a cell spends most of its life — a plain
 // linear 3.3–4.2 V map would sit at "60 %" for hours and then collapse.
+// The top ends at 4.12 V, not 4.20 V: 4.2 V is the charger's float voltage, not what a full
+// cell shows once the charger lets go. A full cell measured ~4.14 V on the XIAO nRF52840, and
+// off USB the key reads it under its own 40–60 mA load, which costs another 10–30 mV; the top
+// at 4.12 V leaves room for that sag. With 100 % at 4.20 V every full cell read ~94 % the
+// moment the cable came out (10 mV = 1 % up there).
 inline uint8_t batteryPercent(uint16_t mv) {
-  static const uint16_t MV[]  = { 3300, 3500, 3600, 3700, 3750, 3800, 3850, 3900, 3950, 4000, 4100, 4200 };
+  static const uint16_t MV[]  = { 3300, 3500, 3600, 3700, 3750, 3800, 3850, 3900, 3950, 4000, 4060, 4120 };
   static const uint8_t  PCT[] = {    0,    5,   10,   20,   30,   40,   50,   60,   70,   80,   90,  100 };
   const int n = sizeof(MV) / sizeof(MV[0]);
   if (mv <= MV[0])     return PCT[0];
@@ -102,6 +107,19 @@ inline uint8_t batteryPercent(uint16_t mv) {
   // interpolate between point i-1 and i
   return (uint8_t)(PCT[i - 1] + (uint32_t)(mv - MV[i - 1]) * (PCT[i] - PCT[i - 1]) / (MV[i] - MV[i - 1]));
 }
+
+// On the cell the reported level only ever goes down. The ADC is noisy and the cell recovers a
+// few millivolts whenever the load drops, so a raw reading would wobble 93 → 94 → 93 %; a
+// discharging cell never genuinely gains charge. Reset it whenever USB power is present
+// (charging is the only way up), and a deep-sleep wake starts it afresh anyway.
+struct CellLevel {
+  int last = -1;
+  uint8_t onCell(uint8_t pct) {
+    if (last < 0 || pct < last) last = pct;
+    return (uint8_t)last;
+  }
+  void reset() { last = -1; }
+};
 
 inline bool batteryPlausible(uint16_t mv) {
   return mv >= VBAT_PLAUSIBLE_MIN_MV && mv <= VBAT_PLAUSIBLE_MAX_MV;

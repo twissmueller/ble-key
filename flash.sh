@@ -43,6 +43,12 @@ echo "==> Compiling ($FQBN)"
 arduino-cli compile --fqbn "$FQBN" --library "$ROOT/lib/BleKeyCore" "$SKETCH_DIR"
 
 echo "==> Flashing to $PORT"
+if [[ "$BOARD" == nrf52840 ]]; then
+  # The core uploads with "Touch disabled": open the port at 1200 baud so the running sketch
+  # drops into the bootloader, then give it time to re-enumerate.
+  stty -f "$PORT" 1200 2>/dev/null || stty -F "$PORT" 1200
+  sleep 3
+fi
 arduino-cli upload --fqbn "$FQBN" -p "$PORT" "$SKETCH_DIR"
 
 echo "==> Done."
