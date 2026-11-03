@@ -1,0 +1,92 @@
+{
+  "app": "BLE-Key",
+  "slug": "ble-key",
+  "language": "en",
+  "renderer": "render.py",
+  "title_card": "Turn your Morse key or paddle into a Bluetooth key",
+  "bg": "#0F2A4A",
+  "fg": "#F2F6FB",
+  "fg_secondary": "#B8C7DA",
+  "accent": "#7FB2F0",
+  "seed": 15,
+  "icon": "frames/compact-IMG_2447.jpg",
+  "font_bold": "Avenir-Next-Demi-Bold",
+  "font_regular": "Avenir-Next-Regular",
+  "chapters": [
+    {
+      "title": "The idea",
+      "beats": [
+        {
+          "text": "Want to practise Morse on your own paddle, without a radio, and without a cable to the laptop?",
+          "image": "frames/compact-IMG_2447.jpg"
+        },
+        {
+          "text": "BLE-Key is a tiny Bluetooth box that sits between your key and the app.",
+          "image": "frames/mini-esp-white-IMG_2455.jpg"
+        }
+      ]
+    },
+    {
+      "title": "Inside",
+      "beats": [
+        {
+          "text": "It's built around a Seeed XIAO board: the ESP32-S3, or the nRF52840.",
+          "image": "frames/mini-esp-black-IMG_2453.jpg"
+        },
+        {
+          "text": "The paddle goes into the three and a half millimetre jack. The tip is dit, the ring is dah.",
+          "image": "frames/modular-IMG_2440.jpg"
+        },
+        {
+          "text": "The box makes no sound itself. It just sends exact keying edges, and the LED shows when you key.",
+          "image": "frames/mini-nrf-IMG_2457.jpg"
+        },
+        {
+          "text": "There's a version with a battery, too.",
+          "image": "frames/modular-IMG_2441.jpg"
+        }
+      ]
+    },
+    {
+      "title": "Connecting",
+      "beats": [
+        {
+          "text": "Power it over USB-C. In Longpath, it shows up as a paddle. Tap it, and you're connected.",
+          "image": "frames/longpath-device.png"
+        }
+      ]
+    },
+    {
+      "title": "Practising",
+      "beats": [
+        {
+          "text": "Now the app makes the sidetone, decodes what you send, and shows your timing.",
+          "image": "frames/longpath-send.png"
+        },
+        {
+          "text": "It works with straight keys, single paddles and iambic paddles, on phone, tablet or Mac.",
+          "image": "frames/longpath-mac-send.png"
+        }
+      ]
+    },
+    {
+      "title": "Build or buy",
+      "beats": [
+        {
+          "text": "Firmware and enclosure are open on GitHub. Print the case, solder the jack, flash the board.",
+          "image": "frames/modular-IMG_2437.jpg"
+        },
+        {
+          "text": "Or get a parts kit or a finished key from the Ramus Labs shop.",
+          "image": "frames/modular-IMG_2445.jpg"
+        }
+      ]
+    }
+  ],
+  "closing": "Links to the shop, to Longpath and to GitHub are in the description. Seventy-three!",
+  "endcard": {
+    "tagline": "Open-hardware Bluetooth Morse key",
+    "platforms": "Works with Longpath on iPhone · iPad · Mac · Android",
+    "url": "shop.ramuslabs.com/ble-key"
+  }
+}
