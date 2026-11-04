@@ -1,0 +1,40 @@
+{
+  "app": "BLE-Key",
+  "slug": "ble-key",
+  "language": "en",
+  "bg": "#0F2A4A",
+  "fg": "#F2F6FB",
+  "fg_secondary": "#B8C7DA",
+  "accent": "#7FB2F0",
+  "font_bold": "Avenir-Next-Demi-Bold",
+  "font_regular": "Avenir-Next-Regular",
+  "seed": 15,
+  "icon": "../youtube/frames/compact-IMG_2447.jpg",
+  "endcard": {
+    "tagline": "Open-hardware Bluetooth Morse key",
+    "platforms": "Works with Longpath on iPhone · iPad · Mac · Android",
+    "url": "shop.ramuslabs.com/ble-key"
+  },
+  "renderer": "../youtube/render.py",
+  "voice_dir": "voice/02-build-it-in-an-evening",
+  "closing": "BLE-Key. Build it or buy it. Link in bio.",
+  "chapters": [
+    {
+      "title": "",
+      "beats": [
+        {
+          "text": "Build your own Bluetooth Morse key.",
+          "image": "../youtube/frames/modular-IMG_2437.jpg"
+        },
+        {
+          "text": "A XIAO board, a jack, a printed case.",
+          "image": "../youtube/frames/mini-esp-black-IMG_2453.jpg"
+        },
+        {
+          "text": "Flash it, and send your first dit.",
+          "image": "../youtube/frames/longpath-device.png"
+        }
+      ]
+    }
+  ]
+}
