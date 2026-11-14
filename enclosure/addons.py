@@ -291,22 +291,22 @@ def hand(tray: bool):
 # ============================================================================================
 # Pedal frame: x across (left to right), y from the heel (0) to the toe end, z = 0 on the floor.
 
-PW, PD = 122.0, 178.0        # footprint; fits a 180 mm bed
+PW, PD = 122.0, 168.0        # footprint; 6 mm to spare all round on the A1 mini's 180 mm bed
 KEY_Z = 14.0                 # top of the base under the keys (plate the switches clip into)
 KEY_W, KEY_GAP = 52.0, 6.0
 KEY_T = 5.0
-KEY_Y0, KEY_Y1 = 2.0, 135.0  # key from the heel to its toe edge
+KEY_Y0, KEY_Y1 = 2.0, 125.0  # key from the heel to its toe edge
 HINGE_Y = 8.0
-SWITCH_Y = 112.0
-SPRING_Y = 88.0
-STOP_Y = 124.0
+SWITCH_Y = 102.0
+SPRING_Y = 80.0
+STOP_Y = 114.0
 KEY_UNDER = KEY_Z + MX_STEM + 0.8 + 1.0   # key underside at rest (presser pad 1.8 below it)
 HINGE_Z = KEY_UNDER + KEY_T / 2
 KNUCKLE_W = 16.0
 LUG_W = 5.0
 KNUCKLE_R = 5.0
 PLATE_Y0 = HINGE_Y + KNUCKLE_R + 2 + 1.5   # the key's plate starts clear of the heel ridge
-BLOCK_Y0 = 138.0             # toe block with the Modular pocket
+BLOCK_Y0 = 128.0             # toe block with the Modular pocket
 POCKET_DEPTH = MOD_H + TRAY_H + 0.8
 POCKET_FLOOR = 3.0
 BLOCK_Z = POCKET_FLOOR + POCKET_DEPTH
@@ -511,7 +511,7 @@ def pedal_key(right: bool):
             Cylinder(SPRING_D / 2 + 0.4, 3.0, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
         # grip: shallow grooves across the top; arrow towards the toe on the right key, the heel on
         # the left
-        for i in range(8):
+        for i in range(7):
             with Locations((kx, 40 + i * 10, KEY_UNDER + KEY_T)):
                 Box(KEY_W - 12, 1.6, 0.8, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
         with BuildSketch(Plane.XY.offset(KEY_UNDER + KEY_T)):

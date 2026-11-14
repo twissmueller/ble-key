@@ -150,7 +150,7 @@ test before anything goes into the shop.
 Its shaft and body lengths are taken off the drawing's scale (only the overall length and the
 diameters are dimensioned): check them on the real part.
 
-**Foot pedal** (`out/pedal-fdm/`, 122 × 178 × 34 mm, fits a 180 mm bed): two foot keys side by
+**Foot pedal** (`out/pedal-fdm/`, 122 × 168 × 34 mm; the Bambu Lab A1 mini prints 180 × 180 × 180 mm, so 6 mm stay free all round): two foot keys side by
 side, left is back, right is forward, each hinged at the heel on an M3 × 30 screw with a nut and pressing a
 Cherry-MX-style switch that clips into the deck. A compression spring under each key lifts it; two
 posts beside each switch take the foot's force once the switch is pressed. The Modular lies in a pocket in the toe block that fits it exactly, and the plug
