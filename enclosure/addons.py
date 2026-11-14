@@ -295,15 +295,16 @@ KEY_Z = 14.0                 # top of the base under the keys (plate the switche
 KEY_W, KEY_GAP = 52.0, 6.0
 KEY_T = 5.0
 KEY_Y0, KEY_Y1 = 2.0, 125.0  # key from the heel to its toe edge
-HINGE_Y = 8.0
+HINGE_Y = 10.0
 SWITCH_Y = 102.0
 SPRING_Y = 80.0
 STOP_Y = 114.0
 KEY_UNDER = KEY_Z + MX_STEM + 0.8 + 1.0   # key underside at rest (presser pad 1.8 below it)
 HINGE_Z = KEY_UNDER + KEY_T / 2
 KNUCKLE_W = 16.0
-LUG_W = 5.0
-KNUCKLE_R = 5.0
+LUG_W = 6.0
+KNUCKLE_R = 7.0
+HINGE_BOLT = 6.0             # M6 x 40 hex bolt (DIN 933) and two M6 nuts, as in the IC-705 mount's set
 PLATE_Y0 = HINGE_Y + KNUCKLE_R + 2 + 1.5   # the key's plate starts clear of the heel ridge
 BLOCK_Y0 = 128.0             # toe block with the Modular pocket
 TUNNEL_H = MOD_H + TRAY_H + 2 * C   # inside height of the tunnel
@@ -398,8 +399,9 @@ def pedal_base():
             with BuildSketch():
                 RectangleRounded(PW, PD - BLOCK_Y0, 6.0)
             extrude(amount=BLOCK_Z)
-        # hinge: two lugs per key either side of its knuckle, on an M3 x 30 screw from the outer
-        # side with a nut on the inner lug (lug 5 + knuckle 16 + lug 5 + nut fits 30 mm)
+        # hinge: two lugs per key either side of its knuckle, on an M6 x 40 hex bolt from the outer
+        # side with two nuts locked against each other on the inner lug (lug 6 + knuckle 16 + lug 6
+        # + two nuts fits 40 mm); the same bolts and nuts as in the IC-705 mount's hardware set
         lug_h = HINGE_Z + KNUCKLE_R + 0.5 - KEY_Z
         for kx in key_xs():
             sx = 1 if kx > 0 else -1
@@ -407,7 +409,7 @@ def pedal_base():
                 with Locations((kx + d * (KNUCKLE_W / 2 + 0.4 + LUG_W / 2), HINGE_Y, KEY_Z)):
                     Box(LUG_W, 2 * KNUCKLE_R + 4, lug_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
             with Locations(Location((kx, HINGE_Y, HINGE_Z), (0, 90, 0))):
-                Cylinder(1.6, KNUCKLE_W + 2 * LUG_W + 2, mode=Mode.SUBTRACT)
+                Cylinder(HINGE_BOLT / 2 + 0.2, KNUCKLE_W + 2 * LUG_W + 2, mode=Mode.SUBTRACT)
             # switch: plate cut-out, cavity below it down to the cover, channel to the plug
             with Locations((kx, SWITCH_Y, KEY_Z)):
                 Box(MX_CUT, MX_CUT, MX_PLATE, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
@@ -453,10 +455,11 @@ def pedal_base():
                 with Locations((x, y, zt - LID_T)):
                     Cylinder(enc.PILOT_D / 2, 5.5, align=(Align.CENTER, Align.CENTER, Align.MAX))
         insert(mod_in_pedal(lid_cut.part), mode=Mode.SUBTRACT)
-        # screw holes for the bottom cover: M3 self-tapping from below, pilot 2.5
+        # screw holes for the bottom cover: countersunk 2.2 x 6.5 (DIN 7982) from below, as on the
+        # Modular's lid; the pedal stands on the cover, so the screws only keep it in place
         for x, y in cover_screws():
             with Locations((x, y, 0)):
-                Cylinder(1.25, 10.0, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+                Cylinder(enc.PILOT_D / 2, 5.0, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
     return p.part
 
 
@@ -474,8 +477,8 @@ def pedal_cover():
             extrude(amount=BOTTOM_T)
         for x, y in cover_screws():
             with Locations((x, y, 0)):
-                Cylinder(1.7, BOTTOM_T, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
-                Cone(1.7, 3.1, 1.4, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT,
+                Cylinder(enc.SCREW_D / 2, BOTTOM_T, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
+                Cone(enc.SCREW_D / 2, enc.CSK_D / 2, (enc.CSK_D - enc.SCREW_D) / 2, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT,
                      rotation=(180, 0, 0))
         for x, y in ((-PW / 2 + 14, 14), (PW / 2 - 14, 14), (-PW / 2 + 14, PD - 14), (PW / 2 - 14, PD - 14)):
             with Locations((x, y, -BOTTOM_T)):
@@ -498,7 +501,7 @@ def pedal_key(right: bool):
         with Locations((kx, (HINGE_Y + PLATE_Y0 + 3) / 2, HINGE_Z)):
             Box(KNUCKLE_W, PLATE_Y0 + 3 - HINGE_Y, KEY_T, align=(Align.CENTER, Align.CENTER, Align.CENTER))
         with Locations(Location((kx, HINGE_Y, HINGE_Z), (0, 90, 0))):
-            Cylinder(1.8, KNUCKLE_W + 1, mode=Mode.SUBTRACT)
+            Cylinder(HINGE_BOLT / 2 + 0.3, KNUCKLE_W + 1, mode=Mode.SUBTRACT)
         # ribs underneath, along the key
         for dx in (-KEY_W / 2 + 3, 0, KEY_W / 2 - 3):
             if dx == 0:
@@ -522,7 +525,7 @@ def pedal_key(right: bool):
             with Locations((kx, 40 + i * 10, KEY_UNDER + KEY_T)):
                 Box(KEY_W - 12, 1.6, 0.8, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
         with BuildSketch(Plane.XY.offset(KEY_UNDER + KEY_T)):
-            with Locations((kx, 24)):
+            with Locations((kx, PLATE_Y0 + 10)):
                 Triangle(a=12, b=12, c=12, rotation=0 if right else 180)
         extrude(amount=-0.8, mode=Mode.SUBTRACT)
     return p.part

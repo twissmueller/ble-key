@@ -150,8 +150,8 @@ test before anything goes into the shop.
 Its shaft and body lengths are taken off the drawing's scale (only the overall length and the
 diameters are dimensioned): check them on the real part.
 
-**Foot pedal** (`out/pedal-fdm/`, 122 × 168 × 34 mm; the Bambu Lab A1 mini prints 180 × 180 × 180 mm, so 6 mm stay free all round): two foot keys side by
-side, left is back, right is forward, each hinged at the heel on an M3 × 30 screw with a nut and pressing a
+**Foot pedal** (`out/pedal-fdm/`, 122 × 168 × 36 mm; the Bambu Lab A1 mini prints 180 × 180 × 180 mm, so 6 mm stay free all round): two foot keys side by
+side, left is back, right is forward, each hinged at the heel on an M6 × 40 hex bolt with two nuts locked against each other, and pressing a
 Cherry-MX-style switch that clips into the deck. A compression spring under each key lifts it; two
 posts beside each switch take the foot's force once the switch is pressed. The Modular slides onto a fixed plug, as into the hand switch: the toe block has a
 roofed tunnel, open on the pedal's right side (a 31 mm bridge when printing). The Modular goes in
@@ -159,13 +159,14 @@ jack end first and stands 8 mm out of the side, enough to grip it and pull it ou
 the two light holes stay outside. The plug lies in a cradle that is open to the top: a U-shaped
 1 mm lip in front that its body rests on, two shoulders behind its end, the wires going down
 between them. A lid (`ble-key-pedal-plug-lid`) closes the cradle from above and its tongue holds
-the plug down, with four countersunk 2.2 × 6.5 screws, the Modular's lid screws. The wires run in channels under the deck, closed by the bottom cover (M3
-self-tapping screws, recesses for four stick-on feet). Parts: base, cover, two keys, plug lid.
+the plug down, with four countersunk 2.2 × 6.5 screws, the Modular's lid screws. The wires run in channels under the deck, closed by the bottom cover (seven countersunk 2.2 × 6.5 screws,
+recesses for four stick-on feet). Parts: base, cover, two keys, plug lid.
 
 Bought parts (Reichelt order numbers): pedal: 2 × `CHERRY MX2A-11NN` (MX Black, snap-in), 2 ×
-compression spring about 8 × 20 mm (from the assortment `SIN 206032`), 2 × M3 × 30 (`CIMCO 190811`)
-with M3 nuts (`CIMCO 192000`), 7 × countersunk M3 × 10 (`SKS M3X10-50`), 4 × stick-on feet 10 × 3 mm
-(`DELOCK 18309`), 1 × 3.5 mm stereo plug (`NEUTRIK NYS231`), 4 × countersunk 2.2 × 6.5 for the plug's lid. Hand
+compression spring about 8 × 20 mm (from the assortment `SIN 206032`), 2 × M6 × 40 hex bolt and 4 × M6 nut
+(DIN 933/934, from the M6/M8 set bought for the IC-705 mount), 11 × countersunk self-tapping
+2.2 × 6.5 (DIN 7982, the Modular's lid screws: 7 for the cover, 4 for the plug's lid), 4 × stick-on feet 10 × 3 mm
+(`DELOCK 18309`), 1 × 3.5 mm stereo plug (`NEUTRIK NYS231`). Hand
 switch: 2 × tactile switch 12 × 12 × 7.3 mm (`DIP DTS-24N`), 1 × `NEUTRIK NYS231`, 2 × countersunk
 2.2 × 6.5. Wire: 0.14 mm² (`LITZE 77685`).
 
@@ -176,3 +177,7 @@ the fit of the sleeve hold it. Two 12 × 12 mm tactile buttons on top, the front
 rear one back, with their wires in a channel to the plug. The USB-C end and the two light holes stay
 free. `ble-key-hand`, 74.6 × 35.2 × 35.5 mm with the cap. Prints standing on its end block, without
 supports.
+
+**Fasteners, kept to two kinds across the add-ons:** countersunk self-tapping 2.2 × 6.5 (DIN 7982),
+the screw of the BLE Key cases, for every lid, cap and cover; and M6 hex bolts and nuts (DIN 933/934)
+for the pedal's hinges, from the same M6/M8 set as the IC-705 mount in `~/projects/prints`. No M3.
