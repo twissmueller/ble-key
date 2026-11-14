@@ -9,7 +9,7 @@ Nothing inside the Modular changes.
           The Modular slides into a tunnel in the toe block from the pedal's right side, onto
           the fixed plug, and stands out of the side a little so it can be pulled out again.
           The plug lies in a cradle open to the top, closed by a small lid with the Modular's
-          own countersunk screws. The toe block is only as long as tunnel and plug need.
+          own countersunk screws.
 - hand:   a sleeve that slides over the Modular's jack end; the plug in its end block goes into
           the jack as it slides home. Two 12 x 12 mm tactile buttons on top (front forward, rear
           back).
@@ -316,13 +316,12 @@ POCKET_W = MOD_W + 2 * C
 # sleeve, and stands out of the side by STICK_OUT, to pull it out again. The plug lies in a cradle
 # that is open to the top: a U-shaped lip in front that its body's nose rests on, two shoulders
 # behind its end with a slot between them for the wires, and a lid from above whose tongue holds
-# it down. The toe block ends just behind the plug.
+# it down. The toe block runs across the whole pedal, for an even look.
 STICK_OUT = 8.0
 POCKET_X0 = PW / 2 + STICK_OUT - MOD_L - FACE_GAP   # end wall face of the tunnel
 CRADLE_X1 = -FACE_GAP - SEAT_RECESS - SEAT_LIP      # Modular frame: the plug body's nose
 CRADLE_X0 = CRADLE_X1 - PLUG_BODY - 0.3             # the plug body's end, at the shoulders
 CRADLE_WIRES = 6.0                                  # wire slot behind the plug
-BLOCK_X0 = POCKET_X0 + FACE_GAP + CRADLE_X0 - CRADLE_WIRES - 3.0   # the toe block's left end
 LID_T = 2.0
 LID_W = 24.0
 LID_X0, LID_X1 = CRADLE_X0 - CRADLE_WIRES - 1.5, CRADLE_X1 + SEAT_LIP   # Modular frame
@@ -399,10 +398,6 @@ def pedal_base():
             with BuildSketch():
                 RectangleRounded(PW, PD - BLOCK_Y0, 6.0)
             extrude(amount=BLOCK_Z)
-        # the toe block only reaches as far left as the plug needs
-        with Locations(((-PW / 2 - 1 + BLOCK_X0) / 2, (BLOCK_Y0 + PD) / 2, KEY_Z)):
-            Box(BLOCK_X0 + PW / 2 + 1, PD - BLOCK_Y0 + 2, BLOCK_Z, align=(Align.CENTER, Align.CENTER, Align.MIN),
-                mode=Mode.SUBTRACT)
         # hinge: two lugs per key either side of its knuckle, on an M3 x 30 screw from the outer
         # side with a nut on the inner lug (lug 5 + knuckle 16 + lug 5 + nut fits 30 mm)
         lug_h = HINGE_Z + KNUCKLE_R + 0.5 - KEY_Z

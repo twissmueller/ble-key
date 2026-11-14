@@ -159,8 +159,7 @@ jack end first and stands 8 mm out of the side, enough to grip it and pull it ou
 the two light holes stay outside. The plug lies in a cradle that is open to the top: a U-shaped
 1 mm lip in front that its body rests on, two shoulders behind its end, the wires going down
 between them. A lid (`ble-key-pedal-plug-lid`) closes the cradle from above and its tongue holds
-the plug down, with four countersunk 2.2 × 6.5 screws, the Modular's lid screws. The toe block is
-only as long as tunnel and plug need (87 of the 122 mm). The wires run in channels under the deck, closed by the bottom cover (M3
+the plug down, with four countersunk 2.2 × 6.5 screws, the Modular's lid screws. The wires run in channels under the deck, closed by the bottom cover (M3
 self-tapping screws, recesses for four stick-on feet). Parts: base, cover, two keys, plug lid.
 
 Bought parts (Reichelt order numbers): pedal: 2 × `CHERRY MX2A-11NN` (MX Black, snap-in), 2 ×
