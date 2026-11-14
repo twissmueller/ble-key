@@ -140,30 +140,42 @@ jack's position are taken from `enclosure.py`.
 .venv/bin/python addons.py --views   # also PNG views in out/addons-views/ (uv pip install vtk first)
 ```
 
-**Status: first draft, not printed yet.** The sizes of the bought parts are assumed (constants
-`PLUG_*`, `MX_*`, `TACT_*`, `SPRING_*` at the top of `addons.py`); measure the real parts and print a
+**Status: first draft, not printed yet.** The sizes of the switches, buttons and spring are assumed
+(constants `MX_*`, `TACT_*`, `SPRING_*` at the top of `addons.py`); measure the real parts and print a
 test before anything goes into the shop.
+
+**The plug** is a Rean NYS231 (Reichelt `NEUTRIK NYS231`, drawing in `../docs/TZ_NYS231.pdf`: body
+Ø 9.0, 39.0 long overall), used whole, with its metal handle on. In both add-ons it sits in the same
+seat on the jack's axis: a 1 mm lip in front that the body's nose rests on, a Ø 9.3 bore for the
+body, and a cap (`ble-key-plug-cap`) screwed on behind with two countersunk 2.2 × 6.5 screws (the
+Modular's lid screws), whose boss presses on the body's end. So the plug cannot move forwards,
+backwards or sideways, needs no glue and can be replaced. The plug goes in from behind; its wires
+leave through a slot in the cap's boss. The ring nut of the Modular's jack goes 1 mm into a recess
+in the wall. The plug's shaft and body lengths are taken off the drawing's scale (only the overall
+length and the diameters are dimensioned): check them on the real part.
 
 **Foot pedal** (`out/pedal-fdm/`, 122 × 178 × 34 mm, fits a 180 mm bed): two foot keys side by
 side, left is back, right is forward, each hinged at the heel on an M3 × 30 screw with a nut and pressing a
 Cherry-MX-style switch that clips into the deck. A compression spring under each key lifts it; two
 posts beside each switch take the foot's force once the switch is pressed. The Modular lies in a
-pocket in the toe block. The plug sits fixed in the pocket's end wall: put the Modular in at the far
+pocket in the toe block. The plug's seat runs from the pocket's end wall out to the pedal's left
+side, where its cap is: put the Modular in at the far
 end, slide it onto the plug, then drop the keeper block in behind it. USB-C stays reachable through
 the keeper and the side wall. A Modular without battery tray goes on the spacer, which lifts it to
 the same height. The wires run in channels under the deck, closed by the bottom cover (M3
-self-tapping screws, recesses for four stick-on feet). Parts: base, cover, two keys, keeper, spacer.
+self-tapping screws, recesses for four stick-on feet). Parts: base, cover, two keys, keeper, spacer, plug cap.
 
 Bought parts (Reichelt order numbers): pedal: 2 × `CHERRY MX2A-11NN` (MX Black, snap-in), 2 ×
 compression spring about 8 × 20 mm (from the assortment `SIN 206032`), 2 × M3 × 30 (`CIMCO 190811`)
 with M3 nuts (`CIMCO 192000`), 7 × countersunk M3 × 10 (`SKS M3X10-50`), 4 × stick-on feet 10 × 3 mm
-(`DELOCK 18309`), 1 × 3.5 mm stereo plug (`KSS 35`). Hand switch: 2 × tactile switch 12 × 12 × 7.3 mm
-(`DIP DTS-24N`), 1 × `KSS 35`. Wire: 0.14 mm² (`LITZE 77685`).
+(`DELOCK 18309`), 1 × 3.5 mm stereo plug (`NEUTRIK NYS231`), 2 × countersunk 2.2 × 6.5 for the plug's cap. Hand
+switch: 2 × tactile switch 12 × 12 × 7.3 mm (`DIP DTS-24N`), 1 × `NEUTRIK NYS231`, 2 × countersunk
+2.2 × 6.5. Wire: 0.14 mm² (`LITZE 77685`).
 
 **Hand switch** (`out/hand-fdm/`): a sleeve that slides over the Modular's jack end. The plug sits
-in the sleeve's end block and goes into the jack as the sleeve slides home; the jack's own grip and
+in its seat in the sleeve's end block, with the cap on the back, and goes into the jack as the sleeve slides home; the jack's own grip and
 the fit of the sleeve hold it. Two 12 × 12 mm tactile buttons on top, the front one forward, the
 rear one back, with their wires in a channel to the plug. The USB-C end and the two light holes stay
-free. One sleeve per height: `ble-key-hand-usb` for the Modular without battery tray (62.5 × 35.2 ×
-25.2 mm), `ble-key-hand-tray` with it (35.5 mm tall). Prints standing on its end block, without
+free. One sleeve per height: `ble-key-hand-usb` for the Modular without battery tray (74.6 × 35.2 ×
+25.2 mm with the cap), `ble-key-hand-tray` with it (35.5 mm tall). Prints standing on its end block, without
 supports.

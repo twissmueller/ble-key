@@ -6,7 +6,8 @@ Nothing inside the Modular changes.
 
 - pedal:  two foot keys side by side (left back, right forward) on Cherry-MX-style switches, a
           return spring under each key, and a pocket at the toe end that the Modular drops into.
-          A 3.5 mm plug sits fixed in the pocket's end wall; the Modular goes in at the far end,
+          A 3.5 mm plug (Rean NYS231) sits in a seat in the pocket's end wall, held by a lip in
+          front and a screwed-on cap behind; the Modular goes in at the far end,
           slides onto the plug, and a keeper block fills the gap behind it. USB-C stays reachable
           through the keeper and the pedal's side wall. A spacer lifts a Modular without battery
           tray to the same height, so the plug fits both.
@@ -24,7 +25,7 @@ any change there. Modular frame used here: jack end face at x = 0, USB end at x 
 on y = 0, z = 0 at the base's underside (the battery tray hangs below it, down to -TRAY_H).
 
 Bought parts whose sizes are assumed, not measured (see README, "Add-ons"):
-PLUG_* (a 3.5 mm stereo solder plug with its handle taken off), MX_* (Cherry MX footprint),
+MX_* (Cherry MX footprint),
 TACT_* (12 x 12 mm tactile switch), SPRING_* (compression spring).
 """
 
@@ -51,11 +52,26 @@ NUT_D = enc.JACK.nut_d
 USB_Z = enc.FLOOR + _V.board_z + (enc.USB_Z0 + enc.USB_Z1) / 2   # USB-C centre above the underside
 LED_X = enc.WALL + _V.inner_l - enc.LED_DX           # light holes, from the jack end face
 
-# --- 3.5 mm stereo plug, handle removed (assumed: typical metal solder plug) ------------------
-PLUG_SHAFT = 14.0   # from the shoulder to the tip; goes fully into the jack
-PLUG_D = 6.0        # insulating collar and solder part behind the shoulder
-PLUG_BODY = 16.0    # collar plus solder lugs and strain relief, behind the shoulder
+# --- 3.5 mm stereo plug: Rean NYS231, metal, handle left on (docs/TZ_NYS231.pdf) ---------------
+# 39.0 long overall, body Ø 9.0, cable hole Ø 4.5 (dimensioned); shaft and body lengths are taken
+# off the drawing's scale, not dimensioned: check on the real part.
+PLUG_SHAFT = 14.7   # tip to the body's nose
+PLUG_D = 9.0
+PLUG_BODY = 39.0 - PLUG_SHAFT   # 24.3
 PLUG_BORE = PLUG_D + 0.3
+# The seat, along the jack's axis from the wall face backwards: a recess the ring nut goes into, a
+# lip the body's nose rests on (the Ø 9 body cannot pass), the bore for the body, and room for
+# the cap's boss, which presses on the body's end. The plug goes in from behind.
+FACE_GAP = 1.5      # wall face to the Modular's end face; the nut reaches SEAT_RECESS into the wall
+SEAT_RECESS = NUT_OUT - FACE_GAP
+SEAT_LIP = 1.0
+SEAT_LIP_D = 7.5
+CAP_BOSS = 4.0
+SEAT_L = SEAT_RECESS + SEAT_LIP + PLUG_BODY + 0.3 + CAP_BOSS   # wall face to the back face
+CAP_T = 2.5
+CAP_W, CAP_H = 26.0, 13.0
+CAP_SCREW_Y = 9.0   # two countersunk 2.2 x 6.5 (DIN 7982), as on the Modular's lid
+WIRE_SLOT = 5.0
 
 # --- Cherry MX-style switch, plate mount ----------------------------------------------------
 MX_CUT = 14.0       # square plate cut-out
@@ -155,12 +171,55 @@ def modular_stand_in(tray: bool):
 
 
 def plug_stand_in():
-    """Plug in the Modular frame: shoulder at x = -NUT_OUT, shaft into the jack, body behind."""
+    """Plug in the Modular frame: nose on the seat's lip, shaft into the jack, body behind."""
+    x0 = -FACE_GAP - SEAT_RECESS - SEAT_LIP
     with BuildPart() as p:
-        with Locations(Location((-NUT_OUT + PLUG_SHAFT / 2, 0, JACK_Z), (0, 90, 0))):
+        with Locations(Location((x0 + PLUG_SHAFT / 2, 0, JACK_Z), (0, 90, 0))):
             Cylinder(1.75, PLUG_SHAFT)
-        with Locations(Location((-NUT_OUT - PLUG_BODY / 2, 0, JACK_Z), (0, 90, 0))):
+        with Locations(Location((x0 - PLUG_BODY / 2, 0, JACK_Z), (0, 90, 0))):
             Cylinder(PLUG_D / 2, PLUG_BODY)
+    return p.part
+
+
+def seat_cut(wire_up: bool, wire_len: float):
+    """What to cut for the plug's seat, in the Modular frame: nut recess, lip hole, bore through to
+    the back face, pilots for the cap's screws, and a wire slot from the boss zone up or down."""
+    xf = -FACE_GAP
+    xb = xf - SEAT_L
+    with BuildPart() as p:
+        with Locations(Location((xf - SEAT_RECESS / 2 + 0.05, 0, JACK_Z), (0, 90, 0))):
+            Cylinder(NUT_D / 2 + 0.4, SEAT_RECESS + 0.1)
+        with Locations(Location((xf - SEAT_RECESS - SEAT_LIP / 2, 0, JACK_Z), (0, 90, 0))):
+            Cylinder(SEAT_LIP_D / 2, SEAT_LIP + 0.2)
+        x1 = xf - SEAT_RECESS - SEAT_LIP
+        with Locations(Location(((x1 + xb) / 2 - 0.05, 0, JACK_Z), (0, 90, 0))):
+            Cylinder(PLUG_BORE / 2, x1 - xb + 0.1)
+        for sy in (-1, 1):
+            with Locations(Location((xb + 3.0 - 0.05, sy * CAP_SCREW_Y, JACK_Z), (0, 90, 0))):
+                Cylinder(enc.PILOT_D / 2, 6.1)
+        with Locations((xb + 1.5 + (CAP_BOSS - 1.5) / 2, 0, JACK_Z)):
+            Box(CAP_BOSS - 1.5, WIRE_SLOT, wire_len,
+                align=(Align.CENTER, Align.CENTER, Align.MIN if wire_up else Align.MAX))
+    return p.part
+
+
+def plug_cap():
+    """Closes the seat from behind, in the Modular frame: a plate on the back face with a boss
+    into the bore that presses on the plug's end, slotted for the wires. Two countersunk screws."""
+    xb = -FACE_GAP - SEAT_L
+    with BuildPart() as p:
+        with Locations((xb - CAP_T / 2, 0, JACK_Z)):
+            Box(CAP_T, CAP_W, CAP_H)
+        fillet(p.edges().filter_by(Axis.X), radius=2.0)
+        with Locations(Location((xb + CAP_BOSS / 2 - 0.15, 0, JACK_Z), (0, 90, 0))):
+            Cylinder(PLUG_D / 2 - 0.1, CAP_BOSS - 0.3)
+        with Locations((xb + CAP_BOSS / 2, 0, JACK_Z)):
+            Box(CAP_BOSS + 0.2, WIRE_SLOT, PLUG_D + 1, mode=Mode.SUBTRACT)
+        for sy in (-1, 1):
+            with Locations(Location((xb - CAP_T / 2, sy * CAP_SCREW_Y, JACK_Z), (0, 90, 0))):
+                Cylinder(enc.SCREW_D / 2, CAP_T + 0.2, mode=Mode.SUBTRACT)
+            with Locations(Location((xb - CAP_T + (enc.CSK_D - enc.SCREW_D) / 4, sy * CAP_SCREW_Y, JACK_Z), (0, 90, 0))):
+                Cone(enc.CSK_D / 2, enc.SCREW_D / 2, (enc.CSK_D - enc.SCREW_D) / 2, mode=Mode.SUBTRACT)
     return p.part
 
 
@@ -170,7 +229,7 @@ def plug_stand_in():
 
 HAND_WALL = 2.0
 HAND_REACH = 40.0           # how far the sleeve reaches over the Modular from its jack end
-HAND_BLOCK = PLUG_BODY + 4.0    # end block behind the end wall face: plug bore, retaining screw
+HAND_BLOCK = SEAT_L             # end block behind the end wall face: the plug's seat
 POD_H = 6.0                 # button pod on top of the sleeve
 POD_W = 26.0
 BTN_X = (9.0, 28.0)         # rear button (back / dah / ring), front button (forward / dit / tip)
@@ -180,7 +239,7 @@ def hand(tray: bool):
     zb = (-TRAY_H if tray else 0.0) - C          # sleeve inside, bottom
     zt = MOD_H + C                               # sleeve inside, top
     yi = MOD_W / 2 + C
-    x_face = -NUT_OUT                            # end wall face: the nut rests on it
+    x_face = -FACE_GAP                           # end wall face; the nut goes into the seat's recess
     x_back = x_face - HAND_BLOCK
     x_open = HAND_REACH
     top = zt + HAND_WALL                         # top of the sleeve, floor of the pod
@@ -198,15 +257,8 @@ def hand(tray: bool):
             Box(x_open + 1 - x_face, 2 * yi, zt - zb, mode=Mode.SUBTRACT)
         # the Modular's vertical corner radius at its jack end: the tunnel's inside corners stay
         # square, which clears it
-        # plug bore from the end wall face back through the block; the plug goes in from behind
-        with Locations(Location((x_face - HAND_BLOCK / 2, 0, JACK_Z), (0, 90, 0))):
-            Cylinder(PLUG_BORE / 2, HAND_BLOCK + 0.2, mode=Mode.SUBTRACT)
-        # narrow step at the face so the plug's collar stops there and only the shaft goes through
-        # (the collar's front face sits flush with the wall face, at the thread's end)
-        # retaining screw across behind the plug: M2 x 10 self-tapping, from below
-        with Locations((x_back + 2.0, 0, zb - HAND_WALL)):
-            Cylinder(0.85, JACK_Z - zb + HAND_WALL + PLUG_BORE / 2 + 1.5,
-                     align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+        # the plug's seat, with its wire slot up into the pod's channel
+        add(seat_cut(True, pod_top - TACT_BODY - 0.8 - JACK_Z), mode=Mode.SUBTRACT)
         # button pockets from the pod's top, wire holes from their floors down into a channel
         for bx in BTN_X:
             with Locations((bx, 0, pod_top)):
@@ -218,12 +270,9 @@ def hand(tray: bool):
                         mode=Mode.SUBTRACT)
         # wire channel along the pod, from the front button back over the end block
         ch_z0, ch_z1 = top + 0.4, pod_top - TACT_BODY - 0.8
-        with Locations(((x_back + 3.0 + BTN_X[1] + 4.5) / 2, 0, ch_z0)):
-            Box(BTN_X[1] + 4.5 - x_back - 3.0, 4.0, ch_z1 - ch_z0, align=(Align.CENTER, Align.CENTER, Align.MIN),
+        with Locations(((x_back + 1.5 + BTN_X[1] + 4.5) / 2, 0, ch_z0)):
+            Box(BTN_X[1] + 4.5 - x_back - 1.5, WIRE_SLOT, ch_z1 - ch_z0, align=(Align.CENTER, Align.CENTER, Align.MIN),
                 mode=Mode.SUBTRACT)
-        # and down from the channel into the plug bore, behind the plug's lugs
-        with Locations((x_back + 4.5, 0, JACK_Z)):
-            Box(3.0, 4.0, ch_z1 - JACK_Z, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
         # arrows beside the buttons, 0.6 deep: rear points back (to the jack), front forward
         for bx, d in ((BTN_X[0], -1), (BTN_X[1], 1)):
             with BuildSketch(Plane.XY.offset(pod_top)) as s:
@@ -257,11 +306,11 @@ BLOCK_Y0 = 138.0             # toe block with the Modular pocket
 POCKET_DEPTH = MOD_H + TRAY_H + 0.8
 POCKET_FLOOR = 3.0
 BLOCK_Z = POCKET_FLOOR + POCKET_DEPTH
-SLIDE = PLUG_SHAFT + 1.5     # the Modular goes in this far from the plug, then slides onto it
+SLIDE = PLUG_SHAFT - SEAT_LIP - SEAT_RECESS - FACE_GAP + 2.0   # room to lay the Modular in clear of the plug's tip
 POCKET_Y = (BLOCK_Y0 + PD) / 2
 POCKET_W = MOD_W + 2 * C
-POCKET_X0 = -26.0            # end wall face with the plug; the nut rests on it
-POCKET_L = NUT_OUT + MOD_L + SLIDE + 2 * C
+POCKET_X0 = -PW / 2 + SEAT_L  # end wall face; the plug's seat runs from it out to the pedal's left side
+POCKET_L = FACE_GAP + MOD_L + SLIDE + 2 * C
 BOTTOM_T = 2.4               # bottom cover
 
 
@@ -271,7 +320,7 @@ def key_xs():
 
 def mod_in_pedal(part):
     """Place a part from the Modular frame into the pedal, Modular engaged on the plug."""
-    return part.translate((POCKET_X0 + NUT_OUT, POCKET_Y, POCKET_FLOOR + TRAY_H + C))
+    return part.translate((POCKET_X0 + FACE_GAP, POCKET_Y, POCKET_FLOOR + TRAY_H + C))
 
 
 def pedal_base():
@@ -314,9 +363,13 @@ def pedal_base():
         with Locations((0, SWITCH_Y, 0)):
             Box(KEY_W + KEY_GAP + 2, ch, KEY_Z - 4.0, align=(Align.CENTER, Align.CENTER, Align.MIN),
                 mode=Mode.SUBTRACT)
-        plug_x0 = POCKET_X0 - PLUG_BODY - 4.0
-        with Locations((plug_x0 + 3.0, (SWITCH_Y + POCKET_Y) / 2, 0)):
+        chx = -PW / 2 + 12.0
+        with Locations((chx, (SWITCH_Y + POCKET_Y) / 2, 0)):
             Box(ch, POCKET_Y - SWITCH_Y + ch, KEY_Z - 4.0, align=(Align.CENTER, Align.CENTER, Align.MIN),
+                mode=Mode.SUBTRACT)
+        # and on to under the plug's end, where the wires come down from the seat
+        with Locations(((-PW / 2 + 1.5 + chx) / 2, POCKET_Y, 0)):
+            Box(chx - (-PW / 2 + 1.5), WIRE_SLOT, KEY_Z - 4.0, align=(Align.CENTER, Align.CENTER, Align.MIN),
                 mode=Mode.SUBTRACT)
 
         # the pocket
@@ -326,13 +379,10 @@ def pedal_base():
                 Rectangle(POCKET_L, POCKET_W)
             extrude(amount=POCKET_DEPTH + 1, mode=Mode.SUBTRACT)
         # finger notches on both long sides, to lift the Modular out
-        with Locations((POCKET_X0 + NUT_OUT + MOD_L / 2, POCKET_Y, BLOCK_Z)):
+        with Locations((POCKET_X0 + FACE_GAP + MOD_L / 2, POCKET_Y, BLOCK_Z)):
             Box(22.0, POCKET_W + 12.0, 9.0, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
-        # plug: bore from the end wall face back, open from below for fitting it; channel down
-        with Locations(Location((POCKET_X0 - (PLUG_BODY + 4) / 2, POCKET_Y, z_plug), (0, 90, 0))):
-            Cylinder(PLUG_BORE / 2, PLUG_BODY + 4 + 0.2, mode=Mode.SUBTRACT)
-        with Locations((POCKET_X0 - (PLUG_BODY + 4) / 2, POCKET_Y, 0)):
-            Box(PLUG_BODY + 4, PLUG_BORE, z_plug, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+        # the plug's seat, open to the pedal's left side (closed by the cap), wire slot down
+        insert(mod_in_pedal(seat_cut(False, z_plug - 1.0)), mode=Mode.SUBTRACT)
         # USB-C: opening through the right side wall at the plug's height, for the cable
         usb_z = POCKET_FLOOR + TRAY_H + C + USB_Z
         x_end = POCKET_X0 + POCKET_L
@@ -415,7 +465,7 @@ def pedal_key(right: bool):
 
 def pedal_keeper():
     """Fills the gap behind the Modular once it is on the plug; slot for the USB-C cable."""
-    x0 = POCKET_X0 + NUT_OUT + MOD_L + C
+    x0 = POCKET_X0 + FACE_GAP + MOD_L + C
     x1 = POCKET_X0 + POCKET_L - C
     w = POCKET_W - 2 * C
     z0 = POCKET_FLOOR
@@ -438,7 +488,7 @@ def pedal_keeper():
 def pedal_spacer():
     """For a Modular without battery tray: lifts it to the tray's height, so the plug fits."""
     x0 = POCKET_X0 + C
-    x1 = POCKET_X0 + NUT_OUT + MOD_L - C     # up to the keeper, which stands on the pocket floor
+    x1 = POCKET_X0 + FACE_GAP + MOD_L - C     # up to the keeper, which stands on the pocket floor
     w = POCKET_W - 2 * C
     with BuildPart() as p:
         with Locations(((x0 + x1) / 2, POCKET_Y, POCKET_FLOOR)):
@@ -479,7 +529,7 @@ def preview(parts, out, suffix=""):
     for name, part in parts.items():
         with BuildPart() as baked:
             for solid in part.solids():
-                add(Solid(solid.wrapped))
+                insert(Solid(solid.wrapped))
         glb = out / f"preview-{name}{suffix}.glb"
         export_gltf(baked.part, str(glb), binary=True, linear_deflection=0.02, angular_deflection=0.2)
         glb.with_suffix(".b64.txt").write_text(base64.b64encode(glb.read_bytes()).decode())
@@ -503,15 +553,15 @@ def main():
     for tray in (False, True):
         tag = "tray" if tray else "usb"
         h = hand(tray)
-        mod, plug = modular_stand_in(tray), plug_stand_in()
-        check(f"hand-{tag}", {"sleeve": h}, {"modular": mod, "plug": plug})
+        mod, plug, cap = modular_stand_in(tray), plug_stand_in(), plug_cap()
+        check(f"hand-{tag}", {"sleeve": h, "cap": cap}, {"modular": mod, "plug": plug})
         # prints standing on its end block, the tunnel upright: no supports
         save(h, out, f"ble-key-hand-{tag}", flip=lambda s: s.rotate(Axis.Y, -90))
-        preview({"base": h, "modular": mod, "plug": plug}, out, f"-{tag}")
+        preview({"base": h + cap, "modular": mod, "plug": plug}, out, f"-{tag}")
         bb = h.bounding_box()
         print(f"hand {tag}: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm")
         if render:
-            views(f"hand-{tag}", [(h, "#c2541b"), (mod, "#2b2f2e"), (plug, "#b9b9b9")], views_out,
+            views(f"hand-{tag}", [(h, "#c2541b"), (cap, "#8a8f8d"), (mod, "#2b2f2e"), (plug, "#b9b9b9")], views_out,
                   elev_azims=((28, -50), (20, 140), (12, -95)))
 
     # --- pedal ---
@@ -522,8 +572,12 @@ def main():
     keeper, spacer = pedal_keeper(), pedal_spacer()
     mod_tray = mod_in_pedal(modular_stand_in(True))
     plug = mod_in_pedal(plug_stand_in())
+    cap = mod_in_pedal(plug_cap())
+    # the cap is the same part for the pedal and the hand switch; it prints plate down
+    save(plug_cap(), OUT / "hand-fdm", "ble-key-plug-cap", flip=lambda s: s.rotate(Axis.Y, 90))
+    save(plug_cap(), out, "ble-key-plug-cap", flip=lambda s: s.rotate(Axis.Y, 90))
     switches = {f"switch-{i}": pedal_switch_stand_in(kx) for i, kx in enumerate(key_xs())}
-    printed = {"base": base, "cover": cover, **keys, "keeper": keeper}
+    printed = {"base": base, "cover": cover, **keys, "keeper": keeper, "cap": cap}
     check("pedal", printed, {"modular": mod_tray, "plug": plug, **switches})
     # a Modular without tray, on the spacer
     mod_usb = mod_in_pedal(modular_stand_in(False))
@@ -535,14 +589,14 @@ def main():
     save(keeper, out, "ble-key-pedal-keeper")
     save(spacer, out, "ble-key-pedal-spacer")
     sw = switches["switch-0"] + switches["switch-1"]
-    preview({"base": base + cover, "keys": keys["key-left"] + keys["key-right"], "keeper": keeper,
+    preview({"base": base + cover + cap, "keys": keys["key-left"] + keys["key-right"], "keeper": keeper,
              "modular": mod_tray, "plug": plug, "switches": sw}, out)
     bb = base.bounding_box()
     print(f"pedal: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm, "
           f"toe height {KEY_UNDER + KEY_T:.1f} mm")
     if render:
         shown = [(base, "#c2541b"), (keys["key-left"], "#e07a3f"), (keys["key-right"], "#e07a3f"),
-                 (keeper, "#8a8f8d"), (mod_tray, "#2b2f2e"), (plug, "#b9b9b9")]
+                 (keeper, "#8a8f8d"), (cap, "#8a8f8d"), (mod_tray, "#2b2f2e"), (plug, "#b9b9b9")]
         views("pedal", shown, views_out, elev_azims=((35, -60), (30, 115), (85, -90)))
         views("pedal-open", [(base, "#c2541b"), (spacer, "#8a8f8d")] + [(sw, "#3a3f3d") for sw in switches.values()],
               views_out, elev_azims=((40, -60), (-55, -60)))
