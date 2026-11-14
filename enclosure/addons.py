@@ -9,11 +9,13 @@ Nothing inside the Modular changes.
           A 3.5 mm plug (Rean NYS231) sits in a seat in the pocket's end wall, held by a lip in
           front and a screwed-on cap behind; the Modular goes in at the far end,
           slides onto the plug, and a keeper block fills the gap behind it. USB-C stays reachable
-          through the keeper and the pedal's side wall. A spacer lifts a Modular without battery
-          tray to the same height, so the plug fits both.
+          through the keeper and the pedal's side wall.
 - hand:   a sleeve that slides over the Modular's jack end; the plug in its end block goes into
           the jack as it slides home. Two 12 x 12 mm tactile buttons on top (front forward, rear
-          back). One sleeve per height: without and with battery tray.
+          back).
+
+Both are made for the Modular with its battery tray: in the hand and under the foot the key has to
+run on its battery.
 
 All parts are for FDM (PETG), 0.35 mm fit, and fit a 180 x 180 mm bed (Bambu Lab A1 mini).
 
@@ -258,7 +260,7 @@ def hand(tray: bool):
         # the Modular's vertical corner radius at its jack end: the tunnel's inside corners stay
         # square, which clears it
         # the plug's seat, with its wire slot up into the pod's channel
-        add(seat_cut(True, pod_top - TACT_BODY - 0.8 - JACK_Z), mode=Mode.SUBTRACT)
+        insert(seat_cut(True, pod_top - TACT_BODY - 0.8 - JACK_Z), mode=Mode.SUBTRACT)
         # button pockets from the pod's top, wire holes from their floors down into a channel
         for bx in BTN_X:
             with Locations((bx, 0, pod_top)):
@@ -485,22 +487,6 @@ def pedal_keeper():
     return p.part
 
 
-def pedal_spacer():
-    """For a Modular without battery tray: lifts it to the tray's height, so the plug fits."""
-    x0 = POCKET_X0 + C
-    x1 = POCKET_X0 + FACE_GAP + MOD_L - C     # up to the keeper, which stands on the pocket floor
-    w = POCKET_W - 2 * C
-    with BuildPart() as p:
-        with Locations(((x0 + x1) / 2, POCKET_Y, POCKET_FLOOR)):
-            with BuildSketch():
-                Rectangle(x1 - x0, w)
-                Rectangle(x1 - x0 - 6, w - 6, mode=Mode.SUBTRACT)
-            extrude(amount=TRAY_H)
-        with Locations(((x0 + x1) / 2, POCKET_Y, POCKET_FLOOR)):
-            Box(x1 - x0 - 6, 3.0, TRAY_H, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    return p.part
-
-
 def pedal_switch_stand_in(kx):
     with BuildPart() as p:
         with Locations((kx, SWITCH_Y, KEY_Z)):
@@ -550,18 +536,17 @@ def main():
     # --- hand switch ---
     out = OUT / "hand-fdm"
     out.mkdir(parents=True, exist_ok=True)
-    for tray in (False, True):
-        tag = "tray" if tray else "usb"
-        h = hand(tray)
-        mod, plug, cap = modular_stand_in(tray), plug_stand_in(), plug_cap()
-        check(f"hand-{tag}", {"sleeve": h, "cap": cap}, {"modular": mod, "plug": plug})
+    if True:
+        h = hand(True)
+        mod, plug, cap = modular_stand_in(True), plug_stand_in(), plug_cap()
+        check("hand", {"sleeve": h, "cap": cap}, {"modular": mod, "plug": plug})
         # prints standing on its end block, the tunnel upright: no supports
-        save(h, out, f"ble-key-hand-{tag}", flip=lambda s: s.rotate(Axis.Y, -90))
-        preview({"base": h + cap, "modular": mod, "plug": plug}, out, f"-{tag}")
+        save(h, out, "ble-key-hand", flip=lambda s: s.rotate(Axis.Y, -90))
+        preview({"base": h + cap, "modular": mod, "plug": plug}, out)
         bb = h.bounding_box()
-        print(f"hand {tag}: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm")
+        print(f"hand: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm")
         if render:
-            views(f"hand-{tag}", [(h, "#c2541b"), (cap, "#8a8f8d"), (mod, "#2b2f2e"), (plug, "#b9b9b9")], views_out,
+            views("hand", [(h, "#c2541b"), (cap, "#8a8f8d"), (mod, "#2b2f2e"), (plug, "#b9b9b9")], views_out,
                   elev_azims=((28, -50), (20, 140), (12, -95)))
 
     # --- pedal ---
@@ -569,7 +554,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     base, cover = pedal_base(), pedal_cover()
     keys = {"key-left": pedal_key(False), "key-right": pedal_key(True)}
-    keeper, spacer = pedal_keeper(), pedal_spacer()
+    keeper = pedal_keeper()
     mod_tray = mod_in_pedal(modular_stand_in(True))
     plug = mod_in_pedal(plug_stand_in())
     cap = mod_in_pedal(plug_cap())
@@ -579,15 +564,11 @@ def main():
     switches = {f"switch-{i}": pedal_switch_stand_in(kx) for i, kx in enumerate(key_xs())}
     printed = {"base": base, "cover": cover, **keys, "keeper": keeper, "cap": cap}
     check("pedal", printed, {"modular": mod_tray, "plug": plug, **switches})
-    # a Modular without tray, on the spacer
-    mod_usb = mod_in_pedal(modular_stand_in(False))
-    check("pedal (no tray)", {"spacer": spacer, "keeper": keeper}, {"modular": mod_usb})
     save(base, out, "ble-key-pedal-base")
     save(cover, out, "ble-key-pedal-cover", flip=lambda s: s.rotate(Axis.X, 180))
     for k, part in keys.items():
         save(part, out, f"ble-key-pedal-{k}", flip=lambda s: s.rotate(Axis.X, 180))   # top on the bed
     save(keeper, out, "ble-key-pedal-keeper")
-    save(spacer, out, "ble-key-pedal-spacer")
     sw = switches["switch-0"] + switches["switch-1"]
     preview({"base": base + cover + cap, "keys": keys["key-left"] + keys["key-right"], "keeper": keeper,
              "modular": mod_tray, "plug": plug, "switches": sw}, out)
@@ -598,7 +579,7 @@ def main():
         shown = [(base, "#c2541b"), (keys["key-left"], "#e07a3f"), (keys["key-right"], "#e07a3f"),
                  (keeper, "#8a8f8d"), (cap, "#8a8f8d"), (mod_tray, "#2b2f2e"), (plug, "#b9b9b9")]
         views("pedal", shown, views_out, elev_azims=((35, -60), (30, 115), (85, -90)))
-        views("pedal-open", [(base, "#c2541b"), (spacer, "#8a8f8d")] + [(sw, "#3a3f3d") for sw in switches.values()],
+        views("pedal-open", [(base, "#c2541b")] + [(sw, "#3a3f3d") for sw in switches.values()],
               views_out, elev_azims=((40, -60), (-55, -60)))
 
 

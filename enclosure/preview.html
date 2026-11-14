@@ -87,8 +87,7 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
         <button id="var-battery" aria-pressed="false">Battery case · frame</button>
         <button id="var-snap-test-fdm" aria-pressed="false">Snap test pieces</button>
         <button id="var-pedal" aria-pressed="false">Add-on · foot pedal</button>
-        <button id="var-hand-usb" aria-pressed="false">Add-on · hand switch</button>
-        <button id="var-hand-tray" aria-pressed="false">Hand switch · with tray</button>
+        <button id="var-hand" aria-pressed="false">Add-on · hand switch</button>
       </div>
     </div>
   </div>
@@ -256,17 +255,17 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
     pedal: {
       dir: 'pedal-fdm',
       dims: '122 × 178 × 34 mm · draft, not printed yet',
-      sub: 'Foot pedal for the BLE Key Modular · left key back (dah, ring), right key forward (dit, tip) · connects through the 3.5 mm jack only',
+      sub: 'Foot pedal for the BLE Key Modular with battery tray · left key back (dah, ring), right key forward (dit, tip) · connects through the 3.5 mm jack only',
       parts: [['Base', '122 × 178 × 28.6'], ['Bottom cover', '122 × 178 × 2.4'], ['Foot key (2)', '52 × 133 × 5, ribs below'],
-              ['Keeper', '15.5 × 30.5 × 25.6'], ['Spacer (Modular without tray)', '59.7 × 30.5 × 10.3'],
+              ['Keeper', '15.5 × 30.5 × 25.6'],
               ['Pocket for the Modular', '76.6 × 31.2 × 25.6'], ['Toe height', '31'], ['Fit clearance', '0.35']],
       openingsTitle: 'Details',
       openings: [['Switch cut-outs', '2 × 14 × 14, plate 1.5 (Cherry MX)'], ['Spring pockets', '2 × Ø 8.8, 5 deep'], ['Travel stops', '2 posts per key'],
                  ['Hinge', 'M3 × 30 per key, between two lugs'], ['Plug seat', 'Ø 9.3 bore, 1.0 lip in front, cap behind; axis 17.65 above the pocket floor'],
                  ['USB-C opening', '13 × 8 through keeper and side wall'], ['Wire channels', '6 wide, from below']],
       heldTitle: 'How the Modular is held',
-      held: "<p>The Modular is not opened or changed. It lies in the pocket of the toe block and is connected only by the plug in its jack:</p><ul><li><b>The plug</b> (Rean NYS231, whole, with its metal handle) sits in a seat at the height of the jack: a lip in front that its body rests on, and a cap screwed on from the pedal's left side that presses on its end. No glue; undo the cap to replace it.</li><li><b>Going in:</b> lay the Modular into the pocket at the far end and slide it onto the plug until its ring nut rests on the wall.</li><li><b>The keeper</b> drops into the gap behind it and keeps it on the plug. It has a slot for the USB-C cable, so the key can be charged in the pedal.</li><li><b>Without battery tray</b> the Modular lies on the spacer, which lifts it by the tray's height.</li><li><b>The keys</b> each turn on an M3 screw at the heel, press a Cherry MX switch near the toe and are lifted by a compression spring. Two posts beside each switch take the foot's force once the switch is pressed.</li></ul><p>The sizes of the switches and the spring are assumed, not measured. Print and try before relying on it.</p>",
-      files: 'out/pedal-fdm/ble-key-pedal-base, -cover, -key-left, -key-right, -keeper, -spacer, ble-key-plug-cap (.step, .stl)',
+      held: "<p>The Modular is not opened or changed. It lies in the pocket of the toe block and is connected only by the plug in its jack:</p><ul><li><b>The plug</b> (Rean NYS231, whole, with its metal handle) sits in a seat at the height of the jack: a lip in front that its body rests on, and a cap screwed on from the pedal's left side that presses on its end. No glue; undo the cap to replace it.</li><li><b>Going in:</b> lay the Modular into the pocket at the far end and slide it onto the plug until its ring nut rests on the wall.</li><li><b>The keeper</b> drops into the gap behind it and keeps it on the plug. It has a slot for the USB-C cable, so the key can be charged in the pedal.</li><li><b>The keys</b> each turn on an M3 screw at the heel, press a Cherry MX switch near the toe and are lifted by a compression spring. Two posts beside each switch take the foot's force once the switch is pressed.</li></ul><p>The sizes of the switches and the spring are assumed, not measured. Print and try before relying on it.</p>",
+      files: 'out/pedal-fdm/ble-key-pedal-base, -cover, -key-left, -key-right, -keeper, ble-key-plug-cap (.step, .stl)',
       process: 'PETG on an FDM printer: base as it sits, keys and cover turned over (the STL files already are), 0.2 mm layers, 15 % infill. Fits a 180 mm bed.',
       buy: ['2 × Cherry MX Black, snap-in (Reichelt CHERRY MX2A-11NN)', '2 × compression spring about 8 × 20 mm (assortment Reichelt SIN 206032)',
             '2 × M3 × 30 (Reichelt CIMCO 190811) and M3 nuts (CIMCO 192000)', '7 × countersunk M3 × 10 (Reichelt SKS M3X10-50)',
@@ -279,17 +278,17 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
               'Lay the Modular in, slide it onto the plug and drop the keeper in behind it.'],
       names: ['base', 'keys', 'keeper', 'modular', 'plug', 'switches'],
     },
-    'hand-usb': {
-      dir: 'hand-fdm', suffix: '-usb',
-      dims: '74.6 × 35.2 × 25.2 mm · draft, not printed yet',
-      sub: 'Hand switch for the BLE Key Modular without battery tray · rear button back (dah, ring), front button forward (dit, tip)',
-      parts: [['Sleeve', '72.1 × 35.2 × 25.2'], ['Reaches over the Modular', '40 from the jack end'], ['End block', '29.6, with the plug\'s seat, plus the cap, 2.5'],
+    hand: {
+      dir: 'hand-fdm',
+      dims: '74.6 × 35.2 × 35.5 mm · draft, not printed yet',
+      sub: 'Hand switch for the BLE Key Modular with battery tray · rear button back (dah, ring), front button forward (dit, tip)',
+      parts: [['Sleeve', '72.1 × 35.2 × 35.5'], ['Reaches over the Modular', '40 from the jack end'], ['End block', '29.6, with the plug\'s seat, plus the cap, 2.5'],
               ['Button pod', '26 wide, 6 tall'], ['Walls', '2.0'], ['Fit clearance', '0.35']],
       openingsTitle: 'Details',
       openings: [['Button pockets', '2 × 12.3 × 12.3, 3.6 deep'], ['Plug seat', 'Ø 9.3 bore, 1.0 lip in front, cap behind'], ['Wire channel', '4 wide, in the pod'], ['Left free', 'USB-C and the two light holes']],
       heldTitle: 'How it is held',
-      held: "<p>The sleeve slides over the Modular's jack end. The plug in its end block goes into the jack as the sleeve slides home, until the ring nut rests on the end wall. The jack's grip on the plug and the fit of the sleeve hold it; pull it off the same way.</p><p>The plug (Rean NYS231, whole, with its metal handle) rests on a lip in front and is held from behind by a cap with two screws. No glue.</p><p>The sizes of the buttons are assumed, not measured. Print and try before relying on it.</p>",
-      files: 'out/hand-fdm/ble-key-hand-usb, ble-key-plug-cap (.step, .stl)',
+      held: "<p>The sleeve slides over the jack end of the Modular with its battery tray. The plug in its end block goes into the jack as the sleeve slides home, until the ring nut rests on the end wall. The jack's grip on the plug and the fit of the sleeve hold it; pull it off the same way.</p><p>The plug (Rean NYS231, whole, with its metal handle) rests on a lip in front and is held from behind by a cap with two screws. No glue.</p><p>The sizes of the buttons are assumed, not measured. Print and try before relying on it.</p>",
+      files: 'out/hand-fdm/ble-key-hand, ble-key-plug-cap (.step, .stl)',
       process: 'PETG on an FDM printer: standing on its end block (the STL already is), no supports.',
       buy: ['2 × tactile switch 12 × 12 × 7.3 mm (Reichelt DIP DTS-24N)', '1 × 3.5 mm stereo plug Rean NYS231 (Reichelt NEUTRIK NYS231)', '2 × countersunk self-tapping screw 2.2 × 6.5 for the plug cap', 'Wire 0.14 mm²', 'Caps for the buttons: printed'],
       steps: ['Solder three wires to the plug and screw its handle back on: tip to the front button, ring to the rear button, sleeve to the other pin of both.',
@@ -297,12 +296,6 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
               'Solder the buttons, press them into their pockets and fix them with a drop of glue.',
               'Slide the sleeve onto the Modular\'s jack end.'],
       names: ['base', 'modular', 'plug'],
-    },
-    'hand-tray': {
-      dir: 'hand-fdm', suffix: '-tray', like: 'hand-usb',
-      dims: '74.6 × 35.2 × 35.5 mm · draft, not printed yet',
-      sub: 'Hand switch for the BLE Key Modular with battery tray · rear button back (dah, ring), front button forward (dit, tip)',
-      files: 'out/hand-fdm/ble-key-hand-tray, ble-key-plug-cap (.step, .stl)',
     },
     'snap-test-fdm': {
       dims: 'two slices + board stand-in',
@@ -326,7 +319,6 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
     },
   };
 
-  Object.values(VARIANTS).forEach(d => { if (d.like) { const o = Object.assign({}, VARIANTS[d.like], d); Object.assign(d, o); d.parts = d.parts.map(p => p[0] === 'Sleeve' ? ['Sleeve', '72.1 × 35.2 × 35.5'] : p); } });
 
   const looks = {
     base:    { color: 0xd9dcd6, opacity: 1 },

@@ -132,7 +132,8 @@ The light holes are placed for the ESP32-S3's LEDs; on the nRF52840 they are not
 
 `addons.py` builds two add-ons for the Modular, meant for prompting in Frame (dit is forward, dah
 is back). Both connect only through the 3.5 mm jack, with a stereo plug wired tip = forward button,
-ring = back button, sleeve = ground. The Modular itself stays as it is. The Modular's size and the
+ring = back button, sleeve = ground. The Modular itself stays as it is. Both are made for the Modular
+with its battery tray (24.8 mm tall): in the hand and under the foot the key has to run on its battery. The Modular's size and the
 jack's position are taken from `enclosure.py`.
 
 ```bash
@@ -161,9 +162,8 @@ posts beside each switch take the foot's force once the switch is pressed. The M
 pocket in the toe block. The plug's seat runs from the pocket's end wall out to the pedal's left
 side, where its cap is: put the Modular in at the far
 end, slide it onto the plug, then drop the keeper block in behind it. USB-C stays reachable through
-the keeper and the side wall. A Modular without battery tray goes on the spacer, which lifts it to
-the same height. The wires run in channels under the deck, closed by the bottom cover (M3
-self-tapping screws, recesses for four stick-on feet). Parts: base, cover, two keys, keeper, spacer, plug cap.
+the keeper and the side wall. The wires run in channels under the deck, closed by the bottom cover (M3
+self-tapping screws, recesses for four stick-on feet). Parts: base, cover, two keys, keeper, plug cap.
 
 Bought parts (Reichelt order numbers): pedal: 2 × `CHERRY MX2A-11NN` (MX Black, snap-in), 2 ×
 compression spring about 8 × 20 mm (from the assortment `SIN 206032`), 2 × M3 × 30 (`CIMCO 190811`)
@@ -176,6 +176,5 @@ switch: 2 × tactile switch 12 × 12 × 7.3 mm (`DIP DTS-24N`), 1 × `NEUTRIK NY
 in its seat in the sleeve's end block, with the cap on the back, and goes into the jack as the sleeve slides home; the jack's own grip and
 the fit of the sleeve hold it. Two 12 × 12 mm tactile buttons on top, the front one forward, the
 rear one back, with their wires in a channel to the plug. The USB-C end and the two light holes stay
-free. One sleeve per height: `ble-key-hand-usb` for the Modular without battery tray (74.6 × 35.2 ×
-25.2 mm with the cap), `ble-key-hand-tray` with it (35.5 mm tall). Prints standing on its end block, without
+free. `ble-key-hand`, 74.6 × 35.2 × 35.5 mm with the cap. Prints standing on its end block, without
 supports.
