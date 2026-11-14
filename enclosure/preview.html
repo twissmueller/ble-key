@@ -118,7 +118,6 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
         <label class="chk" id="l-frame"><input type="checkbox" id="c-frame" checked> Frame</label>
         <label class="chk" id="l-tray"><input type="checkbox" id="c-tray" checked> Battery tray</label>
         <label class="chk" id="l-keys"><input type="checkbox" id="c-keys" checked> Foot keys</label>
-        <label class="chk" id="l-keeper"><input type="checkbox" id="c-keeper" checked> Plug collar</label>
         <label class="chk" id="l-modular"><input type="checkbox" id="c-modular" checked> BLE Key Modular</label>
         <label class="chk" id="l-switches"><input type="checkbox" id="c-switches" checked> Switches</label>
         <label class="chk" id="l-plug"><input type="checkbox" id="c-plug" checked> Plug</label>
@@ -256,28 +255,27 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
       dir: 'pedal-fdm',
       dims: '122 × 168 × 34 mm · draft, not printed yet',
       sub: 'Foot pedal for the BLE Key Modular with battery tray · left key back (dah, ring), right key forward (dit, tip) · connects through the 3.5 mm jack only',
-      parts: [['Base', '122 × 168 × 28.6'], ['Bottom cover', '122 × 168 × 2.4'], ['Foot key (2)', '52 × 123 × 5, ribs below'],
-              ['Plug collar', '8 wide, Ø 14.2, two ears'], ['End plate', '26 × 13 × 2.5'],
-              ['Pocket for the Modular', '61.1 × 31.2 × 25.6'], ['Toe height', '31'], ['Fit clearance', '0.35']],
+      parts: [['Base', '122 × 168 × 30.5'], ['Bottom cover', '122 × 168 × 2.4'], ['Foot key (2)', '52 × 123 × 5, ribs below'],
+              ['Plug cap', '26 × 13 × 2.5 + boss, the same part as on the hand switch'],
+              ['Tunnel for the Modular', '31.2 × 25.5 inside, roofed for 40 from the jack end'], ['Toe height', '31'], ['Fit clearance', '0.35']],
       openingsTitle: 'Details',
       openings: [['Switch cut-outs', '2 × 14 × 14, plate 1.5 (Cherry MX)'], ['Spring pockets', '2 × Ø 8.8, 5 deep'], ['Travel stops', '2 posts per key'],
-                 ['Hinge', 'M3 × 30 per key, between two lugs'], ['Plug bore', 'Ø 9.3, from the pocket wall to the left side; axis 17.65 above the pocket floor'], ['Plug travel', '15.7'], ['Collar cavity', '24.3 × 15.4, open to the top'],
-                 ['USB-C opening', '13 × 8 through the side wall'], ['Wire channels', '6 wide, from below']],
+                 ['Hinge', 'M3 × 30 per key, between two lugs'], ['Plug seat', 'Ø 9.3 bore, 1.0 lip in front, cap behind, as in the hand switch'],
+                 ['USB-C', 'free in the open channel on the right'], ['Wire channels', '6 wide, from below']],
       heldTitle: 'How the Modular is held',
-      held: "<p>The Modular is not opened or changed. It lies in a pocket in the toe block that fits it exactly, and the plug is the bolt:</p><ul><li><b>The plug</b> (Rean NYS231, whole, with its metal handle) slides in a bore in the pocket's end wall, on the jack's axis. A collar is clamped on its body; the collar's two ears stand up out of the toe block as a grip.</li><li><b>Going in:</b> pull the grip back, lay the Modular into the pocket from above, push the grip forward. The plug goes into the jack: that connects the key and keeps it from lifting out. The jack's own grip holds the plug in.</li><li><b>Coming out:</b> pull the grip back and lift the Modular out by the two finger notches.</li><li><b>No loose parts:</b> the collar stops the plug at both ends of its travel, so it cannot come out. USB-C stays reachable through the side wall, so the key can be charged in the pedal.</li><li><b>The keys</b> each turn on an M3 screw at the heel, press a Cherry MX switch near the toe and are lifted by a compression spring. Two posts beside each switch take the foot's force once the switch is pressed.</li></ul><p>The sizes of the switches and the spring are assumed, not measured. Print and try before relying on it.</p>",
-      files: 'out/pedal-fdm/ble-key-pedal-base, -cover, -key-left, -key-right, -collar, -end-plate (.step, .stl)',
-      process: 'PETG on an FDM printer: base as it sits, keys and cover turned over (the STL files already are), 0.2 mm layers, 15 % infill. Fits the 180 × 180 mm bed of a Bambu Lab A1 mini with 6 mm to spare all round.',
+      held: "<p>The Modular is not opened or changed. It goes in the same way as into the hand switch:</p><ul><li><b>The tunnel:</b> the toe block has a tunnel across the pedal, open on the right side. For the first 40 mm from the plug it is roofed, like the hand switch's sleeve; from there to the right side it is an open channel.</li><li><b>The plug</b> (Rean NYS231, whole, with its metal handle) sits fixed at the tunnel's end, in the same seat as in the hand switch: a lip in front, the same cap screwed on behind, here on the pedal's left side.</li><li><b>Going in:</b> lay the Modular into the open channel, jack end first, and slide it left into the tunnel until it sits on the plug. The jack's grip on the plug and the fit of the tunnel hold it.</li><li><b>Coming out:</b> grip its free end at the two finger notches and pull it to the right.</li><li><b>No loose parts.</b> USB-C stays free in the open channel, so the key can be charged in the pedal.</li><li><b>The keys</b> each turn on an M3 screw at the heel, press a Cherry MX switch near the toe and are lifted by a compression spring. Two posts beside each switch take the foot's force once the switch is pressed.</li></ul><p>The sizes of the switches and the spring are assumed, not measured. Print and try before relying on it.</p>",
+      files: 'out/pedal-fdm/ble-key-pedal-base, -cover, -key-left, -key-right, ble-key-plug-cap (.step, .stl)',
+      process: 'PETG on an FDM printer: base as it sits, keys and cover turned over (the STL files already are), 0.2 mm layers, 15 % infill; the tunnel's roof is a 31 mm bridge, no supports. Fits the 180 × 180 mm bed of a Bambu Lab A1 mini with 6 mm to spare all round.',
       buy: ['2 × Cherry MX Black, snap-in (Reichelt CHERRY MX2A-11NN)', '2 × compression spring about 8 × 20 mm (assortment Reichelt SIN 206032)',
             '2 × M3 × 30 (Reichelt CIMCO 190811) and M3 nuts (CIMCO 192000)', '7 × countersunk M3 × 10 (Reichelt SKS M3X10-50)',
-            '4 × stick-on feet 10 × 3 mm (Reichelt DELOCK 18309)', '1 × 3.5 mm stereo plug Rean NYS231 (Reichelt NEUTRIK NYS231)', '2 × countersunk self-tapping screw 2.2 × 6.5 for the end plate', '1 × M3 × 10 and nut for the collar (from the packs above)', 'Wire 0.14 mm²'],
+            '4 × stick-on feet 10 × 3 mm (Reichelt DELOCK 18309)', '1 × 3.5 mm stereo plug Rean NYS231 (Reichelt NEUTRIK NYS231)', '2 × countersunk self-tapping screw 2.2 × 6.5 for the plug cap', 'Wire 0.14 mm²'],
       steps: ['Clip the two switches into the deck from above.',
               'Solder three wires to the plug and screw its handle back on: tip to the right switch, ring to the left switch, sleeve to the other pin of both.',
-              'Set the collar into its cavity, push the plug in from the pedal\'s left side through the bore and the collar, and lead the wires down through the slot into the channels, with enough slack for the plug to travel.',
-              'With the plug pushed fully into a Modular lying in the pocket, slide the collar to the front of its cavity and tighten its M3 screw. Screw the end plate on.',
+              'Push the plug into its seat from the pedal\'s left side until it rests on the lip, lead the wires down through the slot into the channels, and screw the cap on.',
               'Screw the bottom cover on and stick the four feet into their recesses.',
               'Set a spring into each pocket, put the keys on and fasten each with its M3 × 30 screw and nut, loose enough to turn.',
-              'Pull the grip back, lay the Modular in and push the grip forward.'],
-      names: ['base', 'keys', 'keeper', 'modular', 'plug', 'switches'],
+              'Lay the Modular into the open channel on the right, jack end first, and slide it onto the plug.'],
+      names: ['base', 'keys', 'modular', 'plug', 'switches'],
     },
     hand: {
       dir: 'hand-fdm',
@@ -330,7 +328,6 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
     jack:    { color: 0xb08a3e, opacity: 1, metal: true },
     battery: { color: 0x9aa3b5, opacity: 1, metal: true },
     keys:     { color: 0xb9c7c0, opacity: 1 },
-    keeper:   { color: 0x9fb0a8, opacity: 1 },
     modular:  { color: 0x2b2f2e, opacity: 1 },
     plug:     { color: 0xb9b9b9, opacity: 1, metal: true },
     switches: { color: 0x3a3f3d, opacity: 1 },
@@ -338,7 +335,7 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
     'test-battery': { color: 0xd9dcd6, opacity: 1 },
   };
 
-  const TOGGLES = ['base', 'frame', 'tray', 'board', 'jack', 'battery', 'keys', 'keeper', 'modular', 'switches', 'plug'];
+  const TOGGLES = ['base', 'frame', 'tray', 'board', 'jack', 'battery', 'keys', 'modular', 'switches', 'plug'];
   const $ = id => document.getElementById(id);
   const stage = $('stage'), status = $('status');
 

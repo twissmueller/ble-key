@@ -6,11 +6,9 @@ Nothing inside the Modular changes.
 
 - pedal:  two foot keys side by side (left back, right forward) on Cherry-MX-style switches, a
           return spring under each key, and a pocket at the toe end that the Modular drops into.
-          The pocket fits the Modular exactly. The 3.5 mm plug (Rean NYS231) is the bolt: it
-          slides in a bore in the pocket's end wall and carries a clamped-on collar whose two ears
-          stand up out of the toe block as a grip. Pull it back, lay the Modular in, push it into
-          the jack: that connects the key and holds it down. USB-C stays reachable through the
-          pedal's side wall.
+          The Modular slides into a tunnel in the toe block from the pedal's right side, onto
+          the plug fixed at the tunnel's end: the same plug seat, cap and motion as the hand
+          switch. Nothing loose. USB-C stays reachable in the open channel on the right.
 - hand:   a sleeve that slides over the Modular's jack end; the plug in its end block goes into
           the jack as it slides home. Two 12 x 12 mm tactile buttons on top (front forward, rear
           back).
@@ -206,19 +204,19 @@ def seat_cut(wire_up: bool, wire_len: float):
     return p.part
 
 
-def plug_cap(xb=-FACE_GAP - SEAT_L, boss=True):
+def plug_cap():
     """Closes the seat from behind, in the Modular frame: a plate on the back face with a boss
     into the bore that presses on the plug's end, slotted for the wires. Two countersunk screws.
-    Without the boss it is the plain end plate of the pedal's bolt."""
+    The same part for the hand switch and the pedal."""
+    xb = -FACE_GAP - SEAT_L
     with BuildPart() as p:
         with Locations((xb - CAP_T / 2, 0, JACK_Z)):
             Box(CAP_T, CAP_W, CAP_H)
         fillet(p.edges().filter_by(Axis.X), radius=2.0)
-        if boss:
-            with Locations(Location((xb + CAP_BOSS / 2 - 0.15, 0, JACK_Z), (0, 90, 0))):
-                Cylinder(PLUG_D / 2 - 0.1, CAP_BOSS - 0.3)
-            with Locations((xb + CAP_BOSS / 2, 0, JACK_Z)):
-                Box(CAP_BOSS + 0.2, WIRE_SLOT, PLUG_D + 1, mode=Mode.SUBTRACT)
+        with Locations(Location((xb + CAP_BOSS / 2 - 0.15, 0, JACK_Z), (0, 90, 0))):
+            Cylinder(PLUG_D / 2 - 0.1, CAP_BOSS - 0.3)
+        with Locations((xb + CAP_BOSS / 2, 0, JACK_Z)):
+            Box(CAP_BOSS + 0.2, WIRE_SLOT, PLUG_D + 1, mode=Mode.SUBTRACT)
         for sy in (-1, 1):
             with Locations(Location((xb - CAP_T / 2, sy * CAP_SCREW_Y, JACK_Z), (0, 90, 0))):
                 Cylinder(enc.SCREW_D / 2, CAP_T + 0.2, mode=Mode.SUBTRACT)
@@ -307,28 +305,17 @@ LUG_W = 5.0
 KNUCKLE_R = 5.0
 PLATE_Y0 = HINGE_Y + KNUCKLE_R + 2 + 1.5   # the key's plate starts clear of the heel ridge
 BLOCK_Y0 = 128.0             # toe block with the Modular pocket
-POCKET_DEPTH = MOD_H + TRAY_H + 0.8
+TUNNEL_H = MOD_H + TRAY_H + 2 * C   # inside height of the tunnel
+TUNNEL_ROOF = 2.0
 POCKET_FLOOR = 3.0
-BLOCK_Z = POCKET_FLOOR + POCKET_DEPTH
+BLOCK_Z = POCKET_FLOOR + TUNNEL_H + TUNNEL_ROOF
 POCKET_Y = (BLOCK_Y0 + PD) / 2
 POCKET_W = MOD_W + 2 * C
-# The bolt: the plug slides in a bore in the end wall, from the pedal's left side. In the Modular
-# frame, from the wall face backwards: a short guide, a cavity open to the top in which the collar
-# travels, a second guide, and room behind the retracted plug for the wires' slack.
-PEDAL_GAP = NUT_OUT + C      # wall face to the Modular's end face: room for the ring nut
-BOLT_TRAVEL = PLUG_SHAFT + 1.0
-BOLT_GUIDE = 4.0
-COLLAR_W = 8.0
-COLLAR_OD = PLUG_D + 0.2 + 2 * 2.5
-COLLAR_EAR = 3.0             # each ear's thickness; M3 x 10 and a nut pinch them together
-COLLAR_GAP = 1.5
-BOLT_SLACK = 6.0
-BOLT_XC0 = -PEDAL_GAP - BOLT_GUIDE                       # collar cavity, front
-BOLT_XC1 = BOLT_XC0 - BOLT_TRAVEL - COLLAR_W - 0.6       # collar cavity, back
-BOLT_XB = -NUT_OUT - PLUG_BODY - BOLT_TRAVEL - BOLT_SLACK  # back face, the pedal's left side
-BOLT_L = -PEDAL_GAP - BOLT_XB
-POCKET_X0 = -PW / 2 + BOLT_L  # end wall face
-POCKET_L = PEDAL_GAP + MOD_L + C
+# The same mechanism as the hand switch: the plug sits fixed in its seat (lip in front, cap
+# behind) at the end of a tunnel, and the Modular slides onto it, here from the pedal's right side.
+# The tunnel is roofed as far as the hand switch's sleeve reaches (HAND_REACH); from there to the
+# right side it is an open channel, where the Modular is gripped and USB-C is reached.
+POCKET_X0 = -PW / 2 + SEAT_L  # end wall face; the seat runs from it out to the pedal's left side
 BOTTOM_T = 2.4               # bottom cover
 
 
@@ -338,47 +325,7 @@ def key_xs():
 
 def mod_in_pedal(part):
     """Place a part from the Modular frame into the pedal."""
-    return part.translate((POCKET_X0 + PEDAL_GAP, POCKET_Y, POCKET_FLOOR + TRAY_H + C))
-
-
-def bolt_cut(wire_len: float):
-    """What to cut for the bolt, in the Modular frame: the bore through to the left side, the
-    collar's cavity open to the top, the wire slot down behind the plug, the end plate's pilots."""
-    with BuildPart() as p:
-        with Locations(Location(((-PEDAL_GAP + BOLT_XB) / 2, 0, JACK_Z), (0, 90, 0))):
-            Cylinder(PLUG_BORE / 2, -PEDAL_GAP - BOLT_XB + 0.2)
-        w = COLLAR_OD + 1.2
-        with Locations(((BOLT_XC0 + BOLT_XC1) / 2, 0, JACK_Z - w / 2)):
-            Box(BOLT_XC0 - BOLT_XC1, w, 40.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        with Locations((BOLT_XB + 1.5 + (BOLT_SLACK - 1.5) / 2, 0, JACK_Z)):
-            Box(BOLT_SLACK - 1.5, WIRE_SLOT, wire_len, align=(Align.CENTER, Align.CENTER, Align.MAX))
-        for sy in (-1, 1):
-            with Locations(Location((BOLT_XB + 3.0 - 0.05, sy * CAP_SCREW_Y, JACK_Z), (0, 90, 0))):
-                Cylinder(enc.PILOT_D / 2, 6.1)
-    return p.part
-
-
-def bolt_collar():
-    """Split collar clamped on the plug's body, in the Modular frame with the plug in the jack. Its
-    two ears stand up out of the toe block: the grip to push and pull the plug, pinched together by
-    an M3 x 10 screw and nut above the block. Prints lying on its side face, no supports."""
-    x1 = BOLT_XC0 - 0.3
-    ear_top = JACK_Z + COLLAR_OD / 2 + 9.0
-    with BuildPart() as p:
-        with BuildSketch(Plane.YZ.offset(x1 - COLLAR_W)):
-            with Locations((0, JACK_Z)):
-                Circle(COLLAR_OD / 2)
-            for sy in (-1, 1):
-                with Locations((sy * (COLLAR_GAP + COLLAR_EAR) / 2, (JACK_Z + 3.0 + ear_top) / 2)):
-                    Rectangle(COLLAR_EAR, ear_top - JACK_Z - 3.0)
-            with Locations((0, JACK_Z)):
-                Circle((PLUG_D + 0.2) / 2, mode=Mode.SUBTRACT)
-            with Locations((0, JACK_Z + 20)):
-                Rectangle(COLLAR_GAP, 40, mode=Mode.SUBTRACT)
-        extrude(amount=COLLAR_W)
-        with Locations(Location((x1 - COLLAR_W / 2, 0, ear_top - 3.5), (90, 0, 0))):
-            Cylinder(1.65, 12, mode=Mode.SUBTRACT)
-    return p.part
+    return part.translate((POCKET_X0 + FACE_GAP, POCKET_Y, POCKET_FLOOR + TRAY_H + C))
 
 
 def pedal_base():
@@ -430,22 +377,22 @@ def pedal_base():
             Box(chx - (-PW / 2 + 1.5), WIRE_SLOT, KEY_Z - 4.0, align=(Align.CENTER, Align.CENTER, Align.MIN),
                 mode=Mode.SUBTRACT)
 
-        # the pocket
+        # the tunnel for the Modular, from the end wall face out through the right side
         z_plug = POCKET_FLOOR + TRAY_H + C + JACK_Z
-        with Locations((POCKET_X0 + POCKET_L / 2, POCKET_Y, POCKET_FLOOR)):
-            with BuildSketch():
-                Rectangle(POCKET_L, POCKET_W)
-            extrude(amount=POCKET_DEPTH + 1, mode=Mode.SUBTRACT)
-        # finger notches on both long sides, to lift the Modular out
-        with Locations((POCKET_X0 + PEDAL_GAP + MOD_L / 2, POCKET_Y, BLOCK_Z)):
-            Box(22.0, POCKET_W + 12.0, 9.0, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
-        # the bolt: bore, collar cavity, wire slot down to the floor channel
-        insert(mod_in_pedal(bolt_cut(z_plug - 1.0)), mode=Mode.SUBTRACT)
-        # USB-C: opening through the right side wall at the plug's height, for the cable
-        usb_z = POCKET_FLOOR + TRAY_H + C + USB_Z
-        x_end = POCKET_X0 + POCKET_L
-        with Locations(((x_end + PW / 2 + 1) / 2, POCKET_Y, usb_z)):
-            Box(PW / 2 + 1 - x_end, 13.0, 8.0, mode=Mode.SUBTRACT)
+        x_roof = POCKET_X0 + FACE_GAP + HAND_REACH
+        with Locations(((POCKET_X0 + PW / 2 + 1) / 2, POCKET_Y, POCKET_FLOOR)):
+            Box(PW / 2 + 1 - POCKET_X0, POCKET_W, TUNNEL_H, align=(Align.CENTER, Align.CENTER, Align.MIN),
+                mode=Mode.SUBTRACT)
+        # open to the top beyond the roof
+        with Locations(((x_roof + PW / 2 + 1) / 2, POCKET_Y, POCKET_FLOOR)):
+            Box(PW / 2 + 1 - x_roof, POCKET_W, TUNNEL_H + TUNNEL_ROOF + 1,
+                align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+        # finger notches either side of the Modular's free end, to pull it off the plug
+        x_free = (x_roof + POCKET_X0 + FACE_GAP + MOD_L) / 2
+        with Locations((x_free, POCKET_Y, BLOCK_Z)):
+            Box(14.0, POCKET_W + 12.0, 12.0, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
+        # the plug's seat, as in the hand switch; its wire slot goes down to the floor channel
+        insert(mod_in_pedal(seat_cut(False, z_plug - 1.0)), mode=Mode.SUBTRACT)
         # screw holes for the bottom cover: M3 self-tapping from below, pilot 2.5
         for x, y in cover_screws():
             with Locations((x, y, 0)):
@@ -455,7 +402,7 @@ def pedal_base():
 
 def cover_screws():
     return [(-PW / 2 + 8, 30), (PW / 2 - 8, 30), (0, 60), (-PW / 2 + 8, 100), (PW / 2 - 8, 100),
-            (PW / 2 - 8, PD - 8), (-PW / 2 + 8, PD - 8)]
+            (PW / 2 - 6, BLOCK_Y0 - 8), (-PW / 2 + 8, PD - 8)]   # none under the tunnel: its floor is thin
 
 
 def pedal_cover():
@@ -589,29 +536,26 @@ def main():
     base, cover = pedal_base(), pedal_cover()
     keys = {"key-left": pedal_key(False), "key-right": pedal_key(True)}
     mod_tray = mod_in_pedal(modular_stand_in(True))
-    plug = mod_in_pedal(plug_stand_in(-NUT_OUT))
-    cap = mod_in_pedal(plug_cap(BOLT_XB, boss=False))
-    collar = mod_in_pedal(bolt_collar())
+    plug = mod_in_pedal(plug_stand_in())
+    cap = mod_in_pedal(plug_cap())
     # the cap is the same part for the pedal and the hand switch; it prints plate down
     save(plug_cap(), OUT / "hand-fdm", "ble-key-plug-cap", flip=lambda s: s.rotate(Axis.Y, 90))
-    save(plug_cap(BOLT_XB, boss=False), out, "ble-key-pedal-end-plate", flip=lambda s: s.rotate(Axis.Y, 90))
-    save(bolt_collar(), out, "ble-key-pedal-collar", flip=lambda s: s.rotate(Axis.Y, 90))
+    save(plug_cap(), out, "ble-key-plug-cap", flip=lambda s: s.rotate(Axis.Y, 90))
     switches = {f"switch-{i}": pedal_switch_stand_in(kx) for i, kx in enumerate(key_xs())}
-    printed = {"base": base, "cover": cover, **keys, "collar": collar, "cap": cap}
+    printed = {"base": base, "cover": cover, **keys, "cap": cap}
     check("pedal", printed, {"modular": mod_tray, "plug": plug, **switches})
     save(base, out, "ble-key-pedal-base")
     save(cover, out, "ble-key-pedal-cover", flip=lambda s: s.rotate(Axis.X, 180))
     for k, part in keys.items():
         save(part, out, f"ble-key-pedal-{k}", flip=lambda s: s.rotate(Axis.X, 180))   # top on the bed
     sw = switches["switch-0"] + switches["switch-1"]
-    preview({"base": base + cover + cap, "keys": keys["key-left"] + keys["key-right"], "keeper": collar,
-             "modular": mod_tray, "plug": plug, "switches": sw}, out)
+    preview({"base": base + cover + cap, "keys": keys["key-left"] + keys["key-right"], "modular": mod_tray, "plug": plug, "switches": sw}, out)
     bb = base.bounding_box()
     print(f"pedal: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm, "
           f"toe height {KEY_UNDER + KEY_T:.1f} mm")
     if render:
         shown = [(base, "#c2541b"), (keys["key-left"], "#e07a3f"), (keys["key-right"], "#e07a3f"),
-                 (collar, "#8a8f8d"), (cap, "#8a8f8d"), (mod_tray, "#2b2f2e"), (plug, "#b9b9b9")]
+                 (cap, "#8a8f8d"), (mod_tray, "#2b2f2e"), (plug, "#b9b9b9")]
         views("pedal", shown, views_out, elev_azims=((35, -60), (30, 115), (85, -90)))
         views("pedal-open", [(base, "#c2541b")] + [(sw, "#3a3f3d") for sw in switches.values()],
               views_out, elev_azims=((40, -60), (-55, -60)))

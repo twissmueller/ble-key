@@ -153,19 +153,19 @@ diameters are dimensioned): check them on the real part.
 **Foot pedal** (`out/pedal-fdm/`, 122 × 168 × 34 mm; the Bambu Lab A1 mini prints 180 × 180 × 180 mm, so 6 mm stay free all round): two foot keys side by
 side, left is back, right is forward, each hinged at the heel on an M3 × 30 screw with a nut and pressing a
 Cherry-MX-style switch that clips into the deck. A compression spring under each key lifts it; two
-posts beside each switch take the foot's force once the switch is pressed. The Modular lies in a pocket in the toe block that fits it exactly, and the plug
-is the bolt: it slides in a bore from the pocket's end wall to the pedal's left side and carries a
-clamped-on split collar (M3 × 10 and nut) whose two ears stand up out of the toe block as a grip.
-Pull the grip back, lay the Modular in from above, push the grip forward: the plug goes into the
-jack, which connects the key and keeps it from lifting out. The collar travels in a cavity and stops
-the plug at both ends, so there are no loose parts. An end plate with two countersunk 2.2 × 6.5
-screws closes the bore on the side. USB-C stays reachable through the side wall. The wires run in channels under the deck, closed by the bottom cover (M3
-self-tapping screws, recesses for four stick-on feet). Parts: base, cover, two keys, collar, end plate.
+posts beside each switch take the foot's force once the switch is pressed. The Modular goes in the same way as into the hand switch: the toe block has a
+tunnel across the pedal, open on the right side, with the plug fixed at its end in the same seat (a
+1 mm lip in front, the same cap `ble-key-plug-cap` screwed on behind, here on the pedal's left
+side). Lay the Modular into the open channel on the right, jack end first, and slide it onto the
+plug; pull it off by its free end at the two finger notches. The tunnel is roofed for the first
+40 mm, like the hand switch's sleeve (a 31 mm bridge when printing), and open from there to the
+right side, where USB-C stays free. Nothing loose. The wires run in channels under the deck, closed by the bottom cover (M3
+self-tapping screws, recesses for four stick-on feet). Parts: base, cover, two keys, plug cap.
 
 Bought parts (Reichelt order numbers): pedal: 2 × `CHERRY MX2A-11NN` (MX Black, snap-in), 2 ×
 compression spring about 8 × 20 mm (from the assortment `SIN 206032`), 2 × M3 × 30 (`CIMCO 190811`)
 with M3 nuts (`CIMCO 192000`), 7 × countersunk M3 × 10 (`SKS M3X10-50`), 4 × stick-on feet 10 × 3 mm
-(`DELOCK 18309`), 1 × 3.5 mm stereo plug (`NEUTRIK NYS231`), 2 × countersunk 2.2 × 6.5 for the end plate, 1 × M3 × 10 and nut for the collar. Hand
+(`DELOCK 18309`), 1 × 3.5 mm stereo plug (`NEUTRIK NYS231`), 2 × countersunk 2.2 × 6.5 for the plug's cap. Hand
 switch: 2 × tactile switch 12 × 12 × 7.3 mm (`DIP DTS-24N`), 1 × `NEUTRIK NYS231`, 2 × countersunk
 2.2 × 6.5. Wire: 0.14 mm² (`LITZE 77685`).
 
