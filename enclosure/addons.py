@@ -249,7 +249,8 @@ SPRING_Y = 88.0
 STOP_Y = 124.0
 KEY_UNDER = KEY_Z + MX_STEM + 0.8 + 1.0   # key underside at rest (presser pad 1.8 below it)
 HINGE_Z = KEY_UNDER + KEY_T / 2
-KNUCKLE_W = 28.0
+KNUCKLE_W = 16.0
+LUG_W = 5.0
 KNUCKLE_R = 5.0
 PLATE_Y0 = HINGE_Y + KNUCKLE_R + 2 + 1.5   # the key's plate starts clear of the heel ridge
 BLOCK_Y0 = 138.0             # toe block with the Modular pocket
@@ -284,23 +285,16 @@ def pedal_base():
             with BuildSketch():
                 RectangleRounded(PW, PD - BLOCK_Y0, 6.0)
             extrude(amount=BLOCK_Z)
-        # heel ridge with the hinge: segments either side of each key's knuckle
-        ridge_h = HINGE_Z + KNUCKLE_R + 0.5
-        with Locations((0, HINGE_Y, 0)):
-            Box(PW - 4, 2 * KNUCKLE_R + 4, ridge_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        # hinge: two lugs per key either side of its knuckle, on an M3 x 30 screw from the outer
+        # side with a nut on the inner lug (lug 5 + knuckle 16 + lug 5 + nut fits 30 mm)
+        lug_h = HINGE_Z + KNUCKLE_R + 0.5 - KEY_Z
         for kx in key_xs():
-            # slot for the knuckle, with room to swing
-            with Locations((kx, HINGE_Y + 2, KEY_Z)):
-                Box(KNUCKLE_W + 1.0, 2 * KNUCKLE_R + 8, ridge_h, align=(Align.CENTER, Align.CENTER, Align.MIN),
-                    mode=Mode.SUBTRACT)
-            # hinge pin: M3 x 50 from the outside, head sunk in, nut in a slot in the middle segment
             sx = 1 if kx > 0 else -1
-            with Locations(Location((sx * (PW / 2 + 4) / 2, HINGE_Y, HINGE_Z), (0, 90, 0))):
-                Cylinder(1.6, PW / 2 - 4 + 0.2, mode=Mode.SUBTRACT)
-            with Locations(Location((sx * (PW / 2 - 2), HINGE_Y, HINGE_Z), (0, 90, 0))):
-                Cylinder(3.1, 4.2, mode=Mode.SUBTRACT)
-            with Locations((sx * 8.0, HINGE_Y, HINGE_Z - 3.2)):
-                Box(2.8, 5.8, ridge_h, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+            for d in (-1, 1):
+                with Locations((kx + d * (KNUCKLE_W / 2 + 0.4 + LUG_W / 2), HINGE_Y, KEY_Z)):
+                    Box(LUG_W, 2 * KNUCKLE_R + 4, lug_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            with Locations(Location((kx, HINGE_Y, HINGE_Z), (0, 90, 0))):
+                Cylinder(1.6, KNUCKLE_W + 2 * LUG_W + 2, mode=Mode.SUBTRACT)
             # switch: plate cut-out, cavity below it down to the cover, channel to the plug
             with Locations((kx, SWITCH_Y, KEY_Z)):
                 Box(MX_CUT, MX_CUT, MX_PLATE, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)

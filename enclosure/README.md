@@ -145,7 +145,7 @@ jack's position are taken from `enclosure.py`.
 test before anything goes into the shop.
 
 **Foot pedal** (`out/pedal-fdm/`, 122 × 178 × 34 mm, fits a 180 mm bed): two foot keys side by
-side, left is back, right is forward, each hinged at the heel on an M3 × 50 screw and pressing a
+side, left is back, right is forward, each hinged at the heel on an M3 × 30 screw with a nut and pressing a
 Cherry-MX-style switch that clips into the deck. A compression spring under each key lifts it; two
 posts beside each switch take the foot's force once the switch is pressed. The Modular lies in a
 pocket in the toe block. The plug sits fixed in the pocket's end wall: put the Modular in at the far
@@ -153,6 +153,12 @@ end, slide it onto the plug, then drop the keeper block in behind it. USB-C stay
 the keeper and the side wall. A Modular without battery tray goes on the spacer, which lifts it to
 the same height. The wires run in channels under the deck, closed by the bottom cover (M3
 self-tapping screws, recesses for four stick-on feet). Parts: base, cover, two keys, keeper, spacer.
+
+Bought parts (Reichelt order numbers): pedal: 2 × `CHERRY MX2A-11NN` (MX Black, snap-in), 2 ×
+compression spring about 8 × 20 mm (from the assortment `SIN 206032`), 2 × M3 × 30 (`CIMCO 190811`)
+with M3 nuts (`CIMCO 192000`), 7 × countersunk M3 × 10 (`SKS M3X10-50`), 4 × stick-on feet 10 × 3 mm
+(`DELOCK 18309`), 1 × 3.5 mm stereo plug (`KSS 35`). Hand switch: 2 × tactile switch 12 × 12 × 7.3 mm
+(`DIP DTS-24N`), 1 × `KSS 35`. Wire: 0.14 mm² (`LITZE 77685`).
 
 **Hand switch** (`out/hand-fdm/`): a sleeve that slides over the Modular's jack end. The plug sits
 in the sleeve's end block and goes into the jack as the sleeve slides home; the jack's own grip and
