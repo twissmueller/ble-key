@@ -127,3 +127,37 @@ Both XIAO cases fit either board: the two share the outline, board thickness and
 (checked against Seeed's STEP models, `vendor/XIAO-ESP32S3 v2.step` and
 `vendor/nrf/XIAO-nRF52840 v15.step`), and the lid's two hold-down ribs sit on bare board on both.
 The light holes are placed for the ESP32-S3's LEDs; on the nRF52840 they are not verified.
+
+## Add-ons: foot pedal and hand switch (draft)
+
+`addons.py` builds two add-ons for the Modular, meant for prompting in Frame (dit is forward, dah
+is back). Both connect only through the 3.5 mm jack, with a stereo plug wired tip = forward button,
+ring = back button, sleeve = ground. The Modular itself stays as it is. The Modular's size and the
+jack's position are taken from `enclosure.py`.
+
+```bash
+.venv/bin/python addons.py           # out/pedal-fdm/, out/hand-fdm/
+.venv/bin/python addons.py --views   # also PNG views in out/addons-views/ (uv pip install vtk first)
+```
+
+**Status: first draft, not printed yet.** The sizes of the bought parts are assumed (constants
+`PLUG_*`, `MX_*`, `TACT_*`, `SPRING_*` at the top of `addons.py`); measure the real parts and print a
+test before anything goes into the shop.
+
+**Foot pedal** (`out/pedal-fdm/`, 122 × 178 × 34 mm, fits a 180 mm bed): two foot keys side by
+side, left is back, right is forward, each hinged at the heel on an M3 × 50 screw and pressing a
+Cherry-MX-style switch that clips into the deck. A compression spring under each key lifts it; two
+posts beside each switch take the foot's force once the switch is pressed. The Modular lies in a
+pocket in the toe block. The plug sits fixed in the pocket's end wall: put the Modular in at the far
+end, slide it onto the plug, then drop the keeper block in behind it. USB-C stays reachable through
+the keeper and the side wall. A Modular without battery tray goes on the spacer, which lifts it to
+the same height. The wires run in channels under the deck, closed by the bottom cover (M3
+self-tapping screws, recesses for four stick-on feet). Parts: base, cover, two keys, keeper, spacer.
+
+**Hand switch** (`out/hand-fdm/`): a sleeve that slides over the Modular's jack end. The plug sits
+in the sleeve's end block and goes into the jack as the sleeve slides home; the jack's own grip and
+the fit of the sleeve hold it. Two 12 × 12 mm tactile buttons on top, the front one forward, the
+rear one back, with their wires in a channel to the plug. The USB-C end and the two light holes stay
+free. One sleeve per height: `ble-key-hand-usb` for the Modular without battery tray (62.5 × 35.2 ×
+25.2 mm), `ble-key-hand-tray` with it (35.5 mm tall). Prints standing on its end block, without
+supports.
