@@ -427,19 +427,17 @@ def pedal_base():
             for dx in (-1, 1):
                 with Locations((kx + dx * 16, STOP_Y, KEY_Z)):
                     Cylinder(3.0, KEY_UNDER - KEY_Z - 3.6, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        # wire channel from below: across under both switches, then forward to the plug cavity
+        # wire channel from below: across under both switches
         ch = 6.0
         with Locations((0, SWITCH_Y, 0)):
             Box(KEY_W + KEY_GAP + 2, ch, KEY_Z - 4.0, align=(Align.CENTER, Align.CENTER, Align.MIN),
                 mode=Mode.SUBTRACT)
-        chx = -PW / 2 + 12.0
-        with Locations((chx, (SWITCH_Y + POCKET_Y) / 2, 0)):
+        # from there straight forward to under the plug's end, where the wires come down from the
+        # cradle through the slot behind the plug
+        x_wires = POCKET_X0 + FACE_GAP + CRADLE_X0 - CRADLE_WIRES / 2
+        assert abs(x_wires) < (KEY_W + KEY_GAP + 2) / 2, "the channel misses the one under the switches"
+        with Locations((x_wires, (SWITCH_Y + POCKET_Y) / 2, 0)):
             Box(ch, POCKET_Y - SWITCH_Y + ch, KEY_Z - 4.0, align=(Align.CENTER, Align.CENTER, Align.MIN),
-                mode=Mode.SUBTRACT)
-        # and on to under the plug's end, where the wires come down from the cradle
-        x_wires = POCKET_X0 + FACE_GAP + CRADLE_X0
-        with Locations(((chx + x_wires) / 2, POCKET_Y, 0)):
-            Box(x_wires - chx, WIRE_SLOT, KEY_Z - 4.0, align=(Align.CENTER, Align.CENTER, Align.MIN),
                 mode=Mode.SUBTRACT)
 
         # the tunnel for the Modular, roofed, from the end wall face out through the right side
