@@ -472,6 +472,20 @@ def check(name, printed, others):
             print(f"  {name}: overlap {an}/{bn}: {vol:.2f} mm3")
 
 
+def preview(parts, out, suffix=""):
+    """One mesh per part for preview.html, as base64 text like enclosure.py writes them. Each part
+    is rebuilt inside BuildPart first, so moved shapes have their placement baked in."""
+    import base64
+    for name, part in parts.items():
+        with BuildPart() as baked:
+            for solid in part.solids():
+                add(Solid(solid.wrapped))
+        glb = out / f"preview-{name}{suffix}.glb"
+        export_gltf(baked.part, str(glb), binary=True, linear_deflection=0.02, angular_deflection=0.2)
+        glb.with_suffix(".b64.txt").write_text(base64.b64encode(glb.read_bytes()).decode())
+        glb.unlink()
+
+
 def save(part, out, stem, flip=None):
     assert len(part.solids()) == 1, f"{stem} is in {len(part.solids())} pieces"
     export_step(part, out / f"{stem}.step")
@@ -493,6 +507,7 @@ def main():
         check(f"hand-{tag}", {"sleeve": h}, {"modular": mod, "plug": plug})
         # prints standing on its end block, the tunnel upright: no supports
         save(h, out, f"ble-key-hand-{tag}", flip=lambda s: s.rotate(Axis.Y, -90))
+        preview({"base": h, "modular": mod, "plug": plug}, out, f"-{tag}")
         bb = h.bounding_box()
         print(f"hand {tag}: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm")
         if render:
@@ -519,6 +534,9 @@ def main():
         save(part, out, f"ble-key-pedal-{k}", flip=lambda s: s.rotate(Axis.X, 180))   # top on the bed
     save(keeper, out, "ble-key-pedal-keeper")
     save(spacer, out, "ble-key-pedal-spacer")
+    sw = switches["switch-0"] + switches["switch-1"]
+    preview({"base": base + cover, "keys": keys["key-left"] + keys["key-right"], "keeper": keeper,
+             "modular": mod_tray, "plug": plug, "switches": sw}, out)
     bb = base.bounding_box()
     print(f"pedal: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm, "
           f"toe height {KEY_UNDER + KEY_T:.1f} mm")

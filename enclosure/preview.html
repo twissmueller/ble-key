@@ -86,6 +86,9 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
         <button id="var-modular" aria-pressed="false">Modular · USB + tray</button>
         <button id="var-battery" aria-pressed="false">Battery case · frame</button>
         <button id="var-snap-test-fdm" aria-pressed="false">Snap test pieces</button>
+        <button id="var-pedal" aria-pressed="false">Add-on · foot pedal</button>
+        <button id="var-hand-usb" aria-pressed="false">Add-on · hand switch</button>
+        <button id="var-hand-tray" aria-pressed="false">Hand switch · with tray</button>
       </div>
     </div>
   </div>
@@ -115,14 +118,19 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
         <label class="chk" id="l-base"><input type="checkbox" id="c-base" checked> Enclosure</label>
         <label class="chk" id="l-frame"><input type="checkbox" id="c-frame" checked> Frame</label>
         <label class="chk" id="l-tray"><input type="checkbox" id="c-tray" checked> Battery tray</label>
-        <label class="chk"><input type="checkbox" id="c-board" checked> Board</label>
+        <label class="chk" id="l-keys"><input type="checkbox" id="c-keys" checked> Foot keys</label>
+        <label class="chk" id="l-keeper"><input type="checkbox" id="c-keeper" checked> Keeper</label>
+        <label class="chk" id="l-modular"><input type="checkbox" id="c-modular" checked> BLE Key Modular</label>
+        <label class="chk" id="l-switches"><input type="checkbox" id="c-switches" checked> Switches</label>
+        <label class="chk" id="l-plug"><input type="checkbox" id="c-plug" checked> Plug</label>
+        <label class="chk" id="l-board"><input type="checkbox" id="c-board" checked> Board</label>
         <label class="chk" id="l-jack"><input type="checkbox" id="c-jack" checked> Connectors</label>
         <label class="chk" id="l-battery"><input type="checkbox" id="c-battery" checked> Battery</label>
         <label class="chk"><input type="checkbox" id="c-cut"> Cut lengthwise</label>
       </div>
 
       <section class="held">
-        <h2>How the board is held</h2>
+        <h2 id="held-title">How the board is held</h2>
         <div id="held"></div>
       </section>
 
@@ -245,6 +253,57 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
               'Put the lid on and fasten the four countersunk screws into the corner bosses of the base. To change the cell, undo them and lift the frame out with everything on it.'],
       names: ['base', 'frame', 'lid', 'board', 'jack', 'battery'],
     },
+    pedal: {
+      dir: 'pedal-fdm',
+      dims: '122 × 178 × 34 mm · draft, not printed yet',
+      sub: 'Foot pedal for the BLE Key Modular · left key back (dah, ring), right key forward (dit, tip) · connects through the 3.5 mm jack only',
+      parts: [['Base', '122 × 178 × 28.6'], ['Bottom cover', '122 × 178 × 2.4'], ['Foot key (2)', '52 × 133 × 5, ribs below'],
+              ['Keeper', '15.5 × 30.5 × 25.6'], ['Spacer (Modular without tray)', '59.7 × 30.5 × 10.3'],
+              ['Pocket for the Modular', '76.6 × 31.2 × 25.6'], ['Toe height', '31'], ['Fit clearance', '0.35']],
+      openingsTitle: 'Details',
+      openings: [['Switch cut-outs', '2 × 14 × 14, plate 1.5 (Cherry MX)'], ['Spring pockets', '2 × Ø 8.8, 5 deep'], ['Travel stops', '2 posts per key'],
+                 ['Hinge', 'M3 × 30 per key, between two lugs'], ['Plug bore', 'Ø 6.3 in the pocket\'s end wall, 17.65 above the pocket floor'],
+                 ['USB-C opening', '13 × 8 through keeper and side wall'], ['Wire channels', '6 wide, from below']],
+      heldTitle: 'How the Modular is held',
+      held: "<p>The Modular is not opened or changed. It lies in the pocket of the toe block and is connected only by the plug in its jack:</p><ul><li><b>The plug</b> sits fixed in the pocket's end wall, at the height of the jack.</li><li><b>Going in:</b> lay the Modular into the pocket at the far end and slide it onto the plug until its ring nut rests on the wall.</li><li><b>The keeper</b> drops into the gap behind it and keeps it on the plug. It has a slot for the USB-C cable, so the key can be charged in the pedal.</li><li><b>Without battery tray</b> the Modular lies on the spacer, which lifts it by the tray's height.</li><li><b>The keys</b> each turn on an M3 screw at the heel, press a Cherry MX switch near the toe and are lifted by a compression spring. Two posts beside each switch take the foot's force once the switch is pressed.</li></ul><p>The sizes of the plug, the switches and the spring are assumed, not measured. Print and try before relying on it.</p>",
+      files: 'out/pedal-fdm/ble-key-pedal-base, -cover, -key-left, -key-right, -keeper, -spacer (.step, .stl)',
+      process: 'PETG on an FDM printer: base as it sits, keys and cover turned over (the STL files already are), 0.2 mm layers, 15 % infill. Fits a 180 mm bed.',
+      buy: ['2 × Cherry MX Black, snap-in (Reichelt CHERRY MX2A-11NN)', '2 × compression spring about 8 × 20 mm (assortment Reichelt SIN 206032)',
+            '2 × M3 × 30 (Reichelt CIMCO 190811) and M3 nuts (CIMCO 192000)', '7 × countersunk M3 × 10 (Reichelt SKS M3X10-50)',
+            '4 × stick-on feet 10 × 3 mm (Reichelt DELOCK 18309)', '1 × 3.5 mm stereo plug, solder type (Reichelt KSS 35)', 'Wire 0.14 mm²'],
+      steps: ['Clip the two switches into the deck from above.',
+              'Take the handle off the plug and solder three wires to it: tip to the right switch, ring to the left switch, sleeve to the other pin of both.',
+              'Push the plug into its bore from below until its collar sits flush with the pocket wall, lay the wires in the channels, and fix the plug with a drop of glue.',
+              'Screw the bottom cover on and stick the four feet into their recesses.',
+              'Set a spring into each pocket, put the keys on and fasten each with its M3 × 30 screw and nut, loose enough to turn.',
+              'Lay the Modular in, slide it onto the plug and drop the keeper in behind it.'],
+      names: ['base', 'keys', 'keeper', 'modular', 'plug', 'switches'],
+    },
+    'hand-usb': {
+      dir: 'hand-fdm', suffix: '-usb',
+      dims: '62.5 × 35.2 × 25.2 mm · draft, not printed yet',
+      sub: 'Hand switch for the BLE Key Modular without battery tray · rear button back (dah, ring), front button forward (dit, tip)',
+      parts: [['Sleeve', '62.5 × 35.2 × 25.2'], ['Reaches over the Modular', '40 from the jack end'], ['End block', '20, with the plug'],
+              ['Button pod', '26 wide, 6 tall'], ['Walls', '2.0'], ['Fit clearance', '0.35']],
+      openingsTitle: 'Details',
+      openings: [['Button pockets', '2 × 12.3 × 12.3, 3.6 deep'], ['Plug bore', 'Ø 6.3, on the jack\'s axis'], ['Wire channel', '4 wide, in the pod'], ['Left free', 'USB-C and the two light holes']],
+      heldTitle: 'How it is held',
+      held: "<p>The sleeve slides over the Modular's jack end. The plug in its end block goes into the jack as the sleeve slides home, until the ring nut rests on the end wall. The jack's grip on the plug and the fit of the sleeve hold it; pull it off the same way.</p><p>The sizes of the plug and the buttons are assumed, not measured. Print and try before relying on it.</p>",
+      files: 'out/hand-fdm/ble-key-hand-usb (.step, .stl)',
+      process: 'PETG on an FDM printer: standing on its end block (the STL already is), no supports.',
+      buy: ['2 × tactile switch 12 × 12 × 7.3 mm (Reichelt DIP DTS-24N)', '1 × 3.5 mm stereo plug, solder type (Reichelt KSS 35)', 'Wire 0.14 mm²', 'Caps for the buttons: printed'],
+      steps: ['Take the handle off the plug and solder three wires to it: tip to the front button, ring to the rear button, sleeve to the other pin of both.',
+              'Thread the wires from the plug bore up into the channel and to the button pockets, and push the plug in from behind until its collar sits flush with the end wall.',
+              'Solder the buttons, press them into their pockets and fix them and the plug with a drop of glue.',
+              'Slide the sleeve onto the Modular\'s jack end.'],
+      names: ['base', 'modular', 'plug'],
+    },
+    'hand-tray': {
+      dir: 'hand-fdm', suffix: '-tray', like: 'hand-usb',
+      dims: '62.5 × 35.2 × 35.5 mm · draft, not printed yet',
+      sub: 'Hand switch for the BLE Key Modular with battery tray · rear button back (dah, ring), front button forward (dit, tip)',
+      files: 'out/hand-fdm/ble-key-hand-tray (.step, .stl)',
+    },
     'snap-test-fdm': {
       dims: 'two slices + board stand-in',
       sub: 'Snap-lip test pieces for FDM (PETG, 0.35 mm fit) · USB case left, battery case right',
@@ -267,6 +326,8 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
     },
   };
 
+  Object.values(VARIANTS).forEach(d => { if (d.like) { const o = Object.assign({}, VARIANTS[d.like], d); Object.assign(d, o); d.parts = d.parts.map(p => p[0] === 'Sleeve' ? ['Sleeve', '62.5 × 35.2 × 35.5'] : p); } });
+
   const looks = {
     base:    { color: 0xd9dcd6, opacity: 1 },
     frame:   { color: 0xb9c7c0, opacity: 1 },
@@ -275,10 +336,16 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
     board:   { color: 0x1f2a26, opacity: 1 },
     jack:    { color: 0xb08a3e, opacity: 1, metal: true },
     battery: { color: 0x9aa3b5, opacity: 1, metal: true },
+    keys:     { color: 0xb9c7c0, opacity: 1 },
+    keeper:   { color: 0x9fb0a8, opacity: 1 },
+    modular:  { color: 0x2b2f2e, opacity: 1 },
+    plug:     { color: 0xb9b9b9, opacity: 1, metal: true },
+    switches: { color: 0x3a3f3d, opacity: 1 },
     'test-usb':     { color: 0xd9dcd6, opacity: 1 },
     'test-battery': { color: 0xd9dcd6, opacity: 1 },
   };
 
+  const TOGGLES = ['base', 'frame', 'tray', 'board', 'jack', 'battery', 'keys', 'keeper', 'modular', 'switches', 'plug'];
   const $ = id => document.getElementById(id);
   const stage = $('stage'), status = $('status');
 
@@ -313,7 +380,8 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 
   function loadPart(variant, n) {
     const k = variant + '/' + n;
-    if (!cache[k]) cache[k] = fetch('out/' + variant + '/preview-' + n + '.b64.txt', { cache: 'no-cache' })
+    const d = VARIANTS[variant];
+    if (!cache[k]) cache[k] = fetch('out/' + (d.dir || variant) + '/preview-' + n + (d.suffix || '') + '.b64.txt', { cache: 'no-cache' })
       .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
       .then(t => new Promise((res, rej) => {
         const bin = atob(t.trim()), buf = new Uint8Array(bin.length);
@@ -348,10 +416,9 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
     $('l-jack').hidden = !d.names.includes('jack');
     $('buy').innerHTML = d.buy.map(s => '<li>' + s + '</li>').join('');
     $('steps').innerHTML = d.steps.map(s => '<li>' + s + '</li>').join('');
-    $('l-battery').hidden = !VARIANTS[v].names.includes('battery');
-    $('l-base').hidden = !VARIANTS[v].names.includes('base');
-    $('l-frame').hidden = !VARIANTS[v].names.includes('frame');
-    $('l-tray').hidden = !VARIANTS[v].names.includes('tray');
+    TOGGLES.filter(n => n !== 'jack').forEach(n => { $('l-' + n).hidden = !d.names.includes(n); });
+    $('held-title').textContent = d.heldTitle || 'How the board is held';
+    $('snap-test').hidden = !!d.dir;
     $('openings').innerHTML = d.openings.map(([k, val]) => '<dt>' + k + '</dt><dd>' + val + '</dd>').join('');
     $('held').innerHTML = d.held;
   }
@@ -404,7 +471,7 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
   }
 
   function applyToggles() {
-    ['base', 'frame', 'tray', 'board', 'jack', 'battery'].forEach(n => { if (parts[n]) parts[n].visible = $('c-' + n).checked; });
+    TOGGLES.forEach(n => { if (parts[n]) parts[n].visible = $('c-' + n).checked; });
     const on = $('c-cut').checked;
     root.traverse(m => { if (m.isMesh) { m.material.clippingPlanes = on ? [cutPlane] : []; m.material.needsUpdate = true; } });
   }
@@ -420,7 +487,7 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
   });
   ['on', 'up', 'off'].forEach(k => $('lid-' + k).addEventListener('click', () => setLid(k)));
   Object.keys(views).forEach(k => $('v-' + k).addEventListener('click', () => setView(k)));
-  ['c-base', 'c-frame', 'c-tray', 'c-board', 'c-jack', 'c-battery', 'c-cut'].forEach(id => $(id).addEventListener('change', applyToggles));
+  TOGGLES.map(n => 'c-' + n).concat('c-cut').forEach(id => $(id).addEventListener('change', applyToggles));
 
   function resize() {
     const w = stage.clientWidth, h = stage.clientHeight;
