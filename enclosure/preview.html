@@ -124,7 +124,7 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
         <label class="chk" id="l-board"><input type="checkbox" id="c-board" checked> Board</label>
         <label class="chk" id="l-jack"><input type="checkbox" id="c-jack" checked> Connectors</label>
         <label class="chk" id="l-battery"><input type="checkbox" id="c-battery" checked> Battery</label>
-        <label class="chk"><input type="checkbox" id="c-cut"> Cut lengthwise</label>
+        <label class="chk"><input type="checkbox" id="c-cut"> Cut open</label>
       </div>
 
       <section class="held">
@@ -252,7 +252,7 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
       names: ['base', 'frame', 'lid', 'board', 'jack', 'battery'],
     },
     pedal: {
-      dir: 'pedal-fdm',
+      dir: 'pedal-fdm', cut: { normal: [1, 0, 0], at: 20, view: 'jack' },
       dims: '122 × 168 × 34 mm · draft, not printed yet',
       sub: 'Foot pedal for the BLE Key Modular with battery tray · left key back (dah, ring), right key forward (dit, tip) · connects through the 3.5 mm jack only',
       parts: [['Base', '122 × 168 × 30.5'], ['Bottom cover', '122 × 168 × 2.4'], ['Foot key (2)', '52 × 123 × 5, ribs below'],
@@ -415,6 +415,11 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 
   function setVariant(v) {
     current = v;
+    // the cut goes lengthwise through the middle, or where the variant says: the pedal is cut along
+    // its wire channel, seen from the left
+    const cut = VARIANTS[v].cut || { normal: [0, 0, -1], at: 0 };
+    cutPlane.normal.set(...cut.normal);
+    cutPlane.constant = cut.at;
     press('var-', v, Object.keys(VARIANTS));
     fillSpecs(v);
     if (VARIANTS[v].view) view = VARIANTS[v].view;
@@ -478,6 +483,7 @@ button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
   ['on', 'up', 'off'].forEach(k => $('lid-' + k).addEventListener('click', () => setLid(k)));
   Object.keys(views).forEach(k => $('v-' + k).addEventListener('click', () => setView(k)));
   TOGGLES.map(n => 'c-' + n).concat('c-cut').forEach(id => $(id).addEventListener('change', applyToggles));
+  $('c-cut').addEventListener('change', () => { const c = VARIANTS[current].cut; if ($('c-cut').checked && c && c.view) setView(c.view); });
 
   function resize() {
     const w = stage.clientWidth, h = stage.clientHeight;
