@@ -31,7 +31,7 @@ Status: draft, not printed yet. The sizes of the switches, buttons and spring ar
 |---|---|---|---|---|
 | Tactile switch 12 × 12 × 7.3 mm | 2 | [DIP DTS-24N](https://www.reichelt.de/de/de/shop/produkt/kurzhubtaster_printmontage_1_schliesser_12_x_12_x_7_3_mm-360039) | 0.40 € each | 4 |
 | 3.5 mm stereo plug, metal, Rean NYS231 | 1 | [NEUTRIK NYS231](https://www.reichelt.de/de/de/shop/produkt/klinkenstecker_3_5_mm_stereo_3-pol-131754) | 1.35 € each | see basket |
-| Countersunk self-tapping screw 2.2 × 6.5 (DIN 7982) | 2 (plug cap) | not at Reichelt, see above | | from stock |
+| Countersunk self-tapping screw 2.2 × 6.5 (DIN 7982) | 4 (lid) | not at Reichelt, see above | | from stock |
 | Caps for the two buttons | 2 | not at Reichelt; printed, not drawn yet | | |
 | Stranded wire 0.14 mm² | about 0.3 m | as for the pedal | | |
 
@@ -86,4 +86,4 @@ pay off only for a series.
 | Part | Used in |
 |---|---|
 | M6 × 40 bolt, M6 nut | pedal hinges; M6 nuts also in the swivel mount |
-| Countersunk self-tapping 2.2 × 6.5 (DIN 7982) | BLE Key cases, pedal cover and plug lid, hand switch cap |
+| Countersunk self-tapping 2.2 × 6.5 (DIN 7982) | BLE Key cases, pedal cover and plug lid, hand switch lid |

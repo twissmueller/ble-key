@@ -11,8 +11,9 @@ Nothing inside the Modular changes.
           The plug lies in a cradle open to the top, closed by a small lid with the Modular's
           own countersunk screws.
 - hand:   a sleeve that slides over the Modular's jack end; the plug in its end block goes into
-          the jack as it slides home. Two 12 x 12 mm tactile buttons on top (front forward, rear
-          back).
+          the jack as it slides home. On top a wiring bay, open to the top: the plug in the same
+          cradle as in the pedal, two 12 x 12 mm tactile buttons on the bay's floor (front
+          forward, rear back), the wires beside them, and a flush lid with four screws.
 
 Both are made for the Modular with its battery tray: in the hand and under the foot the key has to
 run on its battery.
@@ -61,18 +62,14 @@ PLUG_SHAFT = 14.7   # tip to the body's nose
 PLUG_D = 9.0
 PLUG_BODY = 39.0 - PLUG_SHAFT   # 24.3
 PLUG_BORE = PLUG_D + 0.3
-# The seat, along the jack's axis from the wall face backwards: a recess the ring nut goes into, a
-# lip the body's nose rests on (the Ø 9 body cannot pass), the bore for the body, and room for
-# the cap's boss, which presses on the body's end. The plug goes in from behind.
+# The plug's cradle, the same in both add-ons, along the jack's axis from the wall face backwards:
+# a recess the ring nut goes into, a U-shaped lip the body's nose rests on (the Ø 9 body cannot
+# pass), a trough for the body, two shoulders behind its end. It is open to the top, so the plug
+# drops in, and a lid's tongue holds it down.
 FACE_GAP = 1.5      # wall face to the Modular's end face; the nut reaches SEAT_RECESS into the wall
 SEAT_RECESS = NUT_OUT - FACE_GAP
 SEAT_LIP = 1.0
 SEAT_LIP_D = 7.5
-CAP_BOSS = 4.0
-SEAT_L = SEAT_RECESS + SEAT_LIP + PLUG_BODY + 0.3 + CAP_BOSS   # wall face to the back face
-CAP_T = 2.5
-CAP_W, CAP_H = 26.0, 13.0
-CAP_SCREW_Y = 9.0   # two countersunk 2.2 x 6.5 (DIN 7982), as on the Modular's lid
 WIRE_SLOT = 5.0
 
 # --- Cherry MX-style switch, plate mount ----------------------------------------------------
@@ -183,105 +180,123 @@ def plug_stand_in(x0=-FACE_GAP - SEAT_RECESS - SEAT_LIP):
     return p.part
 
 
-def seat_cut(wire_up: bool, wire_len: float):
-    """What to cut for the plug's seat, in the Modular frame: nut recess, lip hole, bore through to
-    the back face, pilots for the cap's screws, and a wire slot from the boss zone up or down."""
-    xf = -FACE_GAP
-    xb = xf - SEAT_L
-    with BuildPart() as p:
-        with Locations(Location((xf - SEAT_RECESS / 2 + 0.05, 0, JACK_Z), (0, 90, 0))):
-            Cylinder(NUT_D / 2 + 0.4, SEAT_RECESS + 0.1)
-        with Locations(Location((xf - SEAT_RECESS - SEAT_LIP / 2, 0, JACK_Z), (0, 90, 0))):
-            Cylinder(SEAT_LIP_D / 2, SEAT_LIP + 0.2)
-        x1 = xf - SEAT_RECESS - SEAT_LIP
-        with Locations(Location(((x1 + xb) / 2 - 0.05, 0, JACK_Z), (0, 90, 0))):
-            Cylinder(PLUG_BORE / 2, x1 - xb + 0.1)
-        for sy in (-1, 1):
-            with Locations(Location((xb + 3.0 - 0.05, sy * CAP_SCREW_Y, JACK_Z), (0, 90, 0))):
-                Cylinder(enc.PILOT_D / 2, 6.1)
-        with Locations((xb + 1.5 + (CAP_BOSS - 1.5) / 2, 0, JACK_Z)):
-            Box(CAP_BOSS - 1.5, WIRE_SLOT, wire_len,
-                align=(Align.CENTER, Align.CENTER, Align.MIN if wire_up else Align.MAX))
-    return p.part
-
-
-def plug_cap():
-    """Closes the seat from behind, in the Modular frame: a plate on the back face with a boss
-    into the bore that presses on the plug's end, slotted for the wires. Two countersunk screws.
-    The same part for the hand switch and the pedal."""
-    xb = -FACE_GAP - SEAT_L
-    with BuildPart() as p:
-        with Locations((xb - CAP_T / 2, 0, JACK_Z)):
-            Box(CAP_T, CAP_W, CAP_H)
-        fillet(p.edges().filter_by(Axis.X), radius=2.0)
-        with Locations(Location((xb + CAP_BOSS / 2 - 0.15, 0, JACK_Z), (0, 90, 0))):
-            Cylinder(PLUG_D / 2 - 0.1, CAP_BOSS - 0.3)
-        with Locations((xb + CAP_BOSS / 2, 0, JACK_Z)):
-            Box(CAP_BOSS + 0.2, WIRE_SLOT, PLUG_D + 1, mode=Mode.SUBTRACT)
-        for sy in (-1, 1):
-            with Locations(Location((xb - CAP_T / 2, sy * CAP_SCREW_Y, JACK_Z), (0, 90, 0))):
-                Cylinder(enc.SCREW_D / 2, CAP_T + 0.2, mode=Mode.SUBTRACT)
-            with Locations(Location((xb - CAP_T + (enc.CSK_D - enc.SCREW_D) / 4, sy * CAP_SCREW_Y, JACK_Z), (0, 90, 0))):
-                Cone(enc.CSK_D / 2, enc.SCREW_D / 2, (enc.CSK_D - enc.SCREW_D) / 2, mode=Mode.SUBTRACT)
-    return p.part
-
-
 # ============================================================================================
 # Hand switch: a sleeve over the jack end with the plug in its end block and two buttons on top
 # ============================================================================================
 
 HAND_WALL = 2.0
 HAND_REACH = 40.0           # how far the sleeve reaches over the Modular from its jack end
-HAND_BLOCK = SEAT_L             # end block behind the end wall face: the plug's seat
-POD_H = 6.0                 # button pod on top of the sleeve
+POD_H = 6.0                 # wiring bay on top of the sleeve, lid included
 POD_W = 26.0
-BTN_X = (9.0, 28.0)         # rear button (back / dah / ring), front button (forward / dit / tip)
+POD_WALL = 2.0
+HAND_LID_T = 2.0
+BTN_X = (8.0, 26.0)         # rear button (back / dah / ring), front button (forward / dit / tip)
+TACT_STEM_D = 7.0           # the button's round actuator (assumed)
+HAND_BOSS = 5.0             # corner bosses in the bay for the lid's screws
+
+
+def hand_x():
+    """Back and open end of the hand switch in the Modular frame. The end block holds the plug's
+    cradle: nut recess, lip, the plug's body, the wire slot behind it and a 3 mm end wall."""
+    x_back = CRADLE_X0 - CRADLE_WIRES - 3.0
+    return x_back, HAND_REACH
+
+
+def hand_lid_screws():
+    x_back, x_open = hand_x()
+    d = POD_WALL + HAND_BOSS / 2
+    return [(x, sy * (POD_W / 2 - d)) for x in (x_back + d, x_open - d) for sy in (-1, 1)]
 
 
 def hand(tray: bool):
+    """Sleeve with a wiring bay on top, open to the top and closed by hand_lid(). Everything is
+    fitted from above: the plug drops into its cradle (as in the pedal), its wires come up behind
+    it into the bay and run along both sides of the buttons, which sit on the bay's floor between
+    low ribs. No closed channels to thread wires through."""
     zb = (-TRAY_H if tray else 0.0) - C          # sleeve inside, bottom
     zt = MOD_H + C                               # sleeve inside, top
     yi = MOD_W / 2 + C
-    x_face = -FACE_GAP                           # end wall face; the nut goes into the seat's recess
-    x_back = x_face - HAND_BLOCK
-    x_open = HAND_REACH
-    top = zt + HAND_WALL                         # top of the sleeve, floor of the pod
-    pod_top = top + POD_H
+    x_face = -FACE_GAP                           # end wall face; the nut goes into the cradle's recess
+    x_back, x_open = hand_x()
+    top = zt + HAND_WALL                         # top of the sleeve, floor of the bay
+    bay_h = POD_H - HAND_LID_T
     with BuildPart() as p:
         # outer shell plus end block
         with Locations(((x_back + x_open) / 2, 0, (zb - HAND_WALL + top) / 2)):
             Box(x_open - x_back, 2 * (yi + HAND_WALL), top - zb + HAND_WALL)
         fillet(p.edges().filter_by(Axis.X), radius=1.5)
-        # button pod
+        # the bay's walls
         with Locations(((x_back + x_open) / 2, 0, top)):
-            Box(x_open - x_back, POD_W, POD_H, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            Box(x_open - x_back, POD_W, bay_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            Box(x_open - x_back - 2 * POD_WALL, POD_W - 2 * POD_WALL, bay_h,
+                align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+        # corner bosses for the lid's screws
+        for x, y in hand_lid_screws():
+            with Locations((x, y, top)):
+                Box(HAND_BOSS, HAND_BOSS, bay_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        # the buttons sit on the bay's floor: a rib along each side without legs, a post at the
+        # middle of each side with legs (between the two legs)
+        for bx in BTN_X:
+            for sy in (-1, 1):
+                with Locations((bx, sy * (TACT_POCKET / 2 + 0.6), top)):
+                    Box(8.0, 1.2, 2.5, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            for sx in (-1, 1):
+                with Locations((bx + sx * (TACT_POCKET / 2 + 0.75), 0, top)):
+                    Box(1.5, 2.0, 2.5, align=(Align.CENTER, Align.CENTER, Align.MIN))
         # tunnel for the Modular, open at the USB side
         with Locations(((x_face + x_open + 1) / 2, 0, (zb + zt) / 2)):
             Box(x_open + 1 - x_face, 2 * yi, zt - zb, mode=Mode.SUBTRACT)
-        # the Modular's vertical corner radius at its jack end: the tunnel's inside corners stay
-        # square, which clears it
-        # the plug's seat, with its wire slot up into the pod's channel
-        insert(seat_cut(True, pod_top - TACT_BODY - 0.8 - JACK_Z), mode=Mode.SUBTRACT)
-        # button pockets from the pod's top, wire holes from their floors down into a channel
+        # the plug's cradle, open to the top into the bay; the wires come up behind the plug
+        insert(cradle_cut(0.0), mode=Mode.SUBTRACT)
+        # pilots for the lid's screws
+        for x, y in hand_lid_screws():
+            with Locations((x, y, top + bay_h)):
+                Cylinder(enc.PILOT_D / 2, 5.0, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
+    return p.part
+
+
+def hand_lid():
+    """Lid of the hand switch, flush with the bay's walls all round: holes for the two buttons'
+    actuators (it holds the buttons down), a tongue down onto the plug, four countersunk
+    2.2 x 6.5 screws, arrows beside the buttons. Prints top down."""
+    x_back, x_open = hand_x()
+    z1 = MOD_H + C + HAND_WALL + POD_H
+    z0 = z1 - HAND_LID_T
+    with BuildPart() as p:
+        with Locations(((x_back + x_open) / 2, 0, z0)):
+            Box(x_open - x_back, POD_W, HAND_LID_T, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        # tongue onto the plug's body
+        with Locations(((CRADLE_X0 + CRADLE_X1) / 2, 0, z0)):
+            Box(CRADLE_X1 - CRADLE_X0 - 0.6, PLUG_D - 0.3, z0 - JACK_Z, align=(Align.CENTER, Align.CENTER, Align.MAX))
+        with Locations(Location(((CRADLE_X0 + CRADLE_X1) / 2, 0, JACK_Z), (0, 90, 0))):
+            Cylinder(PLUG_D / 2 + 0.1, CRADLE_X1 - CRADLE_X0, mode=Mode.SUBTRACT)
         for bx in BTN_X:
-            with Locations((bx, 0, pod_top)):
-                Box(TACT_POCKET, TACT_POCKET, TACT_BODY, align=(Align.CENTER, Align.CENTER, Align.MAX),
-                    mode=Mode.SUBTRACT)
-            for dx in (-1, 1):
-                with Locations((bx + dx * 4.5, 0, pod_top - TACT_BODY)):
-                    Box(2.0, 9.0, POD_H - TACT_BODY - 0.8, align=(Align.CENTER, Align.CENTER, Align.MAX),
-                        mode=Mode.SUBTRACT)
-        # wire channel along the pod, from the front button back over the end block
-        ch_z0, ch_z1 = top + 0.4, pod_top - TACT_BODY - 0.8
-        with Locations(((x_back + 1.5 + BTN_X[1] + 4.5) / 2, 0, ch_z0)):
-            Box(BTN_X[1] + 4.5 - x_back - 1.5, WIRE_SLOT, ch_z1 - ch_z0, align=(Align.CENTER, Align.CENTER, Align.MIN),
-                mode=Mode.SUBTRACT)
+            with Locations((bx, 0, z0)):
+                Cylinder(TACT_STEM_D / 2 + 0.3, HAND_LID_T, align=(Align.CENTER, Align.CENTER, Align.MIN),
+                         mode=Mode.SUBTRACT)
+        for x, y in hand_lid_screws():
+            with Locations((x, y, z1)):
+                Cylinder(enc.SCREW_D / 2, HAND_LID_T, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
+                Cone(enc.SCREW_D / 2, enc.CSK_D / 2, (enc.CSK_D - enc.SCREW_D) / 2,
+                     align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
         # arrows beside the buttons, 0.6 deep: rear points back (to the jack), front forward
         for bx, d in ((BTN_X[0], -1), (BTN_X[1], 1)):
-            with BuildSketch(Plane.XY.offset(pod_top)) as s:
-                with Locations((bx, -(TACT_POCKET / 2 + 3.6))):
+            with BuildSketch(Plane.XY.offset(z1)):
+                with Locations((bx, -(TACT_STEM_D / 2 + 4.5))):
                     Triangle(a=4.0, b=4.0, c=4.0, rotation=-90 * d)
             extrude(amount=-0.6, mode=Mode.SUBTRACT)
+    return p.part
+
+
+def tact_stand_in():
+    """The two buttons on the bay's floor, for the views and the clash check."""
+    top = MOD_H + C + HAND_WALL
+    with BuildPart() as p:
+        for bx in BTN_X:
+            with Locations((bx, 0, top)):
+                Box(TACT, TACT, 3.5, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            with Locations((bx, 0, top + 3.5)):
+                Cylinder(TACT_STEM_D / 2, 3.8, align=(Align.CENTER, Align.CENTER, Align.MIN))
     return p.part
 
 
@@ -341,7 +356,7 @@ def mod_in_pedal(part):
 
 def cradle_cut(z_floor: float):
     """What to cut for the plug's cradle, in the Modular frame; z_floor is how far below the
-    jack's axis the wire slot goes down."""
+    jack's axis the wire slot goes down (0: not at all, the wires leave upwards)."""
     up = 40.0
     with BuildPart() as p:
         # ring nut recess in the tunnel's end wall
@@ -356,8 +371,9 @@ def cradle_cut(z_floor: float):
             with Locations(((x0 + x1) / 2, 0, JACK_Z)):
                 Box(x1 - x0, w, up, align=(Align.CENTER, Align.CENTER, Align.MIN))
         # the wires go down behind the plug
-        with Locations((CRADLE_X0 - CRADLE_WIRES / 2, 0, JACK_Z)):
-            Box(CRADLE_WIRES, WIRE_SLOT, z_floor, align=(Align.CENTER, Align.CENTER, Align.MAX))
+        if z_floor > 0:
+            with Locations((CRADLE_X0 - CRADLE_WIRES / 2, 0, JACK_Z)):
+                Box(CRADLE_WIRES, WIRE_SLOT, z_floor, align=(Align.CENTER, Align.CENTER, Align.MAX))
     return p.part
 
 
@@ -581,17 +597,20 @@ def main():
     out = OUT / "hand-fdm"
     out.mkdir(parents=True, exist_ok=True)
     if True:
-        h = hand(True)
-        mod, plug, cap = modular_stand_in(True), plug_stand_in(), plug_cap()
-        check("hand", {"sleeve": h, "cap": cap}, {"modular": mod, "plug": plug})
-        # prints standing on its end block, the tunnel upright: no supports
+        h, hl = hand(True), hand_lid()
+        mod, plug, btn = modular_stand_in(True), plug_stand_in(), tact_stand_in()
+        check("hand", {"sleeve": h, "lid": hl}, {"modular": mod, "plug": plug, "buttons": btn})
+        # the sleeve prints standing on its end block, the tunnel upright; the lid top down
         save(h, out, "ble-key-hand", flip=lambda s: s.rotate(Axis.Y, -90))
-        preview({"base": h + cap, "modular": mod, "plug": plug}, out)
-        bb = h.bounding_box()
+        save(hl, out, "ble-key-hand-lid", flip=lambda s: s.rotate(Axis.X, 180))
+        preview({"base": h, "lid": hl, "modular": mod, "plug": plug, "switches": btn}, out)
+        bb = (h + hl).bounding_box()
         print(f"hand: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm")
         if render:
-            views("hand", [(h, "#c2541b"), (cap, "#8a8f8d"), (mod, "#2b2f2e"), (plug, "#b9b9b9")], views_out,
-                  elev_azims=((28, -50), (20, 140), (12, -95)))
+            views("hand", [(h, "#c2541b"), (hl, "#e07a3f"), (mod, "#2b2f2e"), (plug, "#b9b9b9"), (btn, "#3a3f3d")],
+                  views_out, elev_azims=((28, -50), (20, 140), (12, -95)))
+            views("hand-open", [(h, "#c2541b"), (plug, "#b9b9b9"), (btn, "#3a3f3d")], views_out,
+                  elev_azims=((45, 140), (70, -90)))
 
     # --- pedal ---
     out = OUT / "pedal-fdm"
@@ -601,8 +620,6 @@ def main():
     mod_tray = mod_in_pedal(modular_stand_in(True))
     plug = mod_in_pedal(plug_stand_in())
     lid = mod_in_pedal(pedal_lid(lid_z_top()))
-    # the cap is the same part for the pedal and the hand switch; it prints plate down
-    save(plug_cap(), OUT / "hand-fdm", "ble-key-plug-cap", flip=lambda s: s.rotate(Axis.Y, 90))
     save(pedal_lid(lid_z_top()), out, "ble-key-pedal-plug-lid", flip=lambda s: s.rotate(Axis.X, 180))
     switches = {f"switch-{i}": pedal_switch_stand_in(kx) for i, kx in enumerate(key_xs())}
     printed = {"base": base, "cover": cover, **keys, "lid": lid}

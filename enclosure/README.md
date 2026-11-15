@@ -167,16 +167,19 @@ compression spring about 8 × 20 mm (from the assortment `SIN 206032`), 2 × M6 
 (DIN 933/934, from the M6/M8 set bought for the IC-705 mount), 11 × countersunk self-tapping
 2.2 × 6.5 (DIN 7982, the Modular's lid screws: 7 for the cover, 4 for the plug's lid), 4 × stick-on feet 10 × 3 mm
 (`DELOCK 18309`), 1 × 3.5 mm stereo plug (`NEUTRIK NYS231`). Hand
-switch: 2 × tactile switch 12 × 12 × 7.3 mm (`DIP DTS-24N`), 1 × `NEUTRIK NYS231`, 2 × countersunk
+switch: 2 × tactile switch 12 × 12 × 7.3 mm (`DIP DTS-24N`), 1 × `NEUTRIK NYS231`, 4 × countersunk
 2.2 × 6.5. Wire: 0.14 mm² (`LITZE 77685`).
 
-**Hand switch** (`out/hand-fdm/`): a sleeve that slides over the Modular's jack end. The plug sits
-fixed in the sleeve's end block, between a 1 mm lip in front and a cap (`ble-key-plug-cap`, two
-countersunk 2.2 × 6.5 screws) whose boss presses on its end, and goes into the jack as the sleeve slides home; the jack's own grip and
-the fit of the sleeve hold it. Two 12 × 12 mm tactile buttons on top, the front one forward, the
-rear one back, with their wires in a channel to the plug. The USB-C end and the two light holes stay
-free. `ble-key-hand`, 74.6 × 35.2 × 35.5 mm with the cap. Prints standing on its end block, without
-supports.
+**Hand switch** (`out/hand-fdm/`, 77.1 × 35.2 × 35.5 mm): a sleeve that slides over the Modular's
+jack end. The plug sits fixed in the sleeve's end block and goes into the jack as the sleeve slides
+home; the jack's own grip and the fit of the sleeve hold it. Everything is fitted from above: on top
+of the sleeve is a wiring bay, open to the top. The plug drops into a cradle at the bay's back end,
+as in the pedal; its wires come up behind it into the bay and run along both sides of the two
+12 × 12 mm tactile buttons, which sit on the bay's floor between ribs and posts (front forward,
+rear back). A lid (`ble-key-hand-lid`) closes the bay flush all round with four countersunk
+2.2 × 6.5 screws; its holes let the buttons' actuators through and it holds the buttons and the plug
+down. The USB-C end and the two light holes stay free. The sleeve prints standing on its end block,
+the lid top down, both without supports.
 
 **Fasteners, kept to two kinds across the add-ons:** countersunk self-tapping 2.2 × 6.5 (DIN 7982),
 the screw of the BLE Key cases, for every lid, cap and cover; and M6 hex bolts and nuts (DIN 933/934)
