@@ -173,7 +173,7 @@ switch: 2 × tactile switch 12 × 12 × 7.3 mm (`DIP DTS-24N`), 1 × `NEUTRIK NY
 **Hand switch** (`out/hand-fdm/`, 77.1 × 35.2 × 35.5 mm): a sleeve that slides over the Modular's
 jack end. The plug sits fixed in the sleeve's end block and goes into the jack as the sleeve slides
 home; the jack's own grip and the fit of the sleeve hold it. Everything is fitted from above: on top
-of the sleeve is a wiring bay, open to the top. The plug drops into a cradle at the bay's back end,
+of the sleeve, and as wide as it so the whole is one block, is a wiring bay, open to the top. The plug drops into a cradle at the bay's back end,
 as in the pedal; its wires come up behind it into the bay and run along both sides of the two
 12 × 12 mm tactile buttons, which sit on the bay's floor between ribs and posts (front forward,
 rear back). A lid (`ble-key-hand-lid`) closes the bay flush all round with four countersunk

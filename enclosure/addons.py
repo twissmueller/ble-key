@@ -187,7 +187,7 @@ def plug_stand_in(x0=-FACE_GAP - SEAT_RECESS - SEAT_LIP):
 HAND_WALL = 2.0
 HAND_REACH = 40.0           # how far the sleeve reaches over the Modular from its jack end
 POD_H = 6.0                 # wiring bay on top of the sleeve, lid included
-POD_W = 26.0
+POD_W = MOD_W + 2 * C + 2 * HAND_WALL   # as wide as the sleeve: one block, no step
 POD_WALL = 2.0
 HAND_LID_T = 2.0
 BTN_X = (8.0, 26.0)         # rear button (back / dah / ring), front button (forward / dit / tip)
@@ -221,14 +221,13 @@ def hand(tray: bool):
     top = zt + HAND_WALL                         # top of the sleeve, floor of the bay
     bay_h = POD_H - HAND_LID_T
     with BuildPart() as p:
-        # outer shell plus end block
-        with Locations(((x_back + x_open) / 2, 0, (zb - HAND_WALL + top) / 2)):
-            Box(x_open - x_back, 2 * (yi + HAND_WALL), top - zb + HAND_WALL)
-        fillet(p.edges().filter_by(Axis.X), radius=1.5)
-        # the bay's walls
+        # one block: sleeve, end block and the bay's walls, rounded along the bottom edges
+        with Locations(((x_back + x_open) / 2, 0, zb - HAND_WALL)):
+            Box(x_open - x_back, POD_W, top + bay_h - zb + HAND_WALL, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        fillet(p.edges().filter_by(Axis.X).group_by(Axis.Z)[0], radius=1.5)
+        # the bay, open to the top
         with Locations(((x_back + x_open) / 2, 0, top)):
-            Box(x_open - x_back, POD_W, bay_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
-            Box(x_open - x_back - 2 * POD_WALL, POD_W - 2 * POD_WALL, bay_h,
+            Box(x_open - x_back - 2 * POD_WALL, POD_W - 2 * POD_WALL, bay_h + 1,
                 align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
         # corner bosses for the lid's screws
         for x, y in hand_lid_screws():
@@ -265,6 +264,7 @@ def hand_lid():
     with BuildPart() as p:
         with Locations(((x_back + x_open) / 2, 0, z0)):
             Box(x_open - x_back, POD_W, HAND_LID_T, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        chamfer(p.edges().filter_by(Axis.X).group_by(Axis.Z)[-1], length=1.0)
         # tongue onto the plug's body
         with Locations(((CRADLE_X0 + CRADLE_X1) / 2, 0, z0)):
             Box(CRADLE_X1 - CRADLE_X0 - 0.6, PLUG_D - 0.3, z0 - JACK_Z, align=(Align.CENTER, Align.CENTER, Align.MAX))
