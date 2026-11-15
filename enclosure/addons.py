@@ -443,14 +443,12 @@ def pedal_base():
             with BuildSketch():
                 RectangleRounded(PW, PD - BLOCK_Y0, 6.0)
             extrude(amount=BLOCK_Z)
-        # hinge trench across the heel end, open at both sides (the bolts go in from there) and,
-        # in the middle, to the back (a spanner reaches the nuts from behind)
+        # hinge step across the heel end: the deck is cut down to TRENCH_Z from the heel edge to
+        # TRENCH_Y[1], open to both sides and to the back. The bolts go in from the sides, a spanner
+        # reaches the nuts from behind, and the keys' plates cover it from above.
         ty0, ty1 = TRENCH_Y
-        with Locations((0, (ty0 + ty1) / 2, TRENCH_Z)):
-            Box(PW + 2, ty1 - ty0, KEY_Z, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
-        mid = KEY_GAP + KEY_W - KNUCKLE_W - 0.8     # between the two inner lugs
-        with Locations((0, ty0 / 2, TRENCH_Z)):
-            Box(mid, ty0 + 0.2, KEY_Z, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+        with Locations((0, (ty1 - 1) / 2, TRENCH_Z)):
+            Box(PW + 2, ty1 + 1, KEY_Z, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
         # two lugs per key either side of its knuckle, standing in the trench, on an M6 x 40 hex
         # bolt from the outer side with two nuts locked against each other on the inner lug (lug 6
         # + knuckle 16 + lug 6 + two nuts fits 40 mm); the IC-705 mount's bolts and nuts

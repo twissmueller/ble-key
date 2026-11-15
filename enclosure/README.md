@@ -152,10 +152,10 @@ diameters are dimensioned): check them on the real part.
 
 **Foot pedal** (`out/pedal-fdm/`, 122 × 168 × 34 mm; the Bambu Lab A1 mini prints 180 × 180 × 180 mm, so 6 mm stay free all round): two foot keys side by
 side, left is back, right is forward, each a smooth plate from the heel edge to the toe, sloping 6.5°: 19.5 mm high at the heel, where
-the foot rests, 33.6 mm at the toe. The hinges are sunk into the deck, in a trench across the heel
-end under the plates, out of the foot's way: an M6 × 40 hex bolt with two nuts locked against each
-other, between two lugs. The trench is open at both sides for the bolts and, in the middle, to the
-back for a spanner on the nuts. A hook under each key's toe edge catches under a lip on the toe
+the foot rests, 33.6 mm at the toe. The hinges are sunk into a step in the deck across the heel
+end, under the plates, out of the foot's way: an M6 × 40 hex bolt with two nuts locked against each
+other, between two lugs. The step is open to both sides for the bolts and to the back for a spanner
+on the nuts. A hook under each key's toe edge catches under a lip on the toe
 block: the upper stop that sets the rest position against the spring. Each key presses a
 Cherry-MX-style switch that clips into the deck. A compression spring under each key lifts it; two
 posts beside each switch take the foot's force once the switch is pressed. The Modular slides onto a fixed plug, as into the hand switch: the toe block has a
