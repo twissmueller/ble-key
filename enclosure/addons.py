@@ -318,11 +318,38 @@ KEY_UNDER = KEY_Z + MX_STEM + 0.8 + 1.0   # key underside at rest (presser pad 1
 KNUCKLE_W = 16.0
 LUG_W = 6.0
 KNUCKLE_R = 5.5
-HINGE_GAP = 1.0              # between the lugs' tops and the key's underside
-HINGE_Z = KEY_UNDER - HINGE_GAP - KNUCKLE_R   # the hinge lies under the key's plate, out of the foot's way
+BLOCK_Y0 = 128.0             # toe block with the Modular pocket
+HINGE_GAP = 1.0              # between the lugs' tops and the key's underside, at the hinge
+# The hinges are sunk into the deck, in a trench across the heel end, so the keys slope: low at
+# the heel, where the foot rests, rising to the switches at the toe.
+TRENCH_Z = 3.0               # the trench's floor
+TRENCH_Y = (2.0, 17.0)
+HINGE_Z = TRENCH_Z + KNUCKLE_R + 0.5
+KEY_FLAT = HINGE_Z + KNUCKLE_R + HINGE_GAP    # the key's underside in its own flat frame
+# tilt that brings the underside up to KEY_UNDER over the switch
+KEY_TILT = math.degrees(math.asin((KEY_UNDER - HINGE_Z - (KEY_FLAT - HINGE_Z)) / (SWITCH_Y - HINGE_Y)))
+for _ in range(5):
+    KEY_TILT = math.degrees(math.asin(
+        (KEY_UNDER - HINGE_Z - (KEY_FLAT - HINGE_Z) * math.cos(math.radians(KEY_TILT))) / (SWITCH_Y - HINGE_Y)))
+# A hook under each key's toe edge catches under a lip on the toe block: the upper stop, which
+# sets the rest position against the spring. Both faces slope 45 degrees, so they print unsupported.
+HOOK_W = 30.0
+HOOK_Y0 = KEY_Y1 - 2.5       # the hook's web under the plate; its nose reaches 2.5 beyond the toe edge
+HOOK_NOSE = (KEY_Y1 + 2.5, KEY_FLAT - 6.0)   # flat frame: the nose's upper outer corner
+
+
+def tilted(y, z):
+    """A point of the key's flat frame (y, z), in the pedal at rest."""
+    a = math.radians(KEY_TILT)
+    dy, dz = y - HINGE_Y, z - HINGE_Z
+    return HINGE_Y + dy * math.cos(a) - dz * math.sin(a), HINGE_Z + dy * math.sin(a) + dz * math.cos(a)
+
+
+_ny, _nz = tilted(*HOOK_NOSE)
+LIP_REACH = 2.4
+LIP_Z = _nz - (BLOCK_Y0 - _ny) + 0.2    # where the lip's sloped underside meets the block's face
 HINGE_BOLT = 6.0             # M6 x 40 hex bolt (DIN 933) and two M6 nuts, as in the IC-705 mount's set
 PLATE_Y0 = 1.0               # the key's plate runs from the heel edge and covers the hinge
-BLOCK_Y0 = 128.0             # toe block with the Modular pocket
 TUNNEL_H = MOD_H + TRAY_H + 2 * C   # inside height of the tunnel
 TUNNEL_ROOF = 2.0
 POCKET_FLOOR = 3.0
@@ -416,22 +443,30 @@ def pedal_base():
             with BuildSketch():
                 RectangleRounded(PW, PD - BLOCK_Y0, 6.0)
             extrude(amount=BLOCK_Z)
-        # hinge, under the key's plate so the foot only meets a smooth surface: two lugs per key
-        # either side of its knuckle, on an M6 x 40 hex bolt from the outer side with two nuts
-        # locked against each other on the inner lug (lug 6 + knuckle 16 + lug 6 + two nuts fits
-        # 40 mm); the same bolts and nuts as in the IC-705 mount's hardware set. The lugs' tops
-        # stop the key if someone steps on its heel end.
-        lug_h = HINGE_Z + KNUCKLE_R - KEY_Z
+        # hinge trench across the heel end, open at both sides (the bolts go in from there) and,
+        # in the middle, to the back (a spanner reaches the nuts from behind)
+        ty0, ty1 = TRENCH_Y
+        with Locations((0, (ty0 + ty1) / 2, TRENCH_Z)):
+            Box(PW + 2, ty1 - ty0, KEY_Z, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+        mid = KEY_GAP + KEY_W - KNUCKLE_W - 0.8     # between the two inner lugs
+        with Locations((0, ty0 / 2, TRENCH_Z)):
+            Box(mid, ty0 + 0.2, KEY_Z, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+        # two lugs per key either side of its knuckle, standing in the trench, on an M6 x 40 hex
+        # bolt from the outer side with two nuts locked against each other on the inner lug (lug 6
+        # + knuckle 16 + lug 6 + two nuts fits 40 mm); the IC-705 mount's bolts and nuts
+        lug_h = HINGE_Z + KNUCKLE_R - TRENCH_Z
         for kx in key_xs():
             for d in (-1, 1):
-                with Locations((kx + d * (KNUCKLE_W / 2 + 0.4 + LUG_W / 2), HINGE_Y, KEY_Z)):
-                    Box(LUG_W, 2 * KNUCKLE_R + 4, lug_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
+                with Locations((kx + d * (KNUCKLE_W / 2 + 0.4 + LUG_W / 2), (ty0 + ty1) / 2, TRENCH_Z)):
+                    Box(LUG_W, ty1 - ty0, lug_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
             with Locations(Location((kx, HINGE_Y, HINGE_Z), (0, 90, 0))):
                 Cylinder(HINGE_BOLT / 2 + 0.2, KNUCKLE_W + 2 * LUG_W + 2, mode=Mode.SUBTRACT)
-            # a shallow trough in the deck so the knuckle turns free
-            with Locations((kx, HINGE_Y, KEY_Z)):
-                Box(KNUCKLE_W + 0.8, 2 * KNUCKLE_R + 3, 1.5, align=(Align.CENTER, Align.CENTER, Align.MAX),
-                    mode=Mode.SUBTRACT)
+        # the lip on the toe block's face that the keys' hooks catch under, sloped 45 degrees below
+        with BuildSketch(Plane.YZ.offset(-PW / 2 + 6)):
+            Polygon((BLOCK_Y0 + 0.1, LIP_Z - 0.1), (BLOCK_Y0 - LIP_REACH, LIP_Z + LIP_REACH),
+                    (BLOCK_Y0 - LIP_REACH, BLOCK_Z), (BLOCK_Y0 + 0.1, BLOCK_Z), align=None)
+        extrude(amount=PW - 12)
+        for kx in key_xs():
             # switch: plate cut-out, cavity below it down to the cover, channel to the plug
             with Locations((kx, SWITCH_Y, KEY_Z)):
                 Box(MX_CUT, MX_CUT, MX_PLATE, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
@@ -508,13 +543,15 @@ def pedal_cover():
     return p.part
 
 
-def pedal_key(right: bool):
+def pedal_key(right: bool, flat: bool = False):
     """Foot key: a plate from the heel edge to the toe with nothing standing above it, ribs
     underneath, the hinge knuckle hanging below its heel end, presser pad over the switch, spring
-    seat and stop pads. Modelled at rest, horizontal."""
+    seat, stop pads and the hook under its toe edge. Built flat, then tilted about the hinge into
+    its rest position (flat=True leaves it flat, for printing)."""
     kx = key_xs()[1 if right else 0]
+    U = KEY_FLAT
     with BuildPart() as p:
-        with Locations((kx, (PLATE_Y0 + KEY_Y1) / 2, KEY_UNDER)):
+        with Locations((kx, (PLATE_Y0 + KEY_Y1) / 2, U)):
             with BuildSketch():
                 RectangleRounded(KEY_W, KEY_Y1 - PLATE_Y0, 4.0)
             extrude(amount=KEY_T)
@@ -524,35 +561,43 @@ def pedal_key(right: bool):
         with Locations(Location((kx, HINGE_Y, HINGE_Z), (0, 90, 0))):
             Cylinder(KNUCKLE_R, KNUCKLE_W)
         with Locations((kx, HINGE_Y, HINGE_Z)):
-            Box(KNUCKLE_W, 2 * KNUCKLE_R, KEY_UNDER - HINGE_Z, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            Box(KNUCKLE_W, 2 * KNUCKLE_R, U - HINGE_Z, align=(Align.CENTER, Align.CENTER, Align.MIN))
         with Locations(Location((kx, HINGE_Y, HINGE_Z), (0, 90, 0))):
             Cylinder(HINGE_BOLT / 2 + 0.3, KNUCKLE_W + 1, mode=Mode.SUBTRACT)
         # ribs underneath, along the key, starting clear of the hinge and its bolt head
         rib_y0 = HINGE_Y + KNUCKLE_R + 8.0
         for dx in (-KEY_W / 2 + 3, KEY_W / 2 - 3):
-            with Locations((kx + dx, (rib_y0 + KEY_Y1 - 6) / 2, KEY_UNDER)):
+            with Locations((kx + dx, (rib_y0 + KEY_Y1 - 6) / 2, U)):
                 Box(2.0, KEY_Y1 - 6 - rib_y0, 3.0, align=(Align.CENTER, Align.CENTER, Align.MAX))
         # presser pad over the switch stem
-        with Locations((kx, SWITCH_Y, KEY_UNDER)):
-            Cylinder(3.5, 1.8, align=(Align.CENTER, Align.CENTER, Align.MAX))
+        with Locations((kx, SWITCH_Y, U)):
+            Cylinder(3.5, 1.4, align=(Align.CENTER, Align.CENTER, Align.MAX))   # short of the stem by the tilt
         # stop pads over the posts
         for dx in (-1, 1):
-            with Locations((kx + dx * 16, STOP_Y, KEY_UNDER)):
+            with Locations((kx + dx * 16, STOP_Y, U)):
                 Cylinder(3.0, 1.0, align=(Align.CENTER, Align.CENTER, Align.MAX))
         # spring seat
-        with Locations((kx, SPRING_Y, KEY_UNDER)):
+        with Locations((kx, SPRING_Y, U)):
             Cylinder(SPRING_D / 2 + 1.6, 3.0, align=(Align.CENTER, Align.CENTER, Align.MAX))
             Cylinder(SPRING_D / 2 + 0.4, 3.0, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
+        # hook under the toe edge: a web down from the plate and a nose forward, its top sloped
+        ny, nz = HOOK_NOSE
+        with BuildSketch(Plane.YZ.offset(kx - HOOK_W / 2)):
+            Polygon((HOOK_Y0, U + 0.1), (KEY_Y1, U + 0.1), (KEY_Y1, nz + (ny - KEY_Y1)), (ny, nz),
+                    (ny, nz - 2.0), (HOOK_Y0, nz - 2.0), align=None)
+        extrude(amount=HOOK_W)
         # grip: shallow grooves across the top; arrow towards the toe on the right key, the heel on
         # the left
         for i in range(7):
-            with Locations((kx, 40 + i * 10, KEY_UNDER + KEY_T)):
+            with Locations((kx, 40 + i * 10, U + KEY_T)):
                 Box(KEY_W - 12, 1.6, 0.8, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
-        with BuildSketch(Plane.XY.offset(KEY_UNDER + KEY_T)):
+        with BuildSketch(Plane.XY.offset(U + KEY_T)):
             with Locations((kx, 26)):
                 Triangle(a=12, b=12, c=12, rotation=0 if right else 180)
         extrude(amount=-0.8, mode=Mode.SUBTRACT)
-    return p.part
+    if flat:
+        return p.part
+    return p.part.rotate(Axis((0, HINGE_Y, HINGE_Z), (1, 0, 0)), KEY_TILT)
 
 
 def pedal_switch_stand_in(kx):
@@ -634,13 +679,14 @@ def main():
     check("pedal", printed, {"modular": mod_tray, "plug": plug, **switches})
     save(base, out, "ble-key-pedal-base")
     save(cover, out, "ble-key-pedal-cover", flip=lambda s: s.rotate(Axis.X, 180))
-    for k, part in keys.items():
-        save(part, out, f"ble-key-pedal-{k}", flip=lambda s: s.rotate(Axis.X, 180))   # top on the bed
+    for k, right in (("key-left", False), ("key-right", True)):
+        save(pedal_key(right, flat=True), out, f"ble-key-pedal-{k}", flip=lambda s: s.rotate(Axis.X, 180))   # top on the bed
     sw = switches["switch-0"] + switches["switch-1"]
     preview({"base": base + cover, "lid": lid, "keys": keys["key-left"] + keys["key-right"], "modular": mod_tray, "plug": plug, "switches": sw}, out)
     bb = base.bounding_box()
     print(f"pedal: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm, "
-          f"toe height {KEY_UNDER + KEY_T:.1f} mm")
+          f"keys tilted {KEY_TILT:.1f} deg, toe edge at {tilted(KEY_Y1, KEY_FLAT + KEY_T)[1]:.1f} mm, "
+          f"heel edge at {tilted(PLATE_Y0, KEY_FLAT + KEY_T)[1]:.1f} mm")
     if render:
         shown = [(base, "#c2541b"), (keys["key-left"], "#e07a3f"), (keys["key-right"], "#e07a3f"),
                  (lid, "#8a8f8d"), (mod_tray, "#2b2f2e"), (plug, "#b9b9b9")]
