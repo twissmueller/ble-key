@@ -20,7 +20,7 @@ Status: draft, not printed yet. The sizes of the switches, buttons and spring ar
 | Compression spring, about 8 × 20 mm | 2 | [SIN 206032](https://www.reichelt.de/de/de/shop/produkt/federn-sortiment_200-teilig-314696), assortment of 200; whether it holds this size is not confirmed | 6.15 € | 1 |
 | 3.5 mm stereo plug, metal, Rean NYS231 | 1 | [NEUTRIK NYS231](https://www.reichelt.de/de/de/shop/produkt/klinkenstecker_3_5_mm_stereo_3-pol-131754) | 1.35 € each | see basket |
 | Hinge bolt M6 × 40 | 2 | [P40 ZS M6X40](https://www.reichelt.de/de/de/shop/produkt/din_912_zylinderschraube_mit_innensechskant_8_8_verzinkt-377475), socket head DIN 912; or the hex bolts from the M6/M8 set of the IC-705 mount | 0.36 € each | 0 if the set is there, else 2 |
-| Nut M6 | 4 | [SK M6-100](https://www.reichelt.de/de/de/shop/produkt/sechskantmuttern_m6_100_stueck-65799), pack of 100; or from the M6/M8 set | 3.50 € | 0 if the set is there, else 1 |
+| Nut M6 | 2 | [SK M6-100](https://www.reichelt.de/de/de/shop/produkt/sechskantmuttern_m6_100_stueck-65799), pack of 100; or from the M6/M8 set | 3.50 € | 0 if the set is there, else 1 |
 | Countersunk self-tapping screw 2.2 × 6.5 (DIN 7982) | 11 (7 cover, 4 plug lid) | not at Reichelt; the BLE Key case screw, [eBay V2A](https://www.ebay.de/itm/286747669467) | | from stock |
 | Stick-on rubber feet 10 × 3 mm | 4 | [DELOCK 18309](https://www.reichelt.de/de/de/shop/produkt/gummifuesse_rund_selbstklebend_10_x_3_mm_50_stk_schwarz-371081), pack of 50 | 3.55 € | 1 |
 | Stranded wire 0.14 mm² | about 0.5 m | [LITZE 77685](https://www.reichelt.de/de/de/shop/produkt/kupferlitze_isoliert_10_m_10x_0_14_mm_mehrfarbig-410615), 10 colours, 10 m each | 11.50 € | 0 if wire is there, else 1 |

@@ -153,9 +153,11 @@ diameters are dimensioned): check them on the real part.
 **Foot pedal** (`out/pedal-fdm/`, 122 × 168 × 34 mm; the Bambu Lab A1 mini prints 180 × 180 × 180 mm, so 6 mm stay free all round): two foot keys side by
 side, left is back, right is forward, each a smooth plate from the heel edge to the toe, sloping 6.5°: 19.5 mm high at the heel, where
 the foot rests, 33.6 mm at the toe. The hinges are sunk into a step in the deck across the heel
-end, under the plates, out of the foot's way: an M6 × 40 hex bolt with two nuts locked against each
-other, between two lugs. The step is open to both sides for the bolts and to the back for a spanner
-on the nuts. A hook under each key's toe edge catches under a lip on the toe
+end, under the plates, out of the foot's way: an M6 × 40 hex bolt between two lugs. Its nut sits
+in a slot in the inner lug, open to the top, as in the IC-705 mount: it drops in and cannot turn, so
+the bolt is tightened from its head alone, only until the head touches (the key must turn freely).
+The step is open to both sides for the bolts and to the back.
+A hook under each key's toe edge catches under a lip on the toe
 block: the upper stop that sets the rest position against the spring. Each key presses a
 Cherry-MX-style switch that clips into the deck. A compression spring under each key lifts it; two
 posts beside each switch take the foot's force once the switch is pressed. The Modular slides onto a fixed plug, as into the hand switch: the toe block has a
@@ -168,7 +170,7 @@ the plug down, with four countersunk 2.2 × 6.5 screws, the Modular's lid screws
 recesses for four stick-on feet). Parts: base, cover, two keys, plug lid.
 
 Bought parts (Reichelt order numbers): pedal: 2 × `CHERRY MX2A-11NN` (MX Black, snap-in), 2 ×
-compression spring about 8 × 20 mm (from the assortment `SIN 206032`), 2 × M6 × 40 hex bolt and 4 × M6 nut
+compression spring about 8 × 20 mm (from the assortment `SIN 206032`), 2 × M6 × 40 hex bolt and 2 × M6 nut
 (DIN 933/934, from the M6/M8 set bought for the IC-705 mount), 11 × countersunk self-tapping
 2.2 × 6.5 (DIN 7982, the Modular's lid screws: 7 for the cover, 4 for the plug's lid), 4 × stick-on feet 10 × 3 mm
 (`DELOCK 18309`), 1 × 3.5 mm stereo plug (`NEUTRIK NYS231`). Hand

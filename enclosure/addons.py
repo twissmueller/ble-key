@@ -317,6 +317,9 @@ STOP_Y = 114.0
 KEY_UNDER = KEY_Z + MX_STEM + 0.8 + 1.0   # key underside at rest (presser pad 1.8 below it)
 KNUCKLE_W = 16.0
 LUG_W = 6.0
+LUG_IN = 9.5                 # the inner lug, with the nut slot
+NUT_AF = 10.0                # M6 nut across flats
+NUT_POCKET = 5.5             # slot depth from the lug's inner face, as in the IC-705 mount
 KNUCKLE_R = 5.5
 BLOCK_Y0 = 128.0             # toe block with the Modular pocket
 HINGE_GAP = 1.0              # between the lugs' tops and the key's underside, at the hinge
@@ -449,16 +452,28 @@ def pedal_base():
         ty0, ty1 = TRENCH_Y
         with Locations((0, (ty1 - 1) / 2, TRENCH_Z)):
             Box(PW + 2, ty1 + 1, KEY_Z, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
-        # two lugs per key either side of its knuckle, standing in the trench, on an M6 x 40 hex
-        # bolt from the outer side with two nuts locked against each other on the inner lug (lug 6
-        # + knuckle 16 + lug 6 + two nuts fits 40 mm); the IC-705 mount's bolts and nuts
+        # two lugs per key either side of its knuckle, on an M6 x 40 hex bolt from the outer side.
+        # The inner lug is thicker and holds the nut in a slot open to the top, as the IC-705
+        # mount holds its M6 nuts: the nut drops in and cannot turn, so the bolt is tightened
+        # from its head alone, with no spanner between the keys.
         lug_h = HINGE_Z + KNUCKLE_R - TRENCH_Z
         for kx in key_xs():
-            for d in (-1, 1):
-                with Locations((kx + d * (KNUCKLE_W / 2 + 0.4 + LUG_W / 2), (ty0 + ty1) / 2, TRENCH_Z)):
-                    Box(LUG_W, ty1 - ty0, lug_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            inner = 1 if kx < 0 else -1
+            for d, w in ((-inner, LUG_W), (inner, LUG_IN)):
+                with Locations((kx + d * (KNUCKLE_W / 2 + 0.4 + w / 2), (ty0 + ty1) / 2, TRENCH_Z)):
+                    Box(w, ty1 - ty0, lug_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
             with Locations(Location((kx, HINGE_Y, HINGE_Z), (0, 90, 0))):
-                Cylinder(HINGE_BOLT / 2 + 0.2, KNUCKLE_W + 2 * LUG_W + 2, mode=Mode.SUBTRACT)
+                Cylinder(HINGE_BOLT / 2 + 0.2, KNUCKLE_W + 2 * LUG_IN + 2, mode=Mode.SUBTRACT)
+            # the nut slot, from the inner lug's inner face: a hexagon with two flats upright,
+            # opened to the top
+            x_face = kx + inner * (KNUCKLE_W / 2 + 0.4 + LUG_IN)
+            af = NUT_AF + 0.3
+            with BuildSketch(Plane.YZ.offset(x_face - inner * NUT_POCKET if inner > 0 else x_face)):
+                with Locations((HINGE_Y, HINGE_Z)):
+                    RegularPolygon(af / 2 / math.cos(math.radians(30)), 6, rotation=90)
+                with Locations((HINGE_Y, HINGE_Z + lug_h / 2)):
+                    Rectangle(af, lug_h)
+            extrude(amount=NUT_POCKET + 0.01, mode=Mode.SUBTRACT)
         # the lip on the toe block's face that the keys' hooks catch under, sloped 45 degrees below
         with BuildSketch(Plane.YZ.offset(-PW / 2 + 6)):
             Polygon((BLOCK_Y0 + 0.1, LIP_Z - 0.1), (BLOCK_Y0 - LIP_REACH, LIP_Z + LIP_REACH),
