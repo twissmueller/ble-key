@@ -153,9 +153,10 @@ diameters are dimensioned): check them on the real part.
 **Foot pedal** (`out/pedal-fdm/`, 122 × 168 × 34 mm; the Bambu Lab A1 mini prints 180 × 180 × 180 mm, so 6 mm stay free all round): two foot keys side by
 side, left is back, right is forward, each a smooth plate from the heel edge to the toe, sloping 6.5°: 19.5 mm high at the heel, where
 the foot rests, 33.6 mm at the toe. The hinges are sunk into a step in the deck across the heel
-end, under the plates, out of the foot's way: an M6 × 40 hex bolt between two lugs. Its nut sits
-in a slot in the inner lug, open to the top, as in the IC-705 mount: it drops in and cannot turn, so
-the bolt is tightened from its head alone, only until the head touches (the key must turn freely).
+end, under the plates, out of the foot's way: an M6 × 40 hex bolt between two lugs. Its nut, a
+self-locking one (DIN 985), sits in a slot in the inner lug, open to the top, as in the IC-705
+mount: it drops in and cannot turn, so the bolt is tightened from its head alone, only until the
+head touches (the key must turn freely); the nylon ring keeps it from working loose.
 The step is open to both sides for the bolts and to the back.
 A hook under each key's toe edge catches under a lip on the toe
 block: the upper stop that sets the rest position against the spring. Each key presses a
@@ -170,8 +171,8 @@ the plug down, with four countersunk 2.2 × 6.5 screws, the Modular's lid screws
 recesses for four stick-on feet). Parts: base, cover, two keys, plug lid.
 
 Bought parts (Reichelt order numbers): pedal: 2 × `CHERRY MX2A-11NN` (MX Black, snap-in), 2 ×
-compression spring about 8 × 20 mm (from the assortment `SIN 206032`), 2 × M6 × 40 hex bolt and 2 × M6 nut
-(DIN 933/934, from the M6/M8 set bought for the IC-705 mount), 11 × countersunk self-tapping
+compression spring about 8 × 20 mm (from the assortment `SIN 206032`), 2 × M6 × 40 hex bolt (DIN 933, from the
+M6/M8 set bought for the IC-705 mount), 2 × self-locking M6 nut (DIN 985, `SKSM M6-100`), 11 × countersunk self-tapping
 2.2 × 6.5 (DIN 7982, the Modular's lid screws: 7 for the cover, 4 for the plug's lid), 4 × stick-on feet 10 × 3 mm
 (`DELOCK 18309`), 1 × 3.5 mm stereo plug (`NEUTRIK NYS231`). Hand
 switch: 2 × tactile switch 12 × 12 × 7.3 mm (`DIP DTS-24N`), 1 × `NEUTRIK NYS231`, 4 × countersunk
@@ -189,5 +190,6 @@ down. The USB-C end and the two light holes stay free. The sleeve prints standin
 the lid top down, both without supports.
 
 **Fasteners, kept to two kinds across the add-ons:** countersunk self-tapping 2.2 × 6.5 (DIN 7982),
-the screw of the BLE Key cases, for every lid, cap and cover; and M6 hex bolts and nuts (DIN 933/934)
-for the pedal's hinges, from the same M6/M8 set as the IC-705 mount in `~/projects/prints`. No M3.
+the screw of the BLE Key cases, for every lid, cap and cover; and M6 hex bolts (DIN 933) for the
+pedal's hinges, from the same M6/M8 set as the IC-705 mount in `~/projects/prints`, with self-locking
+M6 nuts (DIN 985). No M3.
