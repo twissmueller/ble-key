@@ -12,8 +12,9 @@ Nothing inside the Modular changes.
           own countersunk screws.
 - hand:   a sleeve that slides over the Modular's jack end; the plug in its end block goes into
           the jack as it slides home. On top a wiring bay, open to the top: the plug in the same
-          cradle as in the pedal, two 12 x 12 mm tactile buttons on the bay's floor (front
-          forward, rear back), the wires beside them, and a flush lid with four screws.
+          cradle as in the pedal, the wires, and a flush lid with four screws that is also the
+          plate for two Cherry-MX-style switches, the same as in the pedal (front forward, rear
+          back). Standard MX keycaps go on top.
 
 Both are made for the Modular with its battery tray: in the hand and under the foot the key has to
 run on its battery.
@@ -28,8 +29,7 @@ any change there. Modular frame used here: jack end face at x = 0, USB end at x 
 on y = 0, z = 0 at the base's underside (the battery tray hangs below it, down to -TRAY_H).
 
 Bought parts whose sizes are assumed, not measured (see README, "Add-ons"):
-MX_* (Cherry MX footprint),
-TACT_* (12 x 12 mm tactile switch), SPRING_* (compression spring).
+MX_* (Cherry MX footprint), SPRING_* (compression spring).
 """
 
 import math
@@ -78,11 +78,6 @@ MX_PLATE = 1.5      # plate thickness the clips need
 MX_BELOW = 8.5      # body plus pins below the plate's top
 MX_STEM = 10.2      # stem top above the plate's top, at rest (assumed)
 MX_TRAVEL = 4.0
-
-# --- 12 x 12 mm tactile switch (body 12 x 12 x 3.5, 7.3 to the top of the actuator) -----------
-TACT = 12.0
-TACT_BODY = 3.6
-TACT_POCKET = TACT + 0.3
 
 # --- return spring under each foot key --------------------------------------------------------
 SPRING_D = 8.0      # outer diameter (assumed: 8 x 20 mm, about 0.3 N/mm)
@@ -181,17 +176,17 @@ def plug_stand_in(x0=-FACE_GAP - SEAT_RECESS - SEAT_LIP):
 
 
 # ============================================================================================
-# Hand switch: a sleeve over the jack end with the plug in its end block and two buttons on top
+# Hand switch: a sleeve over the jack end with the plug in its end block and two MX switches on top
 # ============================================================================================
 
 HAND_WALL = 2.0
 HAND_REACH = 40.0           # how far the sleeve reaches over the Modular from its jack end
-POD_H = 6.0                 # wiring bay on top of the sleeve, lid included
+POD_H = MX_BELOW + 0.5      # wiring bay on top of the sleeve, lid included: the switches' pins clear the floor
 POD_W = MOD_W + 2 * C + 2 * HAND_WALL   # as wide as the sleeve: one block, no step
 POD_WALL = 2.0
 HAND_LID_T = 2.0
-BTN_X = (8.0, 26.0)         # rear button (back / dah / ring), front button (forward / dit / tip)
-TACT_STEM_D = 7.0           # the button's round actuator (assumed)
+BTN_X = (9.0, 28.5)         # rear switch (back / dah / ring), front switch (forward / dit / tip); 19.5 pitch for 18 mm caps
+KEYCAP = 18.0               # standard 1u MX keycap, for spacing and the arrows
 HAND_BOSS = 5.0             # corner bosses in the bay for the lid's screws
 
 
@@ -211,8 +206,8 @@ def hand_lid_screws():
 def hand(tray: bool):
     """Sleeve with a wiring bay on top, open to the top and closed by hand_lid(). Everything is
     fitted from above: the plug drops into its cradle (as in the pedal), its wires come up behind
-    it into the bay and run along both sides of the buttons, which sit on the bay's floor between
-    low ribs. No closed channels to thread wires through."""
+    it into the bay and run along both sides of the switches, which hang from the lid. No closed
+    channels to thread wires through."""
     zb = (-TRAY_H if tray else 0.0) - C          # sleeve inside, bottom
     zt = MOD_H + C                               # sleeve inside, top
     yi = MOD_W / 2 + C
@@ -233,15 +228,6 @@ def hand(tray: bool):
         for x, y in hand_lid_screws():
             with Locations((x, y, top)):
                 Box(HAND_BOSS, HAND_BOSS, bay_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        # the buttons sit on the bay's floor: a rib along each side without legs, a post at the
-        # middle of each side with legs (between the two legs)
-        for bx in BTN_X:
-            for sy in (-1, 1):
-                with Locations((bx, sy * (TACT_POCKET / 2 + 0.6), top)):
-                    Box(8.0, 1.2, 2.5, align=(Align.CENTER, Align.CENTER, Align.MIN))
-            for sx in (-1, 1):
-                with Locations((bx + sx * (TACT_POCKET / 2 + 0.75), 0, top)):
-                    Box(1.5, 2.0, 2.5, align=(Align.CENTER, Align.CENTER, Align.MIN))
         # tunnel for the Modular, open at the USB side
         with Locations(((x_face + x_open + 1) / 2, 0, (zb + zt) / 2)):
             Box(x_open + 1 - x_face, 2 * yi, zt - zb, mode=Mode.SUBTRACT)
@@ -255,9 +241,9 @@ def hand(tray: bool):
 
 
 def hand_lid():
-    """Lid of the hand switch, flush with the bay's walls all round: holes for the two buttons'
-    actuators (it holds the buttons down), a tongue down onto the plug, four countersunk
-    2.2 x 6.5 screws, arrows beside the buttons. Prints top down."""
+    """Lid of the hand switch, flush with the bay's walls all round and the plate for the two MX
+    switches: 14 mm cut-outs, thinned to the 1.5 mm the clips need from below, a tongue down onto
+    the plug, four countersunk 2.2 x 6.5 screws, arrows beside the switches. Prints top down."""
     x_back, x_open = hand_x()
     z1 = MOD_H + C + HAND_WALL + POD_H
     z0 = z1 - HAND_LID_T
@@ -271,32 +257,35 @@ def hand_lid():
         with Locations(Location(((CRADLE_X0 + CRADLE_X1) / 2, 0, JACK_Z), (0, 90, 0))):
             Cylinder(PLUG_D / 2 + 0.1, CRADLE_X1 - CRADLE_X0, mode=Mode.SUBTRACT)
         for bx in BTN_X:
+            with Locations((bx, 0, z1)):
+                Box(MX_CUT, MX_CUT, HAND_LID_T, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
             with Locations((bx, 0, z0)):
-                Cylinder(TACT_STEM_D / 2 + 0.3, HAND_LID_T, align=(Align.CENTER, Align.CENTER, Align.MIN),
-                         mode=Mode.SUBTRACT)
+                Box(MX_CUT + 2, MX_CUT + 2, HAND_LID_T - MX_PLATE, align=(Align.CENTER, Align.CENTER, Align.MIN),
+                    mode=Mode.SUBTRACT)
         for x, y in hand_lid_screws():
             with Locations((x, y, z1)):
                 Cylinder(enc.SCREW_D / 2, HAND_LID_T, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
                 Cone(enc.SCREW_D / 2, enc.CSK_D / 2, (enc.CSK_D - enc.SCREW_D) / 2,
                      align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT)
-        # arrows beside the buttons, 0.6 deep: rear points back (to the jack), front forward
+        # arrows beside the switches, outside the keycaps, 0.6 deep: rear points back (to the jack), front forward
         for bx, d in ((BTN_X[0], -1), (BTN_X[1], 1)):
             with BuildSketch(Plane.XY.offset(z1)):
-                with Locations((bx, -(TACT_STEM_D / 2 + 4.5))):
+                with Locations((bx, -(KEYCAP / 2 + 3.0))):
                     Triangle(a=4.0, b=4.0, c=4.0, rotation=-90 * d)
             extrude(amount=-0.6, mode=Mode.SUBTRACT)
     return p.part
 
 
-def tact_stand_in():
-    """The two buttons on the bay's floor, for the views and the clash check."""
-    top = MOD_H + C + HAND_WALL
+def hand_switch_stand_in():
+    """The two MX switches in the lid, for the views and the clash check."""
+    plate = MOD_H + C + HAND_WALL + POD_H
     with BuildPart() as p:
         for bx in BTN_X:
-            with Locations((bx, 0, top)):
-                Box(TACT, TACT, 3.5, align=(Align.CENTER, Align.CENTER, Align.MIN))
-            with Locations((bx, 0, top + 3.5)):
-                Cylinder(TACT_STEM_D / 2, 3.8, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            with Locations((bx, 0, plate)):
+                Box(15.6, 15.6, MX_STEM - 3.6, align=(Align.CENTER, Align.CENTER, Align.MIN))
+                Box(MX_CUT - 0.1, MX_CUT - 0.1, MX_BELOW - 3.3, align=(Align.CENTER, Align.CENTER, Align.MAX))
+            with Locations((bx, 0, plate + MX_STEM - 3.6)):
+                Box(4.0, 4.0, 3.6, align=(Align.CENTER, Align.CENTER, Align.MIN))
     return p.part
 
 
@@ -664,7 +653,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     if True:
         h, hl = hand(True), hand_lid()
-        mod, plug, btn = modular_stand_in(True), plug_stand_in(), tact_stand_in()
+        mod, plug, btn = modular_stand_in(True), plug_stand_in(), hand_switch_stand_in()
         check("hand", {"sleeve": h, "lid": hl}, {"modular": mod, "plug": plug, "buttons": btn})
         # the sleeve prints standing on its end block, the tunnel upright; the lid top down
         save(h, out, "ble-key-hand", flip=lambda s: s.rotate(Axis.Y, -90))

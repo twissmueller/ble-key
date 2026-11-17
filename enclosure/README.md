@@ -142,7 +142,7 @@ jack's position are taken from `enclosure.py`.
 ```
 
 **Status: first draft, not printed yet.** The sizes of the switches, buttons and spring are assumed
-(constants `MX_*`, `TACT_*`, `SPRING_*` at the top of `addons.py`); measure the real parts and print a
+(constants `MX_*`, `SPRING_*` at the top of `addons.py`); measure the real parts and print a
 test before anything goes into the shop.
 
 **The plug** is a Rean NYS231 (Reichelt `NEUTRIK NYS231`, drawing in `../docs/TZ_NYS231.pdf`: body
@@ -171,22 +171,25 @@ the plug down, with four countersunk 2.2 × 6.5 screws, the Modular's lid screws
 recesses for four stick-on feet). Parts: base, cover, two keys, plug lid.
 
 Bought parts (Reichelt order numbers): pedal: 2 × `CHERRY MX2A-11NN` (MX Black, snap-in), 2 ×
-compression spring about 8 × 20 mm (from the assortment `SIN 206032`), 2 × M6 × 40 hex bolt (DIN 933, from the
+compression spring 8 × 20 mm (from an Amazon assortment with 8 × 20 in 0.6, 0.8 and 1.0 mm wire, to try the feel), 2 × M6 × 40 hex bolt (DIN 933, from the
 M6/M8 set bought for the IC-705 mount), 2 × self-locking M6 nut (DIN 985, `SKSM M6-100`), 11 × countersunk self-tapping
 2.2 × 6.5 (DIN 7982, the Modular's lid screws: 7 for the cover, 4 for the plug's lid), 4 × stick-on feet 10 × 3 mm
 (`DELOCK 18309`), 1 × 3.5 mm stereo plug (`NEUTRIK NYS231`). Hand
-switch: 2 × tactile switch 12 × 12 × 7.3 mm (`DIP DTS-24N`), 1 × `NEUTRIK NYS231`, 4 × countersunk
-2.2 × 6.5. Wire: 0.14 mm² (`LITZE 77685`).
+switch: 2 × `CHERRY MX2A-11NN`, the same as the pedal's, 2 × standard 1u MX keycap, 1 × `NEUTRIK NYS231`,
+4 × countersunk 2.2 × 6.5. Wire: 0.14 mm² (`LITZE 77685`).
 
-**Hand switch** (`out/hand-fdm/`, 77.1 × 35.2 × 35.5 mm): a sleeve that slides over the Modular's
+**Hand switch** (`out/hand-fdm/`, 77.1 × 35.2 × 38.5 mm without switches; about 55 mm high with switches and keycaps): a sleeve that slides over the Modular's
 jack end. The plug sits fixed in the sleeve's end block and goes into the jack as the sleeve slides
 home; the jack's own grip and the fit of the sleeve hold it. Everything is fitted from above: on top
 of the sleeve, and as wide as it so the whole is one block, is a wiring bay, open to the top. The plug drops into a cradle at the bay's back end,
 as in the pedal; its wires come up behind it into the bay and run along both sides of the two
-12 × 12 mm tactile buttons, which sit on the bay's floor between ribs and posts (front forward,
-rear back). A lid (`ble-key-hand-lid`) closes the bay flush all round with four countersunk
-2.2 × 6.5 screws; its holes let the buttons' actuators through and it holds the buttons and the plug
-down. The USB-C end and the two light holes stay free. The sleeve prints standing on its end block,
+Cherry-MX-style switches (front forward, rear back), the same switch as in the pedal. A lid
+(`ble-key-hand-lid`) closes the bay flush all round with four countersunk 2.2 × 6.5 screws and is the
+switches' plate: two 14 mm cut-outs, thinned from below to the 1.5 mm the clips need, 19.5 mm apart
+for standard 18 mm keycaps, with arrows beside them. The switches snap into the lid from above
+before it goes on; the bay is deep enough (8.5 mm below the lid's top) for their bodies and pins, and
+the lid holds the plug down. Until 2026-11-16 the hand switch used 12 × 12 mm tactile buttons; MX
+switches last longer, feel like the pedal, take bought keycaps and leave one switch type to stock. The USB-C end and the two light holes stay free. The sleeve prints standing on its end block,
 the lid top down, both without supports.
 
 **Fasteners, kept to two kinds across the add-ons:** countersunk self-tapping 2.2 × 6.5 (DIN 7982),
